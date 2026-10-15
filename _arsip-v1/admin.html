@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCS Administration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 120 120" fill="none"><circle cx="60" cy="60" r="30" stroke="#4fd1e8" stroke-width="5" /><path d="M30 60h60M60 30c-11 9-11 51 0 60M60 30c11 9 11 51 0 60" stroke="#4fd1e8" stroke-width="3" opacity=".6" /></svg>
+      <div><div class="b1">MCS ADMIN</div><div class="b2">DATA MANAGEMENT</div></div>
+    </div>
+    <nav>
+      <a href="#" class="active">Data Perkara</a>
+      <a href="#" onclick="alert('Fitur Manajemen Pengguna (Mock)')">Pengguna & Akses</a>
+      <a href="#" onclick="alert('Fitur Pengaturan Sistem (Mock)')">Pengaturan Sistem</a>
+    </nav>
+    <div class="user-info">
+      <div><b>Super Admin</b></div>
+      <div>Akses: Nasional</div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="top">
+      <h2>Manajemen Perkara</h2>
+      <button class="btn-primary" id="btn-add">TAMBAH PERKARA</button>
+    </div>
+    <div class="filters">
+      <select id="f-prov"><option value="">Seluruh Provinsi</option></select>
+      <select id="f-kab"><option value="">Pilih Kab/Kota</option></select>
+      <select id="f-kec"><option value="">Pilih Kecamatan</option></select>
+      <select id="f-cat"><option value="">Semua Kategori</option></select>
+      <input type="text" id="f-search" placeholder="Cari nomor perkara atau judul...">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID Perkara</th>
+            <th>Tanggal</th>
+            <th>Judul Kasus</th>
+            <th>Wilayah</th>
+            <th>Kategori</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button id="p-prev">« Prev</button>
+      <span id="p-info">Halaman 1 dari 10</span>
+      <button id="p-next">Next »</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <h3 id="m-title">Tambah Perkara Baru</h3>
+      <form id="form">
+        <input type="hidden" id="c-id">
+        <div class="fg">
+          <label>Judul Kasus</label>
+          <input type="text" id="c-title" required placeholder="Contoh: Dugaan korupsi...">
+        </div>
+        <div class="row">
+          <div class="fg">
+            <label>Provinsi</label>
+            <select id="c-prov" required></select>
+          </div>
+          <div class="fg">
+            <label>Kab/Kota</label>
+            <select id="c-kab" required></select>
+          </div>
+          <div class="fg">
+            <label>Kecamatan</label>
+            <select id="c-kec" required></select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="fg">
+            <label>Kategori</label>
+            <select id="c-cat" required></select>
+          </div>
+          <div class="fg">
+            <label>Status Saat Ini</label>
+            <select id="c-status" required></select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="fg">
+            <label>Tersangka (Pisahkan dengan koma)</label>
+            <input type="text" id="c-suspects" placeholder="A (24), B (30)">
+          </div>
+          <div class="fg">
+            <label>Estimasi Kerugian (Miliar Rp)</label>
+            <input type="number" step="0.1" id="c-loss" placeholder="0">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Pasal-Pasal Hukum (Pilih satu atau lebih)</label>
+          <select id="c-arts" multiple required size="5"></select>
+        </div>
+        <div class="m-actions">
+          <button type="button" class="btn-sec" id="btn-cancel">Batal</button>
+          <button type="submit" class="btn-primary">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

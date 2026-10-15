@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCS · Workspace — Pengelolaan Perkara</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute">
+    <symbol id="mark" viewBox="0 0 48 48"><path d="M24 3 6 10v13c0 11 7.6 19.6 18 22 10.4-2.4 18-11 18-22V10L24 3Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" /><path d="M24 13v22M15 19h18M17 19l-3 8a3.4 3.4 0 0 0 6 0l-3-8M31 19l-3 8a3.4 3.4 0 0 0 6 0l-3-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+  </svg>
+
+  <aside class="side">
+    <a class="brand" href="#beranda">
+      <svg viewBox="0 0 48 48"><use href="#mark" /></svg>
+      <div><b>MCS</b><span>Workspace</span></div>
+    </a>
+    <nav id="nav"></nav>
+    <div class="me" id="me"></div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumb" id="crumb"></div>
+      <button class="search-trigger" id="q-open"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg><span>Cari nomor perkara, terdakwa, NRP…</span><kbd>Ctrl K</kbd></button>
+      <button class="ib" id="notif-btn" title="Notifikasi"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" /></svg><i id="notif-dot"></i></button>
+      <a class="btn" href="index.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18" /></svg>Command Center</a>
+    </header>
+    <div class="page scroll" id="page"></div>
+  </div>
+
+  <!-- notifikasi -->
+  <div class="pop" id="notif"></div>
+
+  <!-- modal generik -->
+  <div class="modal" id="modal" aria-hidden="true"><div class="mbox" id="mbox"></div></div>
+
+  <!-- pencarian cepat -->
+  <div class="modal top" id="qs" aria-hidden="true">
+    <div class="mbox qs">
+      <div class="qs-in"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg><input id="qs-input" placeholder="Nomor register, nomor LP, nama terdakwa, NRP, satuan…" autocomplete="off" /><kbd>Esc</kbd></div>
+      <div class="qs-res scroll" id="qs-res"></div>
+    </div>
+  </div>
+
+  <div id="toast" role="status"></div>
+
+  <script src="vendor/d3.min.js"></script>
+  <script src="vendor/topojson-client.min.js"></script>
+  <script src="data/geo-id.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
