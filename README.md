@@ -1,10 +1,10 @@
 # MCS — Military Crime System (prototipe front-end)
 
-Prototipe sistem monitoring perkara pidana militer. Konsep lengkap: [docs/KONSEP-MCS.md](docs/KONSEP-MCS.md).
+Prototipe sistem pemantauan perkara pidana militer untuk **Bidang Pidana Militer Kejaksaan RI** (Jampidmil & Aspidmil Kejati): perkara koneksitas dan koordinasi teknis penuntutan Oditurat. Konsep lengkap: [docs/KONSEP-MCS.md](docs/KONSEP-MCS.md).
 
 ## Menjalankan
 
-Buka lewat XAMPP: `http://localhost/mcs/` (Command Center) dan `http://localhost/mcs/admin.html` (Workspace).
+Buka lewat XAMPP: `http://localhost/mcs/` (Command Center) dan `http://localhost/mcs/admin.html` (Workspace Kejaksaan).
 Tidak perlu build. Tambahkan `?nointro` di URL Command Center untuk melewati animasi globe.
 Data contoh dibangkitkan relatif terhadap tanggal hari ini; perubahan dari Workspace disimpan di `localStorage` browser
 (hapus data situs untuk kembali ke kondisi awal).
@@ -14,10 +14,10 @@ Data contoh dibangkitkan relatif terhadap tanggal hari ini; perubahan dari Works
 | Berkas | Isi |
 |---|---|
 | `index.html`, `css/mcs.css` | Command Center |
-| `admin.html`, `css/admin.css`, `js/admin.js` | Workspace (input & pembaruan perkara, verifikasi, laporan, pengguna) |
+| `admin.html`, `css/admin.css`, `js/admin.js` | Workspace Kejaksaan (input oleh Kejati, verifikasi Aspidmil, eksaminasi, laporan, pengguna) |
 | `css/tokens.css`, `js/ui.js` | Token desain & komponen bersama |
-| `js/data.js` | Model domain peradilan militer + data contoh deterministik |
-| `js/map.js` | Peta D3/TopoJSON: nasional → provinsi → kab/kota, lapisan pengadilan militer |
+| `js/data.js` | Model domain (Kejati, jenis perkara, tahapan Perpres 15/2021) + data contoh deterministik |
+| `js/map.js` | Peta D3/TopoJSON: nasional → provinsi → kab/kota, lapisan Kejaksaan Tinggi |
 | `js/app.js`, `js/case.js`, `js/panels.js`, `js/ai.js`, `js/boot.js` | Dashboard, berkas perkara, agenda/pustaka/pencarian, asisten, intro globe |
 | `data/geo-id.js` | Batas 514 kab/kota (BPS/OCHA via geoBoundaries, CC BY 3.0 IGO), 38 provinsi |
 | `tools/build-geo.js` | Pembangun `data/geo-id.js` dari GeoJSON geoBoundaries ADM2 |

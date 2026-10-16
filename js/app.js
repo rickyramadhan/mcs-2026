@@ -4,7 +4,7 @@
 window.App = (function () {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const F0 = { region: 'ID', matra: '', year: '', cat: '', court: '', stage: '' };
+  const F0 = { region: 'ID', jenis: '', matra: '', year: '', cat: '', kejati: '', stage: '' };
   let F = { ...F0 };
   let rtTab = 'agenda', rankTab = 'region';
   let current = [];
@@ -13,13 +13,13 @@ window.App = (function () {
     const years = [...new Set(MCS.cases.map((c) => c.y))].sort((a, b) => b - a);
     $('f-year').innerHTML = '<option value="">Semua tahun</option>' + years.map((y) => `<option value="${y}">${y}</option>`).join('');
     $('f-cat').innerHTML = '<option value="">Semua klasifikasi</option>' + MCS.CATS.map((c) => `<option value="${c.id}">${c.name}</option>`).join('');
-    $('f-court').innerHTML = '<option value="">Semua pengadilan</option>'
-      + '<optgroup label="Pengadilan Militer Tinggi">' + MCS.DILMILTI.map((c) => `<option value="${c.id}">${c.short}</option>`).join('') + '</optgroup>'
-      + '<optgroup label="Pengadilan Militer">' + MCS.DILMIL.map((c) => `<option value="${c.id}">${c.short}</option>`).join('') + '</optgroup>';
+    $('f-kejati').innerHTML = '<option value="">Semua Kejati</option>' + MCS.KEJATI.map((c) => `<option value="${c.id}">${c.short}</option>`).join('');
+    $('f-matra').innerHTML = '<option value="">Semua matra</option>' + MCS.MATRA.map((m) => `<option value="${m.id}">${m.short}</option>`).join('');
     $('f-year').onchange = () => setFilter('year', $('f-year').value);
     $('f-cat').onchange = () => setFilter('cat', $('f-cat').value);
-    $('f-court').onchange = () => setFilter('court', $('f-court').value);
-    document.querySelectorAll('#f-matra button').forEach((b) => (b.onclick = () => setFilter('matra', b.dataset.v)));
+    $('f-kejati').onchange = () => setFilter('kejati', $('f-kejati').value);
+    $('f-matra').onchange = () => setFilter('matra', $('f-matra').value);
+    document.querySelectorAll('#f-jenis button').forEach((b) => (b.onclick = () => setFilter('jenis', b.dataset.v)));
     document.querySelectorAll('#rt-tabs button').forEach((b) => (b.onclick = () => { rtTab = b.dataset.tab; syncTabs(); renderRight(); }));
     document.querySelectorAll('#rank-tabs button').forEach((b) => (b.onclick = () => { rankTab = b.dataset.tab; syncTabs(); renderRank(); }));
   }
@@ -31,10 +31,10 @@ window.App = (function () {
   function setFilter(k, v, fromMap) {
     if (k === 'reset') F = { ...F0, region: F.region };
     else F[k] = v;
-    if (k === 'court' && window.MCSMap) { if (v) F.region = 'ID'; MCSMap.setCourt(v); }
+    if (k === 'kejati' && window.MCSMap) { if (v) F.region = 'ID'; MCSMap.setCourt(v); }
     if (k === 'region' && window.MCSMap && !fromMap && MCSMap.focus !== v) MCSMap.drill(v, true);
-    $('f-year').value = F.year; $('f-cat').value = F.cat; $('f-court').value = F.court;
-    document.querySelectorAll('#f-matra button').forEach((b) => b.classList.toggle('on', b.dataset.v === F.matra));
+    $('f-year').value = F.year; $('f-cat').value = F.cat; $('f-kejati').value = F.kejati; $('f-matra').value = F.matra;
+    document.querySelectorAll('#f-jenis button').forEach((b) => b.classList.toggle('on', b.dataset.v === F.jenis));
     renderChips();
     render();
   }
@@ -42,8 +42,8 @@ window.App = (function () {
     const ch = [];
     if (F.stage !== '') ch.push(['stage', 'Tahap: ' + MCS.TAHAP[F.stage].name]);
     if (F.cat) ch.push(['cat', MCS.CAT[F.cat].name]);
-    if (F.court) ch.push(['court', MCS.COURT[F.court].short]);
-    const any = ch.length || F.year || F.matra;
+    if (F.kejati) ch.push(['kejati', MCS.KJ[F.kejati].short]);
+    const any = ch.length || F.year || F.matra || F.jenis;
     $('chips').innerHTML = ch.map(([k, t]) => `<span class="chip">${t}<button data-k="${k}" aria-label="Hapus">×</button></span>`).join('')
       + (any ? '<span class="chip reset" id="chip-reset">Atur ulang</span>' : '');
     $('chips').querySelectorAll('button').forEach((b) => (b.onclick = () => setFilter(b.dataset.k, '')));
@@ -57,17 +57,17 @@ window.App = (function () {
     // ringkasan
     UI.countUp($('k-total'), s.total);
     UI.countUp($('k-proses'), s.byGroup.pra + s.byGroup.sidang);
-    UI.countUp($('k-tetap'), s.byGroup.tetap);
+    UI.countUp($('k-kon'), s.byJenis.koneksitas);
     UI.countUp($('k-rugi'), s.kerugianNegara, { fmt: (v) => MCS.fmtRp(v, true) });
     const monthStart = new Date(MCS.NOW); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
     const baru = current.filter((c) => c.d >= monthStart.getTime()).length;
     $('k-total-s').innerHTML = `<span class="up">+${MCS.fmt(baru)}</span> masuk bulan ini`;
     $('k-proses-s').textContent = MCS.fmt(s.byGroup.sidang) + ' di tahap sidang';
-    $('k-tetap-s').textContent = s.putus ? Math.round((s.pecat / s.putus) * 100) + '% disertai pemecatan' : '—';
+    $('k-kon-s').textContent = MCS.fmt(s.sipil) + ' tersangka sipil';
     const pct = s.kerugianNegara ? (s.pulihNegara / s.kerugianNegara) * 100 : 0;
     $('k-rugi-s').textContent = pct.toFixed(0) + '% telah dipulihkan';
     $('k-rugi-bar').style.width = pct + '%';
-    $('ov-scope').textContent = F.court ? MCS.COURT[F.court].short : MCS.regionName(F.region);
+    $('ov-scope').textContent = F.kejati ? MCS.KJ[F.kejati].short : MCS.regionName(F.region);
 
     renderStages(s);
     renderCats(s);
@@ -96,7 +96,7 @@ window.App = (function () {
     const mx = Math.max(...base.byStage) || 1;
     const el = $('stages');
     if (!el.children.length) {
-      el.innerHTML = MCS.TAHAP.map((t, i) => `<div class="stg" data-i="${i}" title="${t.long} — ${t.actor}">
+      el.innerHTML = MCS.TAHAP.map((t, i) => `<div class="stg" data-i="${i}" title="${MCS.tahapLong(i, { jenis: F.jenis || 'koneksitas' })} — ${MCS.tahapActor(i, { jenis: F.jenis || 'koneksitas' })}">
         <i class="grp" style="background:${MCS.GROUP[MCS.groupOf(i)].color}"></i>
         <span class="ix">${i + 1}</span><span class="nm">${t.name}</span><span class="bw"><i class="bar"></i></span><span class="v">0</span></div>`).join('');
       el.querySelectorAll('.stg').forEach((r) => (r.onclick = () => setFilter('stage', F.stage === +r.dataset.i ? '' : +r.dataset.i)));
@@ -126,6 +126,7 @@ window.App = (function () {
     const totT = Object.values(s.byGol).reduce((a, b) => a + b, 0) || 1;
     $('profile').innerHTML = `<div class="stack">${M.map(([k, , c]) => `<i style="flex-grow:${s.byMatra[k]};background:${c}" title="${k}"></i>`).join('')}</div>
       <div class="stack-key">${M.map(([k, n, c]) => `<span><i style="background:${c}"></i>${n} <b>${((s.byMatra[k] / tot) * 100).toFixed(0)}%</b></span>`).join('')}</div>
+      <div class="sipil"><span>Tersangka sipil dalam perkara koneksitas</span><b>${MCS.fmt(s.sipil)}</b></div>
       <div class="gol">${Object.entries(MCS.GOL).map(([k, n]) => `<div title="${n}"><span>${{ T: 'Tamtama', B: 'Bintara', PA: 'Pama', PM: 'Pamen' }[k]}</span><b>${MCS.fmt(s.byGol[k])}</b><em>${Math.round((s.byGol[k] / totT) * 100)}%</em></div>`).join('')}</div>`;
   }
 
@@ -144,7 +145,7 @@ window.App = (function () {
         + arr.map(({ c, s }) => `<div class="ag" data-id="${c.id}" style="animation-delay:${Math.min(i++, 14) * 25}ms">
           <span class="tm">${MCS.fmtTime(s.t)}</span>
           <div><div class="a">${s.agenda} · ${MCS.esc(MCS.terdakwaLabel(c.terdakwa[0]))}</div>
-          <div class="m"><span class="mono">${c.reg}</span> · ${MCS.COURT[c.court].short.replace('Dilmil ', '').replace('Dilmilti ', 'Dilmilti ')}</div></div></div>`).join('')).join('')
+          <div class="m">${c.jenis === 'koneksitas' ? '<b class="kon">Koneksitas</b> · ' : ''}${MCS.forumShort(c)} · ${MCS.KJ[c.kejati].short}</div></div></div>`).join('')).join('')
         + (hs.length > 120 ? `<div class="empty">+${hs.length - 120} sidang lainnya — buka Agenda Sidang</div>` : '');
     } else {
       if (!al.length) { body.innerHTML = '<div class="empty">Tidak ada hal yang memerlukan perhatian.</div>'; return; }
@@ -153,7 +154,7 @@ window.App = (function () {
       body.innerHTML = `<div class="al-sum"><span class="pill crit">${UI.icon('alert')}${n('critical')} kritis</span><span class="pill warn">${n('warning')} peringatan</span><span class="pill info">${n('info')} informasi</span></div>`
         + al.slice(0, 80).map((a, i) => `<div class="al ${a.level}" data-id="${a.c.id}" style="animation-delay:${Math.min(i, 14) * 25}ms">
           <span class="ic">${UI.icon(ICO[a.type])}</span>
-          <div><div class="a">${a.text}</div><div class="m">${MCS.esc(MCS.terdakwaLabel(a.c.terdakwa[0]))} · ${MCS.CAT[a.c.cat].name} · ${MCS.COURT[a.c.court].short}</div></div></div>`).join('');
+          <div><div class="a">${a.text}</div><div class="m">${MCS.esc(MCS.terdakwaLabel(a.c.terdakwa[0]))} · ${MCS.CAT[a.c.cat].name} · ${MCS.KJ[a.c.kejati].short}</div></div></div>`).join('');
     }
     body.querySelectorAll('[data-id]').forEach((r) => (r.onclick = () => CaseView.open(r.dataset.id)));
   }
@@ -174,16 +175,16 @@ window.App = (function () {
         $('rank-aux').textContent = 'per kabupaten/kota';
       }
     } else {
-      const m = d3.rollup(current, (v) => [v.length, v.filter((c) => c.st < 7).length], (c) => c.court);
-      rows = [...m].map(([k, [v, a]]) => ({ id: k, n: MCS.COURT[k].short, v, x: MCS.fmt(a) + ' belum inkracht', court: true }));
-      $('rank-aux').textContent = 'beban perkara';
+      const m = d3.rollup(current, (v) => [v.length, v.filter((c) => c.st < 7).length, v.filter((c) => c.jenis === 'koneksitas').length], (c) => c.kejati);
+      rows = [...m].map(([k, [v, a, kn]]) => ({ id: k, n: MCS.KJ[k].short, v, x: MCS.fmt(a) + ' belum selesai · ' + MCS.fmt(kn) + ' koneksitas', court: true }));
+      $('rank-aux').textContent = 'beban perkara per Kejati';
     }
     rows.sort((a, b) => b.v - a.v);
     const mx = rows[0] ? rows[0].v : 1;
     el.innerHTML = rows.length ? rows.map((r, i) => `<div class="rk" data-id="${r.id}" ${r.court ? 'data-court="1"' : ''} style="${r.sel ? 'background:var(--accent-d)' : ''}">
       <span class="i">${String(i + 1).padStart(2, '0')}</span><span class="n">${r.n}</span><span class="v">${MCS.fmt(r.v)}</span>
       <div class="b"><i data-w="${(r.v / mx) * 100}"></i></div>${r.x ? `<div class="x">${r.x}</div>` : ''}</div>`).join('') : '<div class="empty">Tidak ada data.</div>';
-    el.querySelectorAll('.rk').forEach((r) => (r.onclick = () => (r.dataset.court ? setFilter('court', r.dataset.id) : setFilter('region', r.dataset.id))));
+    el.querySelectorAll('.rk').forEach((r) => (r.onclick = () => (r.dataset.court ? setFilter('kejati', r.dataset.id) : setFilter('region', r.dataset.id))));
     requestAnimationFrame(() => el.querySelectorAll('.b i').forEach((i) => (i.style.width = i.dataset.w + '%')));
   }
 
@@ -229,10 +230,10 @@ window.App = (function () {
 
   // ---------- umpan pembaruan (simulasi) ----------
   const FEED = [
-    (c) => [`<b>${c.otmil.replace('Oditurat Militer', 'Otmil')}</b> memperbarui berkas`, c],
-    (c) => [`Sidang <b>${(MCS.nextSidang(c) || { agenda: 'pemeriksaan saksi' }).agenda.toLowerCase()}</b> dijadwalkan · ${MCS.COURT[c.court].short}`, c],
+    (c) => [`<b>${MCS.KJ[c.kejati].short}</b> memperbarui perkara`, c],
+    (c) => [`Sidang <b>${(MCS.nextSidang(c) || { agenda: 'pemeriksaan saksi' }).agenda.toLowerCase()}</b> dijadwalkan · ${MCS.forumShort(c)}`, c],
     (c) => [`Putusan dibacakan · <b>${c.putusan ? c.putusan.amar : 'pidana penjara'}</b>`, c],
-    (c) => [`Penyidik POM melimpahkan berkas · <b>${MCS.CAT[c.cat].name}</b>`, c],
+    (c) => [`${c.jenis === 'koneksitas' ? 'Tim koneksitas' : MCS.KJ[c.kejati].short} mencatat ${MCS.TAHAP[c.st].name.toLowerCase()} · <b>${MCS.CAT[c.cat].name}</b>`, c],
     (c) => [`Pengembalian kerugian dicatat · <b>${MCS.fmtRp(Math.max(c.pulih, 15e6))}</b>`, c],
   ];
   function spawnFeed() {
@@ -263,7 +264,7 @@ window.App = (function () {
     tick(); setInterval(tick, 15000);
     render();
     for (let i = 0; i < 5; i++) setTimeout(spawnFeed, 200 * i);
-    if (window.MCSMap) MCSMap.onChange((id) => { F.region = id; if (F.court) { F.court = ''; } setFilter('region', id, true); });
+    if (window.MCSMap) MCSMap.onChange((id) => { F.region = id; if (F.kejati) { F.kejati = ''; } setFilter('region', id, true); });
   }
 
   return { init, setFilter, get filter() { return F; }, get list() { return current; }, toast: UI.toast };

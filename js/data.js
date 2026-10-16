@@ -137,6 +137,26 @@
   });
   const courtOfKab = (kabId) => COURT[kabCourt[kabId]];
 
+  // ---------- Kejaksaan Tinggi (pengguna aplikasi) ----------
+  // Bidang pidana militer di daerah dijalankan Asisten Pidana Militer (Aspidmil) pada Kejati.
+  // Cakupan Kejati untuk provinsi pemekaran (Kaltara, Papua Selatan/Tengah/Pegunungan, Papua Barat Daya)
+  // bersifat INDIKATIF — perlu dicocokkan dengan Peraturan Kejaksaan terbaru.
+  const KJ_SEAT = {
+    11: 'Kota Banda Aceh', 12: 'Kota Medan', 13: 'Kota Padang', 14: 'Kota Pekanbaru', 15: 'Kota Jambi', 16: 'Kota Palembang',
+    17: 'Kota Bengkulu', 18: 'Kota Bandar Lampung', 19: 'Kota Pangkalpinang', 21: 'Kota Tanjungpinang', 31: 'Kota Jakarta Selatan',
+    32: 'Kota Bandung', 33: 'Kota Semarang', 34: 'Kota Yogyakarta', 35: 'Kota Surabaya', 36: 'Kota Serang', 51: 'Kota Denpasar',
+    52: 'Kota Mataram', 53: 'Kota Kupang', 61: 'Kota Pontianak', 62: 'Kota Palangka Raya', 63: 'Kota Banjarmasin', 64: 'Kota Samarinda',
+    71: 'Kota Manado', 72: 'Kota Palu', 73: 'Kota Makassar', 74: 'Kota Kendari', 75: 'Kota Gorontalo', 76: 'Kab. Mamuju',
+    81: 'Kota Ambon', 82: 'Kota Ternate', 91: 'Kota Jayapura', 92: 'Kab. Manokwari',
+  };
+  const KJ_COVER = { 64: [64, 65], 91: [91, 93, 94, 95], 92: [92, 96] };
+  const KEJATI = Object.keys(KJ_SEAT).map(Number).map((p) => {
+    const seat = KABS.find((k) => k.name === KJ_SEAT[p]) || kabsOf(p)[0] || { lng: 0, lat: 0, short: '' };
+    return { id: 'KJ' + p, p, name: 'Kejaksaan Tinggi ' + PROV[p], short: 'Kejati ' + PROV[p].replace('Kepulauan Bangka Belitung', 'Babel').replace('Nusa Tenggara Barat', 'NTB').replace('Nusa Tenggara Timur', 'NTT'), city: seat.short.replace(/^Kota /, ''), lng: seat.lng, lat: seat.lat, prov: KJ_COVER[p] || [p] };
+  });
+  const KJ = Object.fromEntries(KEJATI.map((k) => [k.id, k]));
+  const kejatiOfProv = (p) => KEJATI.find((k) => k.prov.includes(+p));
+
   // ---------- Satuan ----------
   const MATRA = [
     { id: 'AD', name: 'TNI Angkatan Darat', short: 'TNI AD' },
@@ -262,22 +282,32 @@
     PMB: ['Pembunuhan dalam perkelahian di {kab}', 'Pembunuhan berencana dengan motif utang piutang'],
   };
 
-  // ---------- Tahapan perkara (hukum acara peradilan militer) ----------
-  const TAHAP = [
-    { id: 0, name: 'Laporan', long: 'Laporan / pengaduan diterima Polisi Militer atau Ankum', actor: 'POM / Ankum' },
-    { id: 1, name: 'Penyidikan', long: 'Penyidikan oleh Penyidik POM — pemeriksaan saksi & tersangka (BAP)', actor: 'Penyidik POM' },
-    { id: 2, name: 'Pemberkasan', long: 'Berkas perkara dilimpahkan ke Oditurat; Oditur menyusun pendapat hukum', actor: 'Oditurat' },
-    { id: 3, name: 'Penyerahan Perkara', long: 'Papera menerbitkan Keputusan Penyerahan Perkara (Skeppera); Oditur menyusun surat dakwaan', actor: 'Papera / Oditurat' },
-    { id: 4, name: 'Persidangan', long: 'Perkara dilimpahkan & disidangkan di Pengadilan Militer', actor: 'Pengadilan Militer' },
-    { id: 5, name: 'Putusan', long: 'Putusan tingkat pertama dibacakan', actor: 'Pengadilan Militer' },
-    { id: 6, name: 'Upaya Hukum', long: 'Banding ke Dilmilti / kasasi ke Mahkamah Agung', actor: 'Dilmilti / MA' },
-    { id: 7, name: 'Inkracht', long: 'Berkekuatan hukum tetap — eksekusi oleh Oditur', actor: 'Oditurat' },
+  // ---------- Jenis perkara (tugas Jampidmil, Perpres 15/2021 Pasal 25A–25C) ----------
+  const JENIS = [
+    { id: 'koneksitas', name: 'Koneksitas', long: 'Perkara koneksitas — pelaku militer bersama sipil, ditangani langsung Kejaksaan' },
+    { id: 'oditurat', name: 'Perkara Oditurat', long: 'Penuntutan oleh Oditurat — dikoordinasikan secara teknis oleh Kejaksaan' },
   ];
+  const JN = Object.fromEntries(JENIS.map((j) => [j.id, j]));
+
+  // ---------- Tahapan perkara (lingkup Pasal 25B ayat (2) Perpres 15/2021) ----------
+  // long/actor: [koneksitas, perkara Oditurat]
+  const TAHAP = [
+    { id: 0, name: 'Penyidikan', long: ['Penyidikan oleh tim tetap koneksitas (Jaksa, Polisi Militer, Oditur)', 'Penyidikan oleh Polisi Militer; Kejati menerima pemberitahuan untuk koordinasi'], actor: ['Tim koneksitas', 'Polisi Militer'] },
+    { id: 1, name: 'Penelitian Berkas', long: ['Penelitian hasil penyidikan & pemeriksaan tambahan oleh Jaksa dan Oditur', 'Penelitian hasil penyidikan oleh Oditur, dikoordinasikan dengan Jaksa'], actor: ['Jaksa & Oditur', 'Oditurat · koordinasi Kejati'] },
+    { id: 2, name: 'Pendapat Hukum', long: ['Penelitian bersama untuk menentukan peradilan yang berwenang (umum atau militer)', 'Pendapat hukum kepada Perwira Penyerah Perkara (Papera) dan penyerahan perkara'], actor: ['Jaksa Agung · Oditur Jenderal', 'Oditurat · Papera'] },
+    { id: 3, name: 'Penuntutan', long: ['Pelimpahan perkara dan surat dakwaan oleh tim penuntut koneksitas', 'Pelimpahan perkara dan surat dakwaan oleh Oditur'], actor: ['Jaksa · Oditur', 'Oditurat'] },
+    { id: 4, name: 'Persidangan', long: ['Pemeriksaan di persidangan', 'Pemeriksaan di Pengadilan Militer'], actor: ['Pengadilan', 'Pengadilan Militer'] },
+    { id: 5, name: 'Putusan', long: ['Putusan tingkat pertama dibacakan', 'Putusan tingkat pertama dibacakan'], actor: ['Pengadilan', 'Pengadilan Militer'] },
+    { id: 6, name: 'Upaya Hukum', long: ['Banding / kasasi oleh penuntut atau terdakwa', 'Banding ke Dilmilti / kasasi ke Mahkamah Agung'], actor: ['Jaksa · Oditur', 'Oditurat'] },
+    { id: 7, name: 'Eksekusi', long: ['Pelaksanaan putusan berkekuatan hukum tetap & pengawasan putusan bersyarat', 'Pelaksanaan putusan berkekuatan hukum tetap oleh Oditur, dipantau Kejati'], actor: ['Jaksa', 'Oditurat · pemantauan Kejati'] },
+  ];
+  const tahapLong = (st, c) => TAHAP[st].long[c && c.jenis === 'oditurat' ? 1 : 0];
+  const tahapActor = (st, c) => TAHAP[st].actor[c && c.jenis === 'oditurat' ? 1 : 0];
   // Tiga kelompok untuk peta & ringkasan (maks. 3 warna, lolos uji buta warna)
   const GROUPS = [
     { id: 'pra', name: 'Pra-persidangan', stages: [0, 1, 2, 3], color: '#3987e5' },
     { id: 'sidang', name: 'Persidangan & upaya hukum', stages: [4, 5, 6], color: '#d95926' },
-    { id: 'tetap', name: 'Inkracht', stages: [7], color: '#199e70' },
+    { id: 'tetap', name: 'Inkracht & eksekusi', stages: [7], color: '#199e70' },
   ];
   const groupOf = (st) => (st <= 3 ? 'pra' : st <= 6 ? 'sidang' : 'tetap');
   const GROUP = Object.fromEntries(GROUPS.map((g) => [g.id, g]));
@@ -330,7 +360,10 @@
     const kabs = kabsOf(p);
     const kab = wpick(kabs, kabs.map((k) => kabW[k.id]));
     const matra = wpick(['AD', 'AL', 'AU'], MARITIME.has(p) ? [58, 30, 12] : [72, 15, 13]);
-    const cat = wpick(CATS, CATS.map((c) => c.w)).id;
+    // ±22% perkara koneksitas; jenis pidananya didominasi korupsi
+    const jenis = rng() < 0.22 ? 'koneksitas' : 'oditurat';
+    const KW = { KOR: 40, NAR: 16, PEN: 14, MAT: 8, SEN: 8, ANI: 6, JUD: 5, PMB: 2 };
+    const cat = jenis === 'koneksitas' ? wpick(Object.keys(KW), Object.values(KW)) : wpick(CATS, CATS.map((c) => c.w)).id;
     const arts = wpick(CAT[cat].arts.map((a) => a[0]), CAT[cat].arts.map((a) => a[1])).slice();
 
     // terdakwa
@@ -383,12 +416,16 @@
     const title = pick(TITLES[cat], r2).replace('{kab}', kab.short).replace('{g}', String(Math.floor(between(0.3, 25, r2) * 10) / 10)).replace('{y}', String(y - 1));
     const loc = KEC[kab.name] ? 'Kec. ' + pick(KEC[kab.name], r2) : null;
     const absentia = cat === 'DES' && r2() < 0.55;
+    // tersangka sipil (koneksitas)
+    const sipil = jenis === 'koneksitas' ? Array.from({ length: 1 + Math.floor(r2() * (cat === 'KOR' ? 3 : 2)) }, () => ({ nama: person(r2), pekerjaan: pick(cat === 'KOR' ? ['Direktur PT rekanan pengadaan', 'Rekanan pengadaan', 'PNS Kementerian Pertahanan', 'Pegawai BUMN', 'Konsultan proyek'] : ['Wiraswasta', 'Karyawan swasta', 'Pengemudi', 'Tidak bekerja', 'Pedagang'], r2), umur: Math.floor(between(24, 60, r2)) })) : [];
+    // forum: koneksitas diadili peradilan umum kecuali kerugian terutama pada kepentingan militer (KUHAP Pasal 89–91)
+    const forum = jenis === 'koneksitas' && r2() < (cat === 'KOR' ? 0.75 : 0.6) ? 'umum' : 'militer';
     const ditahan = !absentia && st >= 1 && st <= 6 && r2() < ({ NAR: 0.7, PMB: 1, ASU: 0.6, ANI: 0.45, SEN: 0.6, KOR: 0.5 }[cat] || 0.2);
 
     cases.push({
       id: null, n, y, d, p, kab: kab.id, loc, cat, arts, st, sd, matra, terdakwa, kesatuan, induk,
       court: courtId, title, kerugian, pulih, kn, absentia, ditahan,
-      koneksitas: (cat === 'KOR' || cat === 'NAR' || cat === 'PEN') && r2() < 0.07,
+      jenis, koneksitas: jenis === 'koneksitas', sipil, forum, kejati: kejatiOfProv(p).id,
       seed: hash('case' + n),
     });
   }
@@ -408,7 +445,16 @@
     const court = COURT[c.court];
     const ro = rosterOf(c.court);
     const lpDate = new Date(c.d);
-    c.lp = 'LP-' + (10 + Math.floor(r() * 180)) + '/A-' + (1 + Math.floor(r() * 60)) + '/' + ROMAN[lpDate.getMonth()] + '/' + lpDate.getFullYear() + '/Idik';
+    const kj = KJ[c.kejati] || kejatiOfProv(c.p);
+    c.kejati = kj.id;
+    c.jenis = c.jenis || (c.koneksitas ? 'koneksitas' : 'oditurat');
+    c.sipil = c.sipil || [];
+    c.forum = c.forum || 'militer';
+    c.lp = c.jenis === 'koneksitas'
+      ? 'Print-' + (10 + Math.floor(r() * 180)) + '/Kon/' + ROMAN[lpDate.getMonth()] + '/' + lpDate.getFullYear()
+      : 'LP-' + (10 + Math.floor(r() * 180)) + '/A-' + (1 + Math.floor(r() * 60)) + '/' + ROMAN[lpDate.getMonth()] + '/' + lpDate.getFullYear() + '/Idik';
+    c.jaksa = person(r) + ', S.H.' + (r() < 0.6 ? ', M.H.' : '');
+    c.pn = c.forum === 'umum' ? (c.cat === 'KOR' ? 'Pengadilan Tipikor pada PN ' + kj.city : 'Pengadilan Negeri ' + KAB[c.kab].short.replace(/^Kota /, '')) : null;
     const korps = KORPS_HUKUM[c.matra];
     const sameKorps = (arr) => { const f = arr.filter((x) => x.includes(' ' + korps + ' ')); return f.length ? f : arr; };
     c.oditur = pick(sameKorps(ro.oditur), r);
@@ -421,11 +467,20 @@
       const m = new Date(t4);
       regSeq[c.court + m.getFullYear()] = (regSeq[c.court + m.getFullYear()] || 0) + 1;
       const no = regSeq[c.court + m.getFullYear()];
-      c.reg = court.level === 'dilmil'
-        ? `${no}-K/PM.${court.code}/${c.matra}/${ROMAN[m.getMonth()]}/${m.getFullYear()}`
-        : `${no}-K/${court.code}/${c.matra}/${ROMAN[m.getMonth()]}/${m.getFullYear()}`;
+      if (c.forum === 'umum') {
+        c.reg = `${no}/${c.cat === 'KOR' ? 'Pid.Sus-TPK' : 'Pid.B'}/${m.getFullYear()}/PN ${(c.cat === 'KOR' ? kj.city : KAB[c.kab].short.replace(/^Kota /, '')).replace(/\s+/g, ' ')}`;
+      } else {
+        c.reg = court.level === 'dilmil'
+          ? `${no}-K/PM.${court.code}/${c.matra}/${ROMAN[m.getMonth()]}/${m.getFullYear()}`
+          : `${no}-K/${court.code}/${c.matra}/${ROMAN[m.getMonth()]}/${m.getFullYear()}`;
+      }
       const hs = new Set([pick(sameKorps(ro.hakim), r)]); while (hs.size < 3) hs.add(pick(ro.hakim, r));
       c.majelis = [...hs];
+      // majelis koneksitas: gabungan hakim peradilan umum & militer (KUHAP Pasal 94)
+      if (c.jenis === 'koneksitas') {
+        const hu = () => person(r) + ', S.H., M.H.';
+        c.majelis = c.forum === 'umum' ? [hu(), hu(), c.majelis[0]] : [c.majelis[0], hu(), c.majelis[1]];
+      }
       c.panitera = pick(ro.panitera, r);
       // riwayat sidang
       const agenda = c.absentia ? AGENDA_ABSENTIA : AGENDA_SHORT;
@@ -465,13 +520,15 @@
         uangPengganti: c.cat === 'KOR' ? Math.round(c.kerugian * between(0.3, 1, r)) : 0,
         tuntutan: bebas ? fmtBulan(Math.round(bulan * 1.2) || 6) : fmtBulan(Math.round(bulan * between(1, 1.4, r))),
       };
-      if (c.st >= 6) c.upaya = c.st === 6 ? { jenis: r() < 0.75 ? 'Banding' : 'Kasasi', oleh: r() < 0.7 ? 'Terdakwa' : 'Oditur', t: c.sd[6] } : (r() < 0.2 ? { jenis: 'Banding', oleh: 'Terdakwa', t: c.sd[5] + 14 * DAY, selesai: true } : null);
+      if (c.st >= 6) c.upaya = c.st === 6 ? { jenis: r() < 0.75 ? 'Banding' : 'Kasasi', oleh: r() < 0.7 ? 'Terdakwa' : c.jenis === 'koneksitas' ? 'Penuntut umum' : 'Oditur', t: c.sd[6] } : (r() < 0.2 ? { jenis: 'Banding', oleh: 'Terdakwa', t: c.sd[5] + 14 * DAY, selesai: true } : null);
       if (c.st === 7) c.eksekusi = NOW - c.sd[7] < 45 * DAY && r() < 0.5 ? 'Menunggu eksekusi' : 'Sudah dieksekusi';
     }
     // penahanan (batas waktu → peringatan)
     if (c.ditahan && c.st <= 6) {
       const sisa = Math.floor(between(-1, 40, r) ** 1.1);
-      c.tahanan = { tempat: pick(['Rumah Tahanan Militer ' + (court.city || ''), 'Sel tahanan ' + (c.matra === 'AD' ? 'Denpom' : c.matra === 'AL' ? 'Pomal' : 'Pomau')], r), sampai: TODAY + Math.max(1, sisa) * DAY, oleh: c.st <= 2 ? 'Ankum / Papera' : c.st === 3 ? 'Papera' : 'Hakim Ketua' };
+      c.tahanan = c.jenis === 'koneksitas'
+        ? { tempat: pick(['Rumah Tahanan Militer ' + (court.city || ''), 'Rutan Kelas I ' + kj.city], r), sampai: TODAY + Math.max(1, sisa) * DAY, oleh: c.st <= 2 ? 'Penyidik koneksitas' : c.st === 3 ? 'Penuntut (Jaksa / Oditur)' : 'Hakim Ketua' }
+        : { tempat: pick(['Rumah Tahanan Militer ' + (court.city || ''), 'Sel tahanan ' + (c.matra === 'AD' ? 'Denpom' : c.matra === 'AL' ? 'Pomal' : 'Pomau')], r), sampai: TODAY + Math.max(1, sisa) * DAY, oleh: c.st <= 2 ? 'Ankum / Papera' : c.st === 3 ? 'Papera' : 'Hakim Ketua' };
     }
     // pembaruan terakhir
     const lastSidang = c.sidang.filter((s) => s.t <= NOW).map((s) => s.t);
@@ -479,9 +536,13 @@
     if (c.updated > NOW) c.updated = NOW - between(0.3, 30, r) * 3600000;
     if (c.st === 6) c.updated = Math.max(c.updated, NOW - between(2, 70, r) * DAY);
     if (c.st < 4 && r() < 0.06) c.updated = Math.min(c.updated, NOW - between(95, 160, r) * DAY);
-    c.updatedBy = c.st <= 1 ? 'Penyidik POM' : c.st <= 3 || c.st === 7 ? c.otmil : court.short;
+    c.updatedBy = (r() < 0.35 ? 'Aspidmil ' : 'Operator ') + kj.short;
     c.verified = r() < 0.94;
   }
+  const forumName = (c) => (c.forum === 'umum' ? c.pn : COURT[c.court].name);
+  const forumShort = (c) => (c.forum === 'umum' ? c.pn.replace('Pengadilan Tipikor pada ', 'Tipikor ').replace('Pengadilan Negeri ', 'PN ') : COURT[c.court].short);
+  const penuntutOf = (c) => (c.jenis === 'koneksitas' ? 'Tim penuntut koneksitas: ' + c.jaksa + ' (Jaksa) & ' + c.oditur + ' (Oditur)' : c.oditur + ' (Oditur)');
+  const lpLabel = (c) => (c.jenis === 'koneksitas' ? 'Surat perintah penyidikan koneksitas' : 'Laporan Polisi Militer');
   function snapToWorkday(t, r) {
     const d = new Date(t); d.setHours(0, 0, 0, 0);
     // akhir pekan dipindah ke hari kerja acak di sekitarnya (tanpa memindah jadwal mendatang ke masa lalu)
@@ -503,8 +564,8 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage penuh/terkunci */ } },
   };
   (function loadCustom() {
-    const custom = LS.get('mcs2_cases', []);
-    const deleted = new Set(LS.get('mcs2_deleted', []));
+    const custom = LS.get('mcs3_cases', []);
+    const deleted = new Set(LS.get('mcs3_deleted', []));
     const byId = new Map(cases.map((c, i) => [c.id, i]));
     custom.forEach((c) => { if (byId.has(c.id)) Object.assign(cases[byId.get(c.id)], c); else cases.push(c); });
     if (deleted.size) for (let i = cases.length - 1; i >= 0; i--) if (deleted.has(cases[i].id)) cases.splice(i, 1);
@@ -518,15 +579,15 @@
     return 'MCS-' + y + '-' + String(max + 1).padStart(5, '0');
   }
   function saveCase(c) {
-    const custom = LS.get('mcs2_cases', []);
+    const custom = LS.get('mcs3_cases', []);
     const i = custom.findIndex((x) => x.id === c.id);
     if (i >= 0) custom[i] = c; else custom.push(c);
-    LS.set('mcs2_cases', custom);
+    LS.set('mcs3_cases', custom);
     const j = cases.findIndex((x) => x.id === c.id);
     if (j >= 0) Object.assign(cases[j], c); else cases.push(c);
   }
   function deleteCase(id) {
-    const del = LS.get('mcs2_deleted', []); del.push(id); LS.set('mcs2_deleted', del);
+    const del = LS.get('mcs3_deleted', []); del.push(id); LS.set('mcs3_deleted', del);
     const j = cases.findIndex((x) => x.id === id); if (j >= 0) cases.splice(j, 1);
   }
 
@@ -537,7 +598,7 @@
     const s = String(region);
     return s.includes('.') ? c.kab === s : c.p === +s;
   }
-  /** f: {region, cat, matra, group, stage, year, court, art, q} */
+  /** f: {region, cat, matra, group, stage, year, court, kejati, jenis, art} */
   function filter(f = {}, list = cases) {
     return list.filter((c) =>
       matchRegion(c, f.region) &&
@@ -547,12 +608,15 @@
       (!f.group || groupOf(c.st) === f.group) &&
       (f.stage == null || f.stage === '' || c.st === +f.stage) &&
       (!f.court || c.court === f.court || (COURT[f.court] && COURT[f.court].level === 'dilmilti' && COURT[c.court].tinggi === f.court)) &&
+      (!f.kejati || c.kejati === f.kejati) &&
+      (!f.jenis || c.jenis === f.jenis) &&
       (!f.art || c.arts.includes(f.art)));
   }
   function stats(list) {
-    const s = { total: list.length, byStage: Array(8).fill(0), byGroup: { pra: 0, sidang: 0, tetap: 0 }, byCat: {}, byMatra: { AD: 0, AL: 0, AU: 0 }, byGol: { T: 0, B: 0, PA: 0, PM: 0 }, kerugianNegara: 0, pulihNegara: 0, kerugianKorban: 0, pecat: 0, putus: 0 };
+    const s = { total: list.length, byStage: Array(8).fill(0), byGroup: { pra: 0, sidang: 0, tetap: 0 }, byCat: {}, byMatra: { AD: 0, AL: 0, AU: 0 }, byGol: { T: 0, B: 0, PA: 0, PM: 0 }, kerugianNegara: 0, pulihNegara: 0, kerugianKorban: 0, pecat: 0, putus: 0, byJenis: { koneksitas: 0, oditurat: 0 }, sipil: 0 };
     CATS.forEach((c) => (s.byCat[c.id] = 0));
     list.forEach((c) => {
+      s.byJenis[c.jenis]++; s.sipil += c.sipil.length;
       s.byStage[c.st]++; s.byGroup[groupOf(c.st)]++; s.byCat[c.cat]++; s.byMatra[c.matra]++;
       c.terdakwa.forEach((t) => s.byGol[t.gol]++);
       if (c.kn === 'negara') { s.kerugianNegara += c.kerugian; s.pulihNegara += c.pulih; }
@@ -654,67 +718,64 @@
 
   // ---------- Pengguna & peran ----------
   const ROLES = [
-    { id: 'PUSAT', name: 'Admin Pusat', unit: 'Babinkum TNI / Orjen TNI', scope: 'Nasional', desc: 'Mengelola seluruh data, master data, pengguna, dan konfigurasi sistem.' },
-    { id: 'PIMPINAN', name: 'Pimpinan', unit: 'Mabes TNI / Kejaksaan Agung (Jampidmil)', scope: 'Nasional', desc: 'Melihat dashboard eksekutif, laporan, dan menerima notifikasi prioritas. Tidak dapat mengubah data.' },
-    { id: 'OTMILTI', name: 'Admin Otmilti', unit: 'Oditurat Militer Tinggi', scope: 'Daerah hukum Otmilti', desc: 'Memverifikasi dan menyetujui pembaruan dari Oditurat di bawahnya.' },
-    { id: 'OTMIL', name: 'Operator Oditurat', unit: 'Oditurat Militer', scope: 'Daerah hukum Otmil', desc: 'Menginput dan memperbarui perkara: pemberkasan, dakwaan, tuntutan, eksekusi.' },
-    { id: 'DILMIL', name: 'Operator Pengadilan', unit: 'Kepaniteraan Pengadilan Militer', scope: 'Pengadilan terkait', desc: 'Mengelola jadwal sidang, hasil sidang, dan putusan.' },
-    { id: 'POM', name: 'Penyidik POM', unit: 'Puspom TNI / Pomdam / Pomal / Pomau', scope: 'Satuan penyidik', desc: 'Menginput laporan dan perkembangan penyidikan sampai pelimpahan berkas.' },
-    { id: 'AUDITOR', name: 'Auditor', unit: 'Itjen TNI', scope: 'Nasional (baca saja)', desc: 'Membaca seluruh data dan log audit untuk keperluan pengawasan.' },
+    { id: 'PUSAT', name: 'Admin Pusat', unit: 'Sekretariat Jampidmil, Kejaksaan Agung', scope: 'Nasional', desc: 'Mengelola data induk, pengguna, konfigurasi, dan verifikasi akhir.' },
+    { id: 'PIMPINAN', name: 'Pimpinan', unit: 'Jaksa Agung · Jampidmil · Direktur pada Jampidmil', scope: 'Nasional', desc: 'Melihat dashboard nasional, laporan, dan peringatan prioritas. Tidak mengubah data.' },
+    { id: 'DIREKTORAT', name: 'Analis Direktorat', unit: 'Direktorat pada Jampidmil', scope: 'Nasional', desc: 'Memantau, mengevaluasi, dan melakukan eksaminasi perkara seluruh Kejati.' },
+    { id: 'ASPIDMIL', name: 'Aspidmil', unit: 'Asisten Pidana Militer, Kejaksaan Tinggi', scope: 'Wilayah Kejati', desc: 'Memverifikasi input staf dan menerbitkan data perkara wilayahnya.' },
+    { id: 'OPERATOR', name: 'Operator Kejati', unit: 'Staf / Jaksa bidang Pidana Militer, Kejaksaan Tinggi', scope: 'Wilayah Kejati', desc: 'Menginput perkara baru dan memperbarui perkembangannya.' },
+    { id: 'PENGAWAS', name: 'Pengawas', unit: 'Jaksa Agung Muda Bidang Pengawasan', scope: 'Nasional (baca saja)', desc: 'Membaca seluruh data dan log audit untuk keperluan pengawasan.' },
   ];
   const PERMS = [
-    ['Lihat Command Center', [1, 1, 1, 1, 1, 1, 1]],
-    ['Lihat berkas perkara lengkap', [1, 1, 1, 1, 1, 0, 1]],
-    ['Input perkara baru', [1, 0, 0, 1, 0, 1, 0]],
-    ['Perbarui tahap penyidikan', [1, 0, 0, 0, 0, 1, 0]],
-    ['Perbarui tahap penuntutan & eksekusi', [1, 0, 1, 1, 0, 0, 0]],
-    ['Kelola jadwal & hasil sidang', [1, 0, 0, 0, 1, 0, 0]],
-    ['Input putusan', [1, 0, 0, 0, 1, 0, 0]],
-    ['Menyetujui pembaruan (verifikasi)', [1, 0, 1, 0, 0, 0, 0]],
-    ['Kelola master pasal & satuan', [1, 0, 0, 0, 0, 0, 0]],
-    ['Kelola pengguna', [1, 0, 1, 0, 0, 0, 0]],
-    ['Lihat log audit', [1, 1, 1, 0, 0, 0, 1]],
-    ['Ekspor laporan', [1, 1, 1, 1, 1, 0, 1]],
+    ['Lihat Command Center', [1, 1, 1, 1, 1, 1]],
+    ['Lihat berkas perkara lengkap', [1, 1, 1, 1, 1, 1]],
+    ['Input perkara baru', [1, 0, 0, 1, 1, 0]],
+    ['Perbarui perkembangan perkara', [1, 0, 0, 1, 1, 0]],
+    ['Menyetujui pembaruan (verifikasi)', [1, 0, 0, 1, 0, 0]],
+    ['Eksaminasi & catatan evaluasi', [1, 1, 1, 1, 0, 0]],
+    ['Kelola data induk pasal & Kejati', [1, 0, 0, 0, 0, 0]],
+    ['Kelola pengguna', [1, 0, 0, 1, 0, 0]],
+    ['Lihat log audit', [1, 1, 0, 1, 0, 1]],
+    ['Ekspor laporan', [1, 1, 1, 1, 1, 1]],
   ];
   const DEFAULT_USERS = [
-    ['U-001', 'Kolonel Chk Haryanto, S.H., M.H.', 'admin.pusat', 'PUSAT', 'Babinkum TNI', 'Aktif', 0.3],
-    ['U-002', 'Brigjen TNI Satrio Wibowo, S.H.', 'pimpinan.mabes', 'PIMPINAN', 'Mabes TNI', 'Aktif', 5],
-    ['U-003', 'Dr. Ratna Kusumawati, S.H., M.H.', 'jampidmil.1', 'PIMPINAN', 'Jampidmil Kejaksaan Agung', 'Aktif', 26],
-    ['U-004', 'Letkol Chk Agus Pramono, S.H.', 'otmilti.jakarta', 'OTMILTI', 'Oditurat Militer Tinggi Jakarta', 'Aktif', 1.2],
-    ['U-005', 'Mayor Chk Fajar Nugroho, S.H.', 'otmil.jakarta', 'OTMIL', 'Oditurat Militer Jakarta', 'Aktif', 0.1],
-    ['U-006', 'Kapten Chk Dedi Kurniawan, S.H.', 'otmil.bandung', 'OTMIL', 'Oditurat Militer Bandung', 'Aktif', 2.5],
-    ['U-007', 'Mayor Laut (H) Andi Mappaseng, S.H.', 'otmil.makassar', 'OTMIL', 'Oditurat Militer Makassar', 'Aktif', 4],
-    ['U-008', 'Kapten Chk Siti Rahmawati, S.H.', 'panitera.ii06', 'DILMIL', 'Dilmil II-06 Jakarta', 'Aktif', 0.6],
-    ['U-009', 'Lettu Chk Rizky Hasibuan, S.H.', 'panitera.i02', 'DILMIL', 'Dilmil I-02 Medan', 'Aktif', 7],
-    ['U-010', 'Serma Yohanes Wenda', 'pom.jayapura', 'POM', 'Pomdam XVII/Cenderawasih', 'Aktif', 30],
-    ['U-011', 'Kolonel Kum Maria Lestari, S.H.', 'auditor.itjen', 'AUDITOR', 'Itjen TNI', 'Aktif', 72],
-    ['U-012', 'Kapten Chk Bayu Saputra, S.H.', 'otmil.surabaya', 'OTMIL', 'Oditurat Militer Surabaya', 'Nonaktif', 900],
-  ].map(([id, name, username, role, unit, status, h]) => ({ id, name, username, role, unit, status, last: NOW - h * 3600000 }));
-  const getUsers = () => LS.get('mcs2_users', DEFAULT_USERS);
-  const saveUsers = (u) => LS.set('mcs2_users', u);
+    ['U-001', 'Kolonel Chk Haryanto, S.H., M.H.', 'admin.jampidmil', 'PUSAT', 'Sekretariat Jampidmil', null, 'Aktif', 0.3],
+    ['U-002', 'Jaksa Agung Muda Bidang Pidana Militer', 'jampidmil', 'PIMPINAN', 'Jampidmil, Kejaksaan Agung', null, 'Aktif', 5],
+    ['U-003', 'Dr. Ratna Kusumawati, S.H., M.H.', 'direktorat.penuntutan', 'DIREKTORAT', 'Direktorat Penuntutan, Jampidmil', null, 'Aktif', 2],
+    ['U-004', 'Kolonel Chk Agus Pramono, S.H.', 'aspidmil.dki', 'ASPIDMIL', 'Kejati DKI Jakarta', 'KJ31', 'Aktif', 1.2],
+    ['U-005', 'Fajar Nugroho, S.H., M.H.', 'pidmil.dki', 'OPERATOR', 'Kejati DKI Jakarta', 'KJ31', 'Aktif', 0.1],
+    ['U-006', 'Kolonel Laut (H) Andi Mappaseng, S.H.', 'aspidmil.sulsel', 'ASPIDMIL', 'Kejati Sulawesi Selatan', 'KJ73', 'Aktif', 4],
+    ['U-007', 'Siti Rahmawati, S.H.', 'pidmil.jatim', 'OPERATOR', 'Kejati Jawa Timur', 'KJ35', 'Aktif', 0.6],
+    ['U-008', 'Rizky Hasibuan, S.H.', 'pidmil.sumut', 'OPERATOR', 'Kejati Sumatera Utara', 'KJ12', 'Aktif', 7],
+    ['U-009', 'Kolonel Kum Dedi Kurniawan, S.H.', 'aspidmil.jabar', 'ASPIDMIL', 'Kejati Jawa Barat', 'KJ32', 'Aktif', 2.5],
+    ['U-010', 'Yohanes Wenda, S.H.', 'pidmil.papua', 'OPERATOR', 'Kejati Papua', 'KJ91', 'Aktif', 30],
+    ['U-011', 'Maria Lestari, S.H., M.H.', 'jamwas.1', 'PENGAWAS', 'Jamwas, Kejaksaan Agung', null, 'Aktif', 72],
+    ['U-012', 'Bayu Saputra, S.H.', 'pidmil.bali', 'OPERATOR', 'Kejati Bali', 'KJ51', 'Nonaktif', 900],
+  ].map(([id, name, username, role, unit, kejati, status, h]) => ({ id, name, username, role, unit, kejati, status, last: NOW - h * 3600000 }));
+  const getUsers = () => LS.get('mcs3_users', DEFAULT_USERS);
+  const saveUsers = (u) => LS.set('mcs3_users', u);
 
   // Log audit
   function audit(user, action, target, detail) {
-    const log = LS.get('mcs2_audit', []);
+    const log = LS.get('mcs3_audit', []);
     log.unshift({ t: Date.now(), user, action, target, detail });
-    LS.set('mcs2_audit', log.slice(0, 400));
+    LS.set('mcs3_audit', log.slice(0, 400));
   }
   function getAudit() {
     const recent = cases.slice().sort((a, b) => b.updated - a.updated).slice(0, 60);
     const gen = recent.map((c, i) => {
-      const acts = { 0: 'Input laporan', 1: 'Perbarui penyidikan', 2: 'Terima berkas perkara', 3: 'Unggah Skeppera', 4: c.sidang.length ? 'Catat hasil sidang' : 'Daftarkan perkara', 5: 'Input putusan', 6: 'Catat upaya hukum', 7: 'Catat eksekusi' };
-      const user = c.st <= 1 ? 'Penyidik POM' : c.st === 4 || c.st === 5 ? 'Panitera ' + COURT[c.court].short.replace('Dilmil ', '') : 'Operator ' + c.otmil.replace('Oditurat Militer', 'Otmil');
+      const acts = { 0: 'Input perkara', 1: 'Catat penelitian berkas', 2: 'Catat pendapat hukum', 3: 'Catat pelimpahan & dakwaan', 4: c.sidang.length ? 'Catat hasil sidang' : 'Catat pelimpahan ke pengadilan', 5: 'Input putusan', 6: 'Catat upaya hukum', 7: 'Catat eksekusi' };
+      const user = c.updatedBy;
       return { t: c.updated, user, action: acts[c.st], target: c.id, detail: TAHAP[c.st].name + (c.reg ? ' · ' + c.reg : '') };
     });
-    return LS.get('mcs2_audit', []).concat(gen).sort((a, b) => b.t - a.t);
+    return LS.get('mcs3_audit', []).concat(gen).sort((a, b) => b.t - a.t);
   }
 
   // Antrian persetujuan (maker-checker)
   function getApprovals() {
-    const saved = LS.get('mcs2_approvals', null);
+    const saved = LS.get('mcs3_approvals', null);
     if (saved) return saved;
     const r = mulberry32(77);
-    const pool = cases.filter((c) => c.st >= 1 && c.st <= 6).slice(-400);
+    const pool = cases.filter((c) => c.st >= 1 && c.st <= 6 && ['KJ31', 'KJ32', 'KJ35', 'KJ73', 'KJ12'].includes(c.kejati)).slice(-400);
     const kinds = [
       (c) => ({ field: 'Tahap', from: TAHAP[c.st].name, to: TAHAP[Math.min(7, c.st + 1)].name }),
       (c) => ({ field: 'Jadwal sidang', from: '—', to: fmtDate(TODAY + 3 * DAY) + ', 09.00 · Pemeriksaan saksi' }),
@@ -724,15 +785,15 @@
     const out = Array.from({ length: 9 }, (x, i) => {
       const c = pick(pool, r);
       const k = pick(kinds, r)(c);
-      return { id: 'APR-' + (1041 + i), caseId: c.id, by: c.st <= 1 ? 'Penyidik POM' : 'Operator ' + c.otmil.replace('Oditurat Militer', 'Otmil'), t: NOW - between(0.2, 40, r) * 3600000, ...k, note: pick(['Sesuai berita acara sidang', 'Berdasarkan Skeppera terbaru', 'Pemutakhiran data penyidikan', 'Setoran pengembalian kerugian dari terdakwa'], r), status: 'menunggu' };
+      return { id: 'APR-' + (1041 + i), caseId: c.id, by: 'Operator ' + KJ[c.kejati].short, t: NOW - between(0.2, 40, r) * 3600000, ...k, note: pick(['Sesuai berita acara sidang', 'Hasil rapat koordinasi dengan Oditurat', 'Berdasarkan surat pelimpahan perkara', 'Setoran pengembalian kerugian dari terdakwa'], r), status: 'menunggu' };
     });
     return out.sort((a, b) => b.t - a.t);
   }
-  const saveApprovals = (a) => LS.set('mcs2_approvals', a);
+  const saveApprovals = (a) => LS.set('mcs3_approvals', a);
 
   window.MCS = {
     NOW, TODAY, DAY, PROV, provIds, KABS, KAB, kabsOf, KEC, courtOfKab, kabCourt,
-    DILMIL, DILMILTI, DILMILTAMA, COURT, otmilOf, MATRA, PANGKAT, GOL, KORPS_HUKUM, KODAM,
+    DILMIL, DILMILTI, DILMILTAMA, COURT, otmilOf, KEJATI, KJ, kejatiOfProv, JENIS, JN, tahapLong, tahapActor, forumName, forumShort, penuntutOf, lpLabel, MATRA, PANGKAT, GOL, KORPS_HUKUM, KODAM,
     CATS, CAT, LAWS, LAW, ARTS, ART, artLabel, TAHAP, GROUPS, GROUP, groupOf, AGENDA, TUNDA, ROMAN,
     cases, byId, filter, stats, monthsSeries, hearings, alerts, nextSidang, timeline, regionName, matchRegion, depth,
     fmt, fmtRp, fmtDate, fmtTime, fmtDay, fmtAgo, fmtBulan, esc, terdakwaLabel, matraName, BULAN, BULAN_L, HARI,

@@ -10,8 +10,8 @@
   let weekStart = mondayOf(MCS.TODAY);
   function mondayOf(t) { const d = new Date(t); d.setHours(0, 0, 0, 0); const wd = (d.getDay() + 6) % 7; d.setDate(d.getDate() - wd); return d.getTime(); }
   function renderAgenda() {
-    const court = $('ag-court').value;
-    const list = MCS.filter({ ...App.filter, court: court || App.filter.court, stage: '' });
+    const kj = $('ag-court').value;
+    const list = MCS.filter({ ...App.filter, kejati: kj || App.filter.kejati, stage: '' });
     const end = weekStart + 5 * MCS.DAY;
     const hs = MCS.hearings(list, weekStart, end);
     const a = new Date(weekStart), b = new Date(end - MCS.DAY);
@@ -23,15 +23,16 @@
       const d = new Date(t0);
       return `<div class="wd ${t0 === MCS.TODAY ? 'today' : ''}"><header><b>${d.getDate()}</b><span>${MCS.HARI[d.getDay()]}</span><em>${day.length} sidang</em></header>
         <div class="list">${day.length ? day.map(({ c, s }) => `<div class="ev ${s.t < MCS.NOW ? 'past' : ''}" data-id="${c.id}" style="animation-delay:${Math.min(n++, 30) * 15}ms">
-          <div class="tm">${MCS.fmtTime(s.t)}<span>${MCS.COURT[c.court].code.replace('PMT-', 'Dilmilti ')}</span></div>
+          <div class="tm">${MCS.fmtTime(s.t)}<span>${MCS.KJ[c.kejati].short.replace('Kejati ', '')}</span></div>
           <div class="a">${s.agenda}</div>
-          <div class="m">${E(MCS.terdakwaLabel(c.terdakwa[0]))} · ${MCS.CAT[c.cat].name}</div>
+          <div class="m">${c.jenis === 'koneksitas' ? '<b class="kon">Koneksitas</b> · ' : ''}${E(MCS.terdakwaLabel(c.terdakwa[0]))} · ${MCS.CAT[c.cat].name}</div>
+          <div class="m">${MCS.forumShort(c)}</div>
           <div class="m mono" style="font-size:10.5px">${c.reg}</div></div>`).join('') : '<div class="empty">Tidak ada sidang</div>'}</div></div>`;
     }).join('');
     $('ag-week').querySelectorAll('.ev').forEach((r) => (r.onclick = () => CaseView.open(r.dataset.id)));
   }
   function initAgenda() {
-    $('ag-court').innerHTML = '<option value="">Sesuai saringan</option>' + MCS.DILMIL.concat(MCS.DILMILTI).map((c) => `<option value="${c.id}">${c.short}</option>`).join('');
+    $('ag-court').innerHTML = '<option value="">Sesuai saringan</option>' + MCS.KEJATI.map((c) => `<option value="${c.id}">${c.short}</option>`).join('');
     $('ag-court').onchange = renderAgenda;
     $('ag-prev').onclick = () => { weekStart -= 7 * MCS.DAY; renderAgenda(); };
     $('ag-next').onclick = () => { weekStart += 7 * MCS.DAY; renderAgenda(); };
@@ -58,7 +59,7 @@
     const putus = list.filter((c) => c.putusan);
     const avg = putus.length ? Math.round(putus.reduce((s, c) => s + c.putusan.pidana, 0) / putus.length) : 0;
     const pecat = putus.length ? Math.round((putus.filter((c) => c.putusan.tambahan).length / putus.length) * 100) : 0;
-    const byCourt = [...d3.rollup(list, (v) => v.length, (c) => c.court)].sort((x, y) => y[1] - x[1]).slice(0, 8);
+    const byCourt = [...d3.rollup(list, (v) => v.length, (c) => c.kejati)].sort((x, y) => y[1] - x[1]).slice(0, 8);
     const mx = byCourt[0] ? byCourt[0][1] : 1;
     const byMatra = d3.rollup(list, (v) => v.length, (c) => c.matra);
     $('lg-detail').innerHTML = `<div class="eyebrow">${l.name}</div><h3>${a.pasal}</h3><div class="lawname">${l.full}</div>
@@ -71,7 +72,7 @@
         <div class="card"><span>Putusan disertai pemecatan</span><b>${putus.length ? pecat + '%' : '—'}</b></div>
         <div class="card"><span>Komposisi matra</span><b style="font-size:14px">AD ${MCS.fmt(byMatra.get('AD') || 0)} · AL ${MCS.fmt(byMatra.get('AL') || 0)} · AU ${MCS.fmt(byMatra.get('AU') || 0)}</b></div>
       </div>
-      <div class="sec"><h4>Sebaran per pengadilan<span>8 teratas</span></h4>${byCourt.map(([k, v]) => `<div class="hbar"><span>${MCS.COURT[k].short}</span><div><i data-w="${(v / mx) * 100}"></i></div><b>${MCS.fmt(v)}</b></div>`).join('')}</div>
+      <div class="sec"><h4>Sebaran per Kejaksaan Tinggi<span>8 teratas</span></h4>${byCourt.map(([k, v]) => `<div class="hbar"><span>${MCS.KJ[k].short}</span><div><i data-w="${(v / mx) * 100}"></i></div><b>${MCS.fmt(v)}</b></div>`).join('')}</div>
       <div style="display:flex;gap:8px"><button class="btn primary" id="lg-apply">${UI.icon('filter')}Tampilkan perkara di peta</button></div>
       <p class="note" style="margin-top:18px">Ringkasan ancaman pidana disederhanakan untuk pemantauan. Rujukan resmi tetap naskah undang-undang; padanan KUHP 2023 perlu divalidasi tim hukum Babinkum TNI.</p>`;
     requestAnimationFrame(() => $('lg-detail').querySelectorAll('[data-w]').forEach((i) => (i.style.width = i.dataset.w + '%')));
@@ -103,22 +104,22 @@
     const groups = [];
     if (!q) {
       groups.push(['Perintah', CMDS.map((c) => ({ ...c, kind: 'cmd' }))]);
-      const recent = MCS.hearings(MCS.cases, MCS.TODAY, MCS.TODAY + MCS.DAY).slice(0, 5).map(({ c, s }) => ({ t: s.agenda + ' · ' + MCS.terdakwaLabel(c.terdakwa[0]), s: MCS.fmtTime(s.t) + ' · ' + MCS.COURT[c.court].short + ' · ' + c.reg, ic: 'gavel', run: () => CaseView.open(c.id) }));
+      const recent = MCS.hearings(MCS.cases, MCS.TODAY, MCS.TODAY + MCS.DAY).slice(0, 5).map(({ c, s }) => ({ t: s.agenda + ' · ' + MCS.terdakwaLabel(c.terdakwa[0]), s: MCS.fmtTime(s.t) + ' · ' + MCS.forumShort(c) + ' · ' + MCS.KJ[c.kejati].short, ic: 'gavel', run: () => CaseView.open(c.id) }));
       if (recent.length) groups.push(['Sidang hari ini', recent]);
     } else {
       const reg = MCS.provIds.filter((p) => MCS.PROV[p].toLowerCase().includes(q)).slice(0, 3).map((p) => ({ t: MCS.PROV[p], s: 'Provinsi · ' + MCS.kabsOf(p).length + ' kab/kota', ic: 'map', h: MCS.PROV[p], run: () => App.setFilter('region', String(p)) }))
         .concat(MCS.KABS.filter((k) => k.name.toLowerCase().includes(q)).slice(0, 5).map((k) => ({ t: k.name, s: MCS.PROV[k.p] + ' · ' + MCS.courtOfKab(k.id).short, ic: 'map', h: k.name, run: () => App.setFilter('region', k.id) })));
-      const courts = MCS.DILMIL.concat(MCS.DILMILTI).filter((c) => (c.name + ' ' + c.code).toLowerCase().includes(q)).slice(0, 3).map((c) => ({ t: c.name, s: 'Pengadilan · saring perkara', ic: 'building', h: c.name, run: () => App.setFilter('court', c.id) }));
+      const courts = MCS.KEJATI.filter((c) => (c.name + ' ' + c.short + ' ' + c.city).toLowerCase().includes(q)).slice(0, 3).map((c) => ({ t: c.name, s: 'Kejaksaan Tinggi · saring perkara wilayahnya', ic: 'building', h: c.name, run: () => App.setFilter('kejati', c.id) }));
       const arts = MCS.ARTS.filter((a) => (a.pasal + ' ' + MCS.LAW[a.law].name + ' ' + a.desc).toLowerCase().includes(q)).slice(0, 4).map((a) => ({ t: a.pasal + ' ' + MCS.LAW[a.law].name, s: a.desc, ic: 'scale', h: a.pasal + ' ' + MCS.LAW[a.law].name, run: () => { $('btn-legal').click(); } }));
       const cs = [];
       for (let i = MCS.cases.length - 1; i >= 0 && cs.length < 8; i--) {
         const c = MCS.cases[i];
-        const hay = (c.id + ' ' + (c.reg || '') + ' ' + c.title + ' ' + c.terdakwa.map((t) => MCS.terdakwaLabel(t) + ' ' + t.nrp).join(' ') + ' ' + c.kesatuan).toLowerCase();
-        if (hay.includes(q)) cs.push({ t: MCS.terdakwaLabel(c.terdakwa[0]) + ' — ' + c.title, s: (c.reg || c.id) + ' · ' + MCS.TAHAP[c.st].name + ' · ' + MCS.COURT[c.court].short, ic: 'file', h: MCS.terdakwaLabel(c.terdakwa[0]) + ' — ' + c.title, run: () => CaseView.open(c.id) });
+        const hay = (c.id + ' ' + (c.reg || '') + ' ' + c.lp + ' ' + c.title + ' ' + c.terdakwa.map((t) => MCS.terdakwaLabel(t) + ' ' + t.nrp).join(' ') + ' ' + c.sipil.map((t) => t.nama).join(' ') + ' ' + c.kesatuan).toLowerCase();
+        if (hay.includes(q)) cs.push({ t: MCS.terdakwaLabel(c.terdakwa[0]) + ' — ' + c.title, s: (c.reg || c.id) + ' · ' + MCS.JN[c.jenis].name + ' · ' + MCS.TAHAP[c.st].name + ' · ' + MCS.KJ[c.kejati].short, ic: 'file', h: MCS.terdakwaLabel(c.terdakwa[0]) + ' — ' + c.title, run: () => CaseView.open(c.id) });
       }
       if (cs.length) groups.push(['Perkara', cs]);
       if (reg.length) groups.push(['Wilayah', reg]);
-      if (courts.length) groups.push(['Pengadilan', courts]);
+      if (courts.length) groups.push(['Kejaksaan Tinggi', courts]);
       if (arts.length) groups.push(['Pasal', arts]);
     }
     let i = 0;

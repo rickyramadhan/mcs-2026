@@ -10,9 +10,9 @@ window.AI = (function () {
   const drawer = $('ai'), msgs = $('ai-msgs');
   const SUGG = [
     'Berapa perkara desersi TNI AD tahun ini?',
-    'Sidang apa saja hari ini di Dilmil II-06 Jakarta?',
+    'Berapa perkara koneksitas di Kejati Jawa Timur?',
     'Penahanan mana yang segera berakhir?',
-    'Bandingkan beban perkara Dilmilti',
+    'Bandingkan beban perkara antar-Kejati',
     'Total kerugian negara dan yang sudah dipulihkan',
   ];
 
@@ -28,10 +28,12 @@ window.AI = (function () {
     if (q.includes('tahun ini')) f.year = new Date(MCS.NOW).getFullYear();
     MCS.provIds.forEach((p) => { if (q.includes(MCS.PROV[p].toLowerCase())) f.region = String(p); });
     MCS.KABS.forEach((k) => { if (k.short.length > 4 && q.includes(k.short.toLowerCase().replace('kota ', ''))) f.region = k.id; });
-    MCS.DILMIL.forEach((c) => { if (q.includes(c.code.toLowerCase()) || q.includes('dilmil ' + c.city.toLowerCase())) f.court = c.id; });
+    MCS.KEJATI.forEach((c) => { if (q.includes(c.short.toLowerCase()) || q.includes(c.name.toLowerCase())) { f.kejati = c.id; delete f.region; } });
+    if (q.includes('koneksitas')) f.jenis = 'koneksitas';
+    if (q.includes('oditurat')) f.jenis = 'oditurat';
     return f;
   }
-  const scopeText = (f) => [f.cat && MCS.CAT[f.cat].name.toLowerCase(), f.matra && MCS.matraName(f.matra), f.region && MCS.regionName(f.region), f.court && MCS.COURT[f.court].short, f.year && 'tahun ' + f.year].filter(Boolean).join(', ') || 'seluruh perkara';
+  const scopeText = (f) => [f.cat && MCS.CAT[f.cat].name.toLowerCase(), f.matra && MCS.matraName(f.matra), f.region && MCS.regionName(f.region), f.kejati && MCS.KJ[f.kejati].short, f.jenis && MCS.JN[f.jenis].name.toLowerCase(), f.year && 'tahun ' + f.year].filter(Boolean).join(', ') || 'seluruh perkara';
 
   function answer(q) {
     const ql = q.toLowerCase();
@@ -48,12 +50,12 @@ window.AI = (function () {
       const from = ql.includes('besok') ? MCS.TODAY + MCS.DAY : MCS.TODAY;
       const to = ql.includes('minggu') ? MCS.TODAY + 7 * MCS.DAY : from + MCS.DAY;
       const hs = MCS.hearings(list, from, to);
-      h = `Terdapat <b>${hs.length} sidang</b> ${ql.includes('minggu') ? 'dalam 7 hari ke depan' : ql.includes('besok') ? 'besok' : 'hari ini'} (${scopeText(f)}).` + (hs.length ? `<table class="tbl">${hs.slice(0, 6).map(({ c, s }) => `<tr><td>${MCS.fmtTime(s.t)} · ${s.agenda}<br><span class="muted">${MCS.esc(MCS.terdakwaLabel(c.terdakwa[0]))} · ${MCS.COURT[c.court].code}</span></td><td>${MCS.CAT[c.cat].name.split(' ')[0]}</td></tr>`).join('')}</table>` : '');
+      h = `Terdapat <b>${hs.length} sidang</b> ${ql.includes('minggu') ? 'dalam 7 hari ke depan' : ql.includes('besok') ? 'besok' : 'hari ini'} (${scopeText(f)}).` + (hs.length ? `<table class="tbl">${hs.slice(0, 6).map(({ c, s }) => `<tr><td>${MCS.fmtTime(s.t)} · ${s.agenda}<br><span class="muted">${MCS.esc(MCS.terdakwaLabel(c.terdakwa[0]))} · ${MCS.KJ[c.kejati].short}</span></td><td>${MCS.CAT[c.cat].name.split(' ')[0]}</td></tr>`).join('')}</table>` : '');
       acts.push(['Buka agenda sidang', () => $('btn-agenda').click()]);
-    } else if (ql.includes('banding') || ql.includes('dilmilti') || ql.includes('bandingkan') || ql.includes('beban')) {
-      const rows = MCS.DILMILTI.map((t) => { const l = MCS.filter({ ...f, court: t.id }); return [t.short, l.length, l.filter((c) => c.st < 7).length]; }).sort((a, b) => b[1] - a[1]);
-      h = `Beban perkara per daerah hukum Pengadilan Militer Tinggi (${scopeText(f)}):<table class="tbl">${rows.map((r) => `<tr><td>${r[0]}<br><span class="muted">${MCS.fmt(r[2])} belum inkracht</span></td><td>${MCS.fmt(r[1])}</td></tr>`).join('')}</table>Daerah hukum <b>${rows[0][0].replace('Dilmilti ', 'Dilmilti ')}</b> menanggung beban terbesar.`;
-      acts.push(['Lihat peringkat pengadilan', () => document.querySelector('#rank-tabs [data-tab=court]').click()]);
+    } else if (ql.includes('bandingkan') || ql.includes('beban') || ql.includes('antar')) {
+      const rows = MCS.KEJATI.map((t) => { const l = MCS.filter({ ...f, kejati: t.id }); return [t.short, l.length, l.filter((c) => c.st < 7).length, l.filter((c) => c.jenis === 'koneksitas').length]; }).sort((a, b) => b[1] - a[1]).slice(0, 6);
+      h = `Enam Kejati dengan beban perkara terbesar (${scopeText(f)}):<table class="tbl">${rows.map((r) => `<tr><td>${r[0]}<br><span class="muted">${MCS.fmt(r[2])} belum selesai · ${MCS.fmt(r[3])} koneksitas</span></td><td>${MCS.fmt(r[1])}</td></tr>`).join('')}</table><b>${rows[0][0]}</b> menanggung beban terbesar.`;
+      acts.push(['Lihat peringkat Kejati', () => document.querySelector('#rank-tabs [data-tab=court]').click()]);
     } else if (ql.includes('rugi') || ql.includes('pulih') || ql.includes('uang')) {
       const s = MCS.stats(list);
       h = `Total kerugian keuangan negara (${scopeText(f)}): <b>${MCS.fmtRp(s.kerugianNegara)}</b>, dengan <b>${MCS.fmtRp(s.pulihNegara)}</b> telah dipulihkan (${s.kerugianNegara ? ((s.pulihNegara / s.kerugianNegara) * 100).toFixed(1) : 0}%). Kerugian korban pada perkara penipuan/penggelapan: ${MCS.fmtRp(s.kerugianKorban)}.`;
@@ -66,7 +68,7 @@ window.AI = (function () {
     } else {
       const s = MCS.stats(list);
       const top = Object.entries(MCS.stats(list).byCat).sort((x, y) => y[1] - x[1])[0];
-      h = `Untuk <b>${scopeText(f)}</b> tercatat <b>${MCS.fmt(s.total)} perkara</b>: ${MCS.fmt(s.byGroup.pra)} pra-persidangan, ${MCS.fmt(s.byGroup.sidang)} di persidangan/upaya hukum, dan ${MCS.fmt(s.byGroup.tetap)} telah inkracht.${!f.cat && top ? ` Klasifikasi terbanyak: ${MCS.CAT[top[0]].name} (${MCS.fmt(top[1])}).` : ''}`;
+      h = `Untuk <b>${scopeText(f)}</b> tercatat <b>${MCS.fmt(s.total)} perkara</b>${f.jenis ? '' : ` (${MCS.fmt(s.byJenis.koneksitas)} koneksitas, ${MCS.fmt(s.byJenis.oditurat)} perkara Oditurat)`}: ${MCS.fmt(s.byGroup.pra)} pra-persidangan, ${MCS.fmt(s.byGroup.sidang)} di persidangan/upaya hukum, dan ${MCS.fmt(s.byGroup.tetap)} sudah inkracht/eksekusi.${!f.cat && top ? ` Klasifikasi terbanyak: ${MCS.CAT[top[0]].name} (${MCS.fmt(top[1])}).` : ''}`;
       acts.push(['Terapkan ke dashboard', () => { Object.entries(f).forEach(([k, v]) => App.setFilter(k, v)); }]);
     }
     return { h: h + `<div class="src">Sumber: basis data MCS · ${MCS.fmtDate(MCS.NOW, true)} · cakupan Nasional</div>`, acts };

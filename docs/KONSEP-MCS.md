@@ -1,276 +1,243 @@
 # MCS — Military Crime System
-## Sistem Monitoring Perkara Pidana Militer Terpadu
+## Sistem Pemantauan Perkara Pidana Militer · Bidang Pidana Militer Kejaksaan RI
 
-*Dokumen konsep · bahan paparan untuk pemangku kepentingan · versi 1.0, Oktober 2026*
+*Dokumen konsep · bahan paparan untuk pemangku kepentingan · versi 2.0, Oktober 2026*
 
 ---
 
 ## 1. Ringkasan eksekutif
 
-Perkara pidana yang melibatkan prajurit TNI melewati banyak instansi: Polisi Militer menyidik, Ankum dan Papera mengambil keputusan, Oditurat menuntut, Pengadilan Militer mengadili, lalu Oditurat kembali mengeksekusi putusan. Saat ini, setiap instansi mencatat perkaranya sendiri. Akibatnya pimpinan sulit mendapat jawaban cepat atas pertanyaan dasar:
+Sejak **Perpres No. 15 Tahun 2021**, Kejaksaan RI memiliki **Jaksa Agung Muda Bidang Pidana Militer (Jampidmil)** dengan dua tugas utama:
 
-- Berapa perkara yang sedang berjalan, dan di tahap mana?
-- Kapan sidang berikutnya, dan siapa yang bersidang hari ini?
-- Masa penahanan siapa yang segera berakhir?
-- Berapa kerugian negara, dan berapa yang sudah dipulihkan?
-- Perkara mana yang lama tidak bergerak?
+1. **Koordinasi teknis penuntutan yang dilakukan Oditurat**, dan
+2. **Penanganan perkara koneksitas**, yaitu perkara pidana yang dilakukan bersama-sama oleh prajurit TNI dan warga sipil.
 
-**MCS menyatukan seluruh perjalanan perkara pidana militer dalam satu sistem.** Setiap instansi memperbarui bagiannya sendiri. Pimpinan melihat gambaran nasional secara langsung: dari peta Indonesia sampai ke berkas satu perkara.
+Di daerah, tugas ini dijalankan oleh **Asisten Pidana Militer (Aspidmil) pada Kejaksaan Tinggi**.
 
-MCS terdiri dari dua aplikasi yang memakai satu basis data:
+Agar tugas pemantauan, evaluasi, dan pelaporan (Pasal 25C huruf f Perpres 15/2021) berjalan efektif, Jampidmil membutuhkan satu sistem yang:
+- diisi langsung oleh **bidang Pidana Militer di setiap Kejati**,
+- diverifikasi oleh **Aspidmil**, dan
+- dipantau secara nasional oleh **Jampidmil** dalam satu layar.
+
+**MCS menjawab kebutuhan itu.** Setiap Kejati menginput dan memperbarui perkaranya, mulai dari penyidikan sampai eksekusi putusan. Pimpinan di Kejaksaan Agung melihat gambaran nasional secara langsung: peta sebaran, tahapan, jadwal sidang, kerugian negara, dan peringatan dini.
 
 | Aplikasi | Pengguna | Fungsi utama |
 |---|---|---|
-| **Command Center** | Pimpinan, analis, Jampidmil, Itjen | Memantau: peta sebaran, statistik, agenda sidang, peringatan, berkas perkara |
-| **Workspace** | Oditurat, Kepaniteraan Pengadilan Militer, Penyidik POM, Admin Otmilti, Admin Pusat | Mengelola: input perkara, pembaruan tahap, jadwal & hasil sidang, putusan, verifikasi, laporan |
+| **Command Center** (pemantauan) | Jaksa Agung, Jampidmil, Direktur pada Jampidmil, Aspidmil | Peta sebaran perkara, statistik nasional, agenda sidang, peringatan dini, berkas perkara |
+| **Workspace Kejaksaan** (pengelolaan) | Operator bidang Pidana Militer Kejati, Aspidmil, Sekretariat Jampidmil | Input & pembaruan perkara, verifikasi, eksaminasi, laporan, pengguna |
 
 ---
 
-## 2. Latar belakang & permasalahan
+## 2. Dasar hukum & fakta kelembagaan
 
-| Kondisi saat ini | Dampak |
+| Rujukan | Isi yang relevan |
 |---|---|
-| Data perkara tersebar di Puspom, Oditurat, Pengadilan Militer, dan satuan | Tidak ada satu angka resmi; rekap manual memakan waktu berhari-hari |
-| Status perkara diperbarui lewat surat atau laporan berkala | Pimpinan terlambat mengetahui perkara yang macet |
-| Batas masa penahanan dipantau manual | Risiko penahanan melewati batas waktu |
-| Kerugian negara dan pemulihannya dicatat terpisah | Sulit mengukur efektivitas pemulihan aset |
-| Jadwal sidang hanya diketahui pengadilan setempat | Koordinasi Oditur, saksi, dan satuan kurang optimal |
-| Peralihan KUHP lama ke KUHP 2023 (UU 1/2023, berlaku 2 Januari 2026) | Butuh rujukan pasal lama ↔ baru yang konsisten |
+| **Perpres 15/2021**, perubahan kedua Perpres 38/2010 tentang Organisasi dan Tata Kerja Kejaksaan | Membentuk Jampidmil sebagai unsur pembantu pimpinan, bertanggung jawab kepada Jaksa Agung |
+| **Pasal 25A–25B Perpres 15/2021** | Tugas: koordinasi teknis penuntutan oleh Oditurat dan penanganan perkara koneksitas |
+| **Pasal 25B ayat (2)** | Lingkup: penyidikan perkara koneksitas, penelitian hasil penyidikan, pemeriksaan tambahan, pendapat hukum kepada Papera, penyerahan perkara, penutupan perkara, penghentian penuntutan, penuntutan, perlawanan, upaya hukum, pelaksanaan putusan, **eksaminasi**, pengawasan putusan bersyarat |
+| **Pasal 25C huruf f** | Fungsi **pemantauan, analisis, evaluasi, dan pelaporan**. Ini dasar langsung kebutuhan MCS. |
+| **Pasal 36 Perpres 15/2021** | Jampidmil terdiri atas Sekretariat dan paling banyak 5 Direktorat |
+| **KUHAP Pasal 89–94** | Perkara koneksitas: tim tetap penyidik, penelitian bersama untuk menentukan peradilan umum atau militer, majelis hakim gabungan |
+| **UU 31/1997 tentang Peradilan Militer** | Hukum acara perkara yang dituntut Oditurat |
+| **UU Tipikor Pasal 39** | Jaksa Agung mengoordinasikan dan mengendalikan penyidikan korupsi yang dilakukan bersama oleh pelaku sipil dan militer |
+| **KUHP 2023 (UU 1/2023)**, berlaku 2 Januari 2026 | Dasar padanan pasal untuk perkara dengan tempus delicti sesudahnya |
+
+**Struktur di daerah:** bidang pidana militer resmi ada di tingkat **Kejaksaan Tinggi** (jabatan Aspidmil, umumnya diisi perwira TNI). Di tingkat Kejaksaan Negeri belum ada seksi pidana militer. Karena itu, **penginput di MCS adalah Kejati**.
 
 ---
 
-## 3. Tujuan
+## 3. Permasalahan yang dijawab
 
-1. **Satu sumber data** perkara pidana militer nasional yang dapat dipertanggungjawabkan.
-2. **Transparansi internal**: setiap perkara dapat dilacak dari laporan sampai eksekusi putusan.
-3. **Peringatan dini**: masa penahanan, perkara macet, penundaan sidang berulang, eksekusi tertunda.
-4. **Akuntabilitas**: setiap perubahan tercatat, terverifikasi, dan dapat diaudit.
-5. **Bahan kebijakan**: tren jenis pidana, sebaran wilayah, matra, golongan pangkat, dan kerugian negara.
-
----
-
-## 4. Ruang lingkup & dasar hukum
-
-**Ruang lingkup:** tindak pidana yang dilakukan prajurit TNI (AD, AL, AU) dan diproses di lingkungan peradilan militer, termasuk perkara koneksitas yang dikoordinasikan dengan Jampidmil Kejaksaan Agung.
-
-**Rujukan utama:**
-- UU No. 31 Tahun 1997 tentang Peradilan Militer (hukum acara, kewenangan pengadilan, penahanan)
-- Kitab Undang-Undang Hukum Pidana Militer (KUHPM)
-- KUHP lama dan KUHP 2023 (UU No. 1 Tahun 2023, berlaku 2 Januari 2026)
-- UU sektoral: Narkotika (35/2009), Tipikor (31/1999 jo. 20/2001), PKDRT (23/2004), TPKS (12/2022), UU Darurat 12/1951, LLAJ (22/2009), ITE
-- UU No. 25 Tahun 2014 tentang Hukum Disiplin Militer (untuk perkara yang diselesaikan secara disiplin)
-- PP No. 22 Tahun 2025 (pembentukan Dilmilti IV Balikpapan dan Dilmilti V Makassar)
-- PP No. 23 Tahun 2025 (susunan 22 Pengadilan Militer)
-
----
-
-## 5. Para pihak & peran dalam sistem
-
-| Pihak | Peran di MCS | Yang diperbarui |
+| Kondisi saat ini | Dampak | Jawaban MCS |
 |---|---|---|
-| **Babinkum TNI / Orjen TNI** | Admin Pusat | Data induk (pasal, satuan), pengguna, konfigurasi, verifikasi akhir |
-| **Puspom TNI / Pomdam / Pomal / Pomau** | Penyidik POM | Laporan polisi militer, perkembangan penyidikan, pelimpahan berkas |
-| **Oditurat Militer (Otmil)** | Operator Oditurat | Pemberkasan, Skeppera, dakwaan, tuntutan, kerugian negara, eksekusi |
-| **Oditurat Militer Tinggi (Otmilti)** | Admin Otmilti | Verifikasi pembaruan dari Otmil di daerah hukumnya |
-| **Pengadilan Militer / Pengadilan Militer Tinggi** | Operator Pengadilan (Kepaniteraan) | Nomor register, majelis, jadwal sidang, hasil sidang, putusan |
-| **Mabes TNI, Jampidmil Kejagung** | Pimpinan | Membaca dashboard, laporan, notifikasi prioritas |
-| **Itjen TNI** | Auditor | Membaca seluruh data dan log audit |
-
-> Catatan penamaan: dalam peradilan militer, fungsi penuntutan dijalankan **Oditurat**, bukan Kejaksaan Negeri. Kejaksaan Agung terlibat melalui **Jampidmil** untuk koordinasi teknis dan perkara koneksitas.
+| Data perkara koneksitas dan perkara Oditurat dilaporkan berkala lewat surat/rekap manual dari tiap Kejati | Jampidmil tidak punya angka nasional yang langsung tersedia | Input langsung oleh Kejati, dashboard nasional seketika |
+| Perkembangan perkara di Oditurat & Pengadilan Militer tidak terpantau rutin | Perkara macet terlambat diketahui | Peringatan otomatis: perkara tanpa pembaruan > 90 hari |
+| Batas masa penahanan dipantau manual | Risiko penahanan melewati batas | Peringatan 5 hari dan 2 hari sebelum berakhir |
+| Kerugian negara & pemulihannya tidak terkonsolidasi | Kinerja pemulihan aset sulit diukur | Nilai kerugian, pemulihan, uang pengganti per perkara & nasional |
+| Eksaminasi tuntutan sulit dilakukan tanpa akses berkas | Mutu penuntutan tidak terpantau | Catatan eksaminasi langsung pada berkas, terkirim ke Kejati |
+| Peralihan KUHP lama → KUHP 2023 | Rujukan pasal tidak seragam | Pustaka pasal dengan padanan KUHP 2023 |
 
 ---
 
-## 6. Alur perkara di dalam sistem (8 tahap)
+## 4. Dua jenis perkara di MCS
 
-| # | Tahap | Penanggung jawab pembaruan | Data minimum yang wajib diisi |
+| | **Perkara koneksitas** | **Perkara Oditurat** |
+|---|---|---|
+| Pelaku | Prajurit TNI **bersama** warga sipil | Prajurit TNI |
+| Peran Kejaksaan | **Menangani langsung**: penyidikan (tim tetap bersama POM & Oditur), penelitian bersama, penuntutan, eksekusi | **Koordinasi teknis** penuntutan yang dilakukan Oditurat, pemantauan, eksaminasi |
+| Peradilan | Peradilan umum (mis. Pengadilan Tipikor) **atau** peradilan militer, ditetapkan lewat penelitian bersama Jaksa & Oditur | Pengadilan Militer / Pengadilan Militer Tinggi |
+| Penuntut | Tim penuntut koneksitas: Jaksa & Oditur | Oditur, dikoordinasikan Jaksa |
+| Contoh umum | Korupsi pengadaan bersama rekanan, narkotika bersama warga sipil, penipuan | Desersi, narkotika, penganiayaan, asusila, dll. |
+
+---
+
+## 5. Pengguna & hak akses
+
+| Peran | Satuan kerja | Cakupan data | Yang dilakukan |
 |---|---|---|---|
-| 1 | **Laporan** | POM / Ankum | Nomor LP, tanggal, locus & tempus delicti, terdakwa, uraian |
-| 2 | **Penyidikan** | Penyidik POM | Tanggal mulai, penyidik, BAP |
-| 3 | **Pemberkasan** | Oditurat | Nomor berkas, tanggal pelimpahan, pendapat hukum |
-| 4 | **Penyerahan Perkara** | Papera / Oditurat | Nomor & tanggal Skeppera, surat dakwaan |
-| 5 | **Persidangan** | Pengadilan Militer | Nomor register, majelis, jadwal & hasil tiap sidang |
-| 6 | **Putusan** | Pengadilan Militer | Tanggal, amar, pidana pokok & tambahan (mis. pemecatan) |
-| 7 | **Upaya Hukum** | Dilmilti / MA | Jenis (banding/kasasi), pemohon, tanggal |
-| 8 | **Inkracht & Eksekusi** | Oditurat | Tanggal BHT, status eksekusi |
+| **Operator Kejati** | Staf/Jaksa bidang Pidana Militer, Kejati | Wilayah Kejati sendiri | Input perkara baru, memperbarui tahapan, jadwal & hasil sidang, kerugian, penahanan, dokumen |
+| **Aspidmil** | Asisten Pidana Militer, Kejati | Wilayah Kejati sendiri | Memverifikasi input operator sebelum terbit, mengelola pengguna Kejati, eksaminasi |
+| **Analis Direktorat** | Direktorat pada Jampidmil | Nasional | Memantau, menganalisis, eksaminasi perkara seluruh Kejati |
+| **Pimpinan** | Jaksa Agung, Jampidmil, Direktur | Nasional | Dashboard, laporan, peringatan prioritas (baca saja) |
+| **Admin Pusat** | Sekretariat Jampidmil | Nasional | Data induk, pengguna, konfigurasi, verifikasi akhir |
+| **Pengawas** | Jaksa Agung Muda Bidang Pengawasan | Nasional (baca) | Membaca data & log audit |
 
-Ketentuan khusus yang didukung:
-- **Kompetensi pengadilan otomatis**: terdakwa berpangkat Mayor ke atas diadili tingkat pertama di Pengadilan Militer Tinggi; selain itu di Pengadilan Militer sesuai daerah hukum locus delicti.
-- **Desersi in absentia**: perkara desersi yang terdakwanya tidak ditemukan ditandai khusus.
-- **Koneksitas**: perkara yang melibatkan warga sipil ditandai dan dapat dibuka oleh Jampidmil.
-- **Masa transisi KUHP**: sistem menandai apakah tempus delicti sebelum atau sesudah 2 Januari 2026 dan menampilkan padanan pasal KUHP 2023.
+Oditurat, Pengadilan Militer, dan Polisi Militer **bukan pengguna** MCS. Mereka dicatat sebagai **pihak/instansi mitra** dalam setiap perkara. Integrasi data dengan instansi tersebut menjadi pengembangan lanjutan (bagian 9).
+
+---
+
+## 6. Alur perkara di MCS (8 tahap)
+
+Tahapan disusun mengikuti lingkup Pasal 25B ayat (2) Perpres 15/2021.
+
+| # | Tahap | Perkara koneksitas | Perkara Oditurat | Data minimum yang diisi Kejati |
+|---|---|---|---|---|
+| 1 | **Penyidikan** | Tim tetap koneksitas (Jaksa, POM, Oditur) | POM menyidik; Kejati menerima pemberitahuan | Nomor sprindik/LP, tersangka militer & sipil, locus, tempus |
+| 2 | **Penelitian Berkas** | Penelitian hasil penyidikan & pemeriksaan tambahan | Penelitian oleh Oditur, dikoordinasikan Jaksa | Tanggal berkas, hasil penelitian |
+| 3 | **Pendapat Hukum** | **Penelitian bersama** untuk menetapkan peradilan umum/militer | Pendapat hukum kepada Papera, Skeppera | Peradilan yang berwenang / nomor pendapat hukum & Skeppera |
+| 4 | **Penuntutan** | Pelimpahan & dakwaan oleh tim penuntut | Pelimpahan & dakwaan oleh Oditur | Nomor dakwaan, tanggal pelimpahan |
+| 5 | **Persidangan** | Majelis gabungan hakim umum & militer | Pengadilan Militer | Nomor register, jadwal & hasil tiap sidang |
+| 6 | **Putusan** | | | Amar, pidana pokok & tambahan, uang pengganti |
+| 7 | **Upaya Hukum** | Banding/kasasi | Banding ke Dilmilti / kasasi ke MA | Jenis, pemohon, tanggal |
+| 8 | **Eksekusi** | Pelaksanaan putusan oleh Jaksa, pengawasan putusan bersyarat | Pelaksanaan oleh Oditur, dipantau Kejati | Tanggal inkracht, status eksekusi |
+
+Setiap pembaruan tahap oleh Operator Kejati **diverifikasi Aspidmil** sebelum tampil di dashboard nasional (prinsip empat mata).
 
 ---
 
 ## 7. Fitur
 
-### 7.1 Command Center (pemantauan)
+### 7.1 Command Center — pemantauan Jampidmil
 
 | Fitur | Penjelasan |
 |---|---|
-| **Peta sebaran perkara** | Batas wilayah asli 38 provinsi dan 514 kabupaten/kota. Tiga tingkat: Nasional → Provinsi → Kabupaten/Kota (titik perkara). Kepadatan ditampilkan dalam 5 kelas warna. |
-| **Lapisan Pengadilan Militer** | 22 Pengadilan Militer dan 5 Pengadilan Militer Tinggi di lokasi sebenarnya. Klik pengadilan untuk melihat wilayah hukum dan menyaring seluruh dashboard. |
-| **Ringkasan perkara** | Total, dalam proses, inkracht (dengan persentase pemecatan), kerugian negara beserta persentase pemulihan. |
-| **Tahapan perkara** | Jumlah perkara di tiap tahap dari 8 tahap; klik untuk menyaring. |
-| **Klasifikasi tindak pidana** | 13 klasifikasi khas militer: desersi, narkotika, penganiayaan, asusila, KDRT, korupsi, senjata api, dan lainnya. |
-| **Profil terdakwa** | Komposisi matra (AD/AL/AU) dan golongan pangkat (Tamtama, Bintara, Pama, Pamen). |
-| **Agenda sidang** | Sidang 7 hari ke depan; tampilan mingguan per pengadilan. |
-| **Perlu perhatian** | Masa penahanan berakhir ≤ 5 hari (kritis ≤ 2 hari), perkara tanpa pembaruan > 90 hari, sidang ditunda ≥ 2 kali, putusan menunggu eksekusi. |
-| **Peringkat** | Wilayah dengan perkara terbanyak, beban perkara per pengadilan. |
-| **Tren 12 bulan** | Perkara masuk vs diputus per bulan. |
-| **Berkas perkara** | Identitas, terdakwa, pasal & ancaman, jalannya sidang, majelis, kerugian & pemulihan, penahanan, dokumen, riwayat, peta lokasi, pembanding rata-rata putusan untuk pasal yang sama. |
-| **Pustaka hukum** | Pasal yang dipakai, ancaman pidana, padanan KUHP 2023, statistik penggunaan dan rata-rata pidana. |
-| **Pencarian cepat (Ctrl+K)** | Cari nomor register, nama terdakwa, NRP, pasal, wilayah, atau pengadilan dari mana saja. |
-| **Asisten analisis** | Pertanyaan dalam bahasa sehari-hari, contoh: “Penahanan mana yang segera berakhir?”. Jawaban selalu disertai sumber dan dibatasi hak akses. |
-| **Pembaruan terkini** | Aliran pembaruan dari seluruh instansi secara langsung. |
+| **Peta sebaran perkara** | Batas wilayah asli 38 provinsi & 514 kabupaten/kota. Bisa diperbesar Nasional → Provinsi → Kabupaten/Kota sampai titik perkara. |
+| **Lapisan Kejaksaan Tinggi** | Lokasi 33 Kejati. Klik untuk melihat wilayahnya dan menyaring seluruh dashboard. |
+| **Saringan cepat** | Jenis perkara (koneksitas/Oditurat), periode, klasifikasi, matra, Kejati |
+| **Ringkasan** | Total perkara, perkara koneksitas & jumlah tersangka sipil, perkara dalam proses, kerugian negara & persentase pemulihan |
+| **Tahapan perkara** | Jumlah perkara di tiap tahap dari 8 tahap |
+| **Klasifikasi tindak pidana** | 13 klasifikasi (korupsi, narkotika, desersi, penganiayaan, asusila, dll.) |
+| **Profil tersangka** | Komposisi matra, golongan pangkat, jumlah tersangka sipil |
+| **Agenda sidang** | Sidang hari ini & 7 hari ke depan; tampilan mingguan per Kejati |
+| **Perlu perhatian** | Penahanan berakhir ≤ 5 hari, perkara tanpa pembaruan > 90 hari, sidang ditunda berulang, putusan menunggu eksekusi |
+| **Peringkat** | Provinsi dan Kejati dengan beban perkara terbesar |
+| **Tren 12 bulan** | Perkara masuk vs diputus |
+| **Berkas perkara** | Identitas, jenis perkara, tersangka militer & sipil, penanganan Kejaksaan (Kejati, jaksa, Oditurat mitra, peradilan), pasal & ancaman, majelis & jalannya sidang, kerugian, penahanan, dokumen, riwayat |
+| **Pustaka hukum** | Pasal, ancaman pidana, padanan KUHP 2023, statistik pemakaian per Kejati |
+| **Pencarian cepat (Ctrl+K)** | Nomor perkara, nama tersangka (militer/sipil), NRP, pasal, Kejati, wilayah |
+| **Asisten analisis** | Pertanyaan bahasa sehari-hari, mis. “Berapa perkara koneksitas di Kejati Jawa Timur?” |
 
-### 7.2 Workspace (pengelolaan)
+### 7.2 Workspace Kejaksaan — pengelolaan oleh Kejati
 
 | Fitur | Penjelasan |
 |---|---|
-| **Beranda tugas** | Daftar tugas yang diurutkan menurut urgensi: penahanan yang perlu diperpanjang, berita acara sidang yang belum dicatat, verifikasi tertunda, perkara yang perlu diperbarui. |
-| **Daftar perkara** | Tampilan tersimpan: Aktif, Sidang 7 hari, Penahanan kritis, Perlu pembaruan, Belum diverifikasi, Inkracht. Pencarian dan saringan per tahap, klasifikasi, matra. |
-| **Input perkara baru (5 langkah)** | Laporan & lokasi → Terdakwa → Pasal → Kerugian & penahanan → Tinjau & kirim. Pengadilan dan Oditurat yang berwenang ditentukan otomatis dari locus dan pangkat. |
-| **Editor perkara** | Pembaruan tahap dengan isian wajib per tahap, jadwal sidang, pencatatan hasil sidang (terlaksana/ditunda beserta alasannya), putusan, kerugian, perpanjangan penahanan, unggah dokumen. |
-| **Persetujuan (maker–checker)** | Pembaruan dari Oditurat dan Penyidik diverifikasi Admin Otmilti sebelum diterbitkan. Perbedaan data lama dan baru ditampilkan berdampingan. |
-| **Agenda sidang** | Kalender bulanan dan daftar sidang harian. |
-| **Laporan baku** | Rekap per pengadilan, kerugian & pemulihan, status penahanan, putusan & pidana tambahan. Ekspor PDF/Excel dengan watermark. |
-| **Data induk** | Pasal & undang-undang (dengan padanan KUHP 2023); pengadilan & oditurat beserta daerah hukumnya. |
-| **Pengguna & hak akses** | 7 peran, matriks izin, cakupan wilayah per pengguna. |
-| **Log audit** | Setiap akses dan perubahan tercatat permanen. |
+| **Beranda tugas** | Daftar tugas menurut urgensi: penahanan yang perlu diperpanjang, hasil sidang yang belum dicatat, perkara tanpa pembaruan |
+| **Daftar perkara** | Tampilan: Aktif, Sidang 7 hari, Penahanan kritis, Perlu pembaruan, Belum diverifikasi, Inkracht |
+| **Input perkara baru (5 langkah)** | Jenis perkara → tersangka militer & sipil → pasal → kerugian → tinjau. Kejati ditentukan otomatis dari locus; operator hanya bisa memilih wilayah Kejati-nya. |
+| **Pembaruan tahap** | Isian wajib berbeda per tahap dan per jenis perkara, termasuk penetapan peradilan pada perkara koneksitas |
+| **Jadwal & hasil sidang** | Penjadwalan, pencatatan hasil (terlaksana/ditunda + alasan) |
+| **Verifikasi Aspidmil** | Antrean persetujuan dengan perbandingan data lama & baru; tolak dengan alasan |
+| **Eksaminasi** | Catatan evaluasi Jampidmil/Aspidmil pada berkas, terkirim ke Kejati yang menangani |
+| **Laporan baku** | Rekap per Kejati, kerugian & pemulihan, penahanan, putusan. Ekspor PDF/Excel dengan watermark. |
+| **Data induk** | Pasal & undang-undang; daftar Kejati & wilayahnya; instansi mitra (Oditurat & Pengadilan Militer) |
+| **Pengguna & hak akses** | 6 peran, matriks izin, cakupan per Kejati |
+| **Log audit** | Semua akses & perubahan tercatat permanen untuk Jamwas |
 
-### 7.3 Fitur lanjutan (tahap pengembangan berikutnya)
+### 7.3 Pengembangan lanjutan
 
 | Fitur | Manfaat |
 |---|---|
-| **Notifikasi** WhatsApp/SMS/email dinas | Pengingat sidang H-1 untuk Oditur, saksi, dan satuan; peringatan penahanan kepada pejabat yang berwenang memperpanjang |
-| **Aplikasi seluler pimpinan** | Ringkasan harian, peringatan kritis, persetujuan dari ponsel |
-| **Tanda tangan elektronik** | Skeppera, surat dakwaan, laporan berkala |
-| **Pemindaian dokumen (OCR)** | Mengisi otomatis data dari BAP atau putusan yang diunggah |
-| **Sinkronisasi dengan SIPP/Direktori Putusan MA** | Nomor register, jadwal, dan putusan langsung dari sistem pengadilan, tanpa input ulang |
-| **Integrasi data personel TNI** | Validasi NRP, pangkat, dan satuan secara otomatis |
-| **Pelacakan barang bukti** | Rantai penyimpanan dan status barang bukti, termasuk senjata api |
-| **Pemantauan pemulihan aset** | Jadwal cicilan uang pengganti, lelang, setoran PNBP |
-| **Analitik prediktif** | Perkiraan beban sidang per pengadilan, wilayah dengan tren kenaikan |
-| **Mode luring (offline) satuan terpencil** | Input di wilayah dengan koneksi terbatas, sinkron saat tersambung |
+| **Tingkat Kejari** | Bila seksi pidana militer di Kejari dibentuk, peran operator Kejari dapat diaktifkan tanpa mengubah struktur sistem |
+| **Integrasi SIPP & Direktori Putusan MA** | Jadwal sidang, nomor register, dan putusan masuk otomatis |
+| **Pertukaran data dengan Oditurat Jenderal TNI & Puspom TNI** | Perkembangan perkara Oditurat tanpa input ulang |
+| **Integrasi CMS/aplikasi internal Kejaksaan** | Satu identitas pengguna & satu basis data penuntutan |
+| **Notifikasi** WhatsApp/email dinas | Pengingat sidang, penahanan, verifikasi |
+| **Aplikasi seluler pimpinan** | Ringkasan harian & persetujuan dari ponsel |
+| **Tanda tangan elektronik** | Laporan berkala & berita acara |
+| **Pemantauan pemulihan aset** | Jadwal pembayaran uang pengganti, lelang barang rampasan, setoran PNBP |
 
 ---
 
-## 8. Data yang dikelola per perkara
-
-- **Identitas perkara**: nomor internal MCS, nomor LP, nomor register pengadilan (format `45-K/PM.II-06/AD/X/2026`), klasifikasi, uraian, status koneksitas
-- **Locus & tempus delicti**: provinsi, kabupaten/kota, lokasi detail, koordinat, tanggal kejadian
-- **Terdakwa**: nama, pangkat, golongan, NRP (tersamar di luar instansi penangani), matra, satuan, induk satuan
-- **Pasal**: pasal yang didakwakan, ancaman pidana, padanan KUHP 2023
-- **Penanganan**: Oditurat, Oditur, pengadilan, majelis hakim, panitera, penasihat hukum
-- **Persidangan**: tanggal, jam, ruang, agenda, status (terlaksana/ditunda + alasan)
-- **Penahanan**: tempat, kewenangan, batas waktu, riwayat perpanjangan
-- **Kerugian**: nilai kerugian negara/korban, pemulihan, uang pengganti
-- **Putusan & eksekusi**: amar, pidana pokok, pidana tambahan, upaya hukum, status eksekusi
-- **Dokumen**: LP, BAP, berkas, Skeppera, dakwaan, berita acara sidang, tuntutan, putusan, BA eksekusi
-- **Jejak audit**: siapa mengubah apa, kapan, dan siapa yang memverifikasi
-
----
-
-## 9. Keamanan & tata kelola data
+## 8. Keamanan & tata kelola data
 
 | Aspek | Pengamanan |
 |---|---|
-| Infrastruktur | Dipasang di pusat data milik TNI/Kemhan (on-premise), jaringan tertutup/VPN |
-| Autentikasi | Akun per orang, autentikasi dua faktor, sesi berbatas waktu |
-| Otorisasi | Akses berbasis peran **dan** wilayah: Otmil hanya melihat daerah hukumnya |
-| Kerahasiaan | Penyamaran NRP dan identitas korban; dokumen dibuka dengan watermark nama pengguna |
-| Integritas | Prinsip empat mata (maker–checker) untuk perubahan tahap; log audit tidak dapat diubah |
-| Enkripsi | Enkripsi saat transit (TLS) dan saat disimpan (database & dokumen) |
-| Klasifikasi | Label kerahasiaan per dokumen; ekspor dibatasi per peran |
-| Kelangsungan | Cadangan harian, pemulihan bencana di lokasi kedua |
+| Infrastruktur | Pusat data Kejaksaan Agung, jaringan internal/VPN |
+| Autentikasi | Akun per orang, autentikasi dua faktor |
+| Otorisasi | Berbasis peran **dan** wilayah: Kejati hanya mengakses perkara di wilayahnya |
+| Kerahasiaan | Penyamaran NRP & NIK; dokumen dibuka dengan watermark nama pengguna |
+| Integritas | Verifikasi Aspidmil (maker–checker); log audit tidak dapat diubah |
+| Enkripsi | TLS saat transit; enkripsi basis data & dokumen |
+| Pengawasan | Akses baca penuh untuk Jamwas |
 
 ---
 
-## 10. Indikator keberhasilan
+## 9. Indikator keberhasilan
 
 | Indikator | Target tahun pertama |
 |---|---|
-| Perkara aktif yang tercatat di MCS | 100% di seluruh daerah hukum |
-| Waktu penyusunan rekap nasional | dari hitungan hari menjadi **seketika** |
-| Penahanan melewati batas waktu | **0** kasus |
+| Kejati yang aktif menginput | 33 dari 33 |
+| Perkara koneksitas & Oditurat yang tercatat | 100% perkara berjalan |
+| Waktu penyusunan laporan nasional Jampidmil | dari hitungan hari menjadi **seketika** |
+| Penahanan melewati batas waktu | **0** |
 | Perkara tanpa pembaruan > 90 hari | turun 80% |
-| Rata-rata waktu laporan → putusan | terukur per pengadilan, ditargetkan turun bertahap |
-| Persentase pemulihan kerugian negara | terukur dan dilaporkan per triwulan |
+| Persentase pemulihan kerugian negara | terukur & dilaporkan per triwulan |
 
 ---
 
-## 11. Tahapan implementasi
+## 10. Tahapan implementasi
 
 | Fase | Durasi indikatif | Keluaran |
 |---|---|---|
-| **0. Validasi konsep** | 1 bulan | Konfirmasi alur, peran, data induk bersama Babinkum, Orjen, Puspom, Ditjen Badilmiltun MA, Jampidmil |
-| **1. Pilot** | 3 bulan | Satu daerah hukum Dilmilti (mis. Dilmilti II Jakarta: Dilmil II-06 s.d. II-09 dan Otmil pasangannya) |
-| **2. Migrasi data** | 2 bulan | Perkara berjalan dan perkara 3 tahun terakhir dari pengadilan & oditurat pilot |
-| **3. Perluasan nasional** | 6 bulan | Seluruh 22 Dilmil, 5 Dilmilti, Otmil/Otmilti, Puspom |
-| **4. Integrasi & lanjutan** | berkelanjutan | SIPP/Direktori Putusan MA, data personel, notifikasi, aplikasi seluler |
+| **0. Validasi** | 1 bulan | Konfirmasi alur, peran, data induk bersama Sekretariat & Direktorat Jampidmil, perwakilan Aspidmil |
+| **1. Pilot** | 3 bulan | 3–5 Kejati (mis. DKI Jakarta, Jawa Barat, Jawa Timur, Sulawesi Selatan, Sumatera Utara) |
+| **2. Migrasi data** | 2 bulan | Perkara berjalan & 3 tahun terakhir dari Kejati pilot |
+| **3. Perluasan nasional** | 6 bulan | Seluruh Kejati |
+| **4. Integrasi** | berkelanjutan | SIPP/Direktori Putusan MA, Orjen TNI, Puspom, aplikasi internal Kejaksaan |
 
 ---
 
-## 12. Hal yang perlu divalidasi bersama instansi terkait
+## 11. Hal yang perlu divalidasi
 
-1. **Daerah hukum Pengadilan Militer** di luar yang diatur PP 22/2025 & PP 23/2025 (contoh: pembagian Jawa Timur antara Dilmil III-10 Surabaya dan III-11 Madiun; status Jambi, Lampung).
-2. **Penomoran dan susunan Oditurat** setelah penataan pengadilan 2025.
-3. **Padanan pasal KUHP 2023** dan ringkasan ancaman pidana, oleh tim hukum Babinkum TNI.
-4. **Format nomor register dan nomor LP** baku yang dipakai saat ini.
-5. **Batas waktu penahanan per kewenangan** (Ankum, Papera, Hakim) sebagai dasar peringatan otomatis.
-6. **Klasifikasi tindak pidana** yang akan dibakukan untuk statistik nasional.
-7. **Satuan & Kodam terbaru** pasca penambahan Kodam 2025.
-8. **Kebijakan berbagi data** dengan Kejaksaan Agung (Jampidmil) dan Mahkamah Agung.
+1. **Daftar Kejati dan wilayahnya** untuk provinsi pemekaran (Kalimantan Utara, Papua Selatan, Papua Tengah, Papua Pegunungan, Papua Barat Daya). Di prototipe masih bersifat indikatif.
+2. **Nama dan pembagian Direktorat** pada Jampidmil yang akan menjadi pengguna.
+3. **Format nomor**: surat perintah penyidikan koneksitas, berita acara penelitian bersama, dan nomor perkara internal.
+4. **Batas waktu penahanan** per kewenangan sebagai dasar peringatan.
+5. **Rencana tingkat Kejari**: apakah Kejari tertentu ikut menginput pada fase awal.
+6. **Kesepakatan berbagi data** dengan Orjen TNI, Puspom TNI, dan Mahkamah Agung.
+7. **Padanan pasal KUHP 2023** oleh tim hukum.
 
 ---
 
-## Lampiran A — Susunan peradilan militer yang dimuat di MCS
+## Lampiran A — Usulan alur slide paparan
 
-**Pengadilan Militer Utama** — Jakarta
+1. MCS — Pemantauan perkara pidana militer untuk Jampidmil
+2. Dasar hukum: Perpres 15/2021 & tugas Jampidmil
+3. Masalah hari ini & jawaban MCS
+4. Dua jenis perkara: koneksitas & perkara Oditurat
+5. Siapa mengisi, siapa memverifikasi, siapa memantau
+6. Alur 8 tahap
+7. Demo Command Center: peta nasional → Kejati → kabupaten
+8. Demo berkas perkara koneksitas (tersangka militer & sipil)
+9. Peringatan dini & agenda sidang
+10. Demo Workspace: input perkara → verifikasi Aspidmil
+11. Keamanan & tata kelola
+12. Indikator, pilot, dan hal yang perlu diputuskan
 
-**Pengadilan Militer Tinggi:** I Medan · II Jakarta · III Surabaya · IV Balikpapan · V Makassar
-
-**Pengadilan Militer (PP 23/2025):**
-
-| Dilmilti | Pengadilan Militer |
-|---|---|
-| I Medan | I-01 Banda Aceh · I-02 Medan · I-03 Pekanbaru · I-04 Padang · I-05 Palembang |
-| II Jakarta | II-06 Jakarta · II-07 Bandung · II-08 Semarang · II-09 Yogyakarta |
-| III Surabaya | III-10 Surabaya · III-11 Madiun · III-12 Denpasar · III-13 Kupang |
-| IV Balikpapan | IV-14 Pontianak · IV-15 Banjarmasin · IV-16 Balikpapan |
-| V Makassar | V-17 Makassar · V-18 Kendari · V-19 Manado · V-20 Ambon · V-21 Manokwari · V-22 Jayapura |
-
-## Lampiran B — Usulan alur slide paparan
-
-1. Judul: MCS — Satu sistem untuk seluruh perjalanan perkara pidana militer
-2. Masalah hari ini (tabel bagian 2)
-3. Solusi: dua aplikasi, satu data (bagian 1)
-4. Siapa melakukan apa (bagian 5) + alur 8 tahap (bagian 6)
-5. Demo Command Center: peta nasional → provinsi → kabupaten (tangkapan layar)
-6. Demo berkas perkara & agenda sidang
-7. Peringatan dini: penahanan & perkara macet
-8. Demo Workspace: beranda tugas → input perkara → verifikasi
-9. Keamanan & tata kelola (bagian 9)
-10. Indikator keberhasilan (bagian 10)
-11. Tahapan implementasi & pilot (bagian 11)
-12. Hal yang perlu diputuskan bersama (bagian 12)
-
-## Lampiran C — Glosarium
+## Lampiran B — Glosarium
 
 | Istilah | Arti |
 |---|---|
-| Ankum | Atasan yang Berhak Menghukum |
-| Papera | Perwira Penyerah Perkara |
-| Skeppera | Surat Keputusan Penyerahan Perkara |
-| Oditur / Oditurat | Penuntut umum di lingkungan peradilan militer / instansinya |
-| Dilmil / Dilmilti / Dilmiltama | Pengadilan Militer / Pengadilan Militer Tinggi / Pengadilan Militer Utama |
-| POM | Polisi Militer (Puspom TNI, Pomdam, Pomal, Pomau) |
-| THTI | Tidak hadir tanpa izin |
-| Desersi | Tidak hadir tanpa izin lebih dari 30 hari dalam masa damai (Pasal 87 KUHPM) |
-| Koneksitas | Perkara yang dilakukan bersama-sama oleh prajurit dan warga sipil |
-| Inkracht / BHT | Putusan berkekuatan hukum tetap |
 | Jampidmil | Jaksa Agung Muda Bidang Pidana Militer, Kejaksaan Agung |
+| Aspidmil | Asisten Pidana Militer pada Kejaksaan Tinggi |
+| Koneksitas | Tindak pidana yang dilakukan bersama-sama oleh orang yang tunduk pada peradilan umum dan peradilan militer |
+| Penelitian bersama | Penelitian Jaksa & Oditur untuk menentukan perkara koneksitas diadili di peradilan umum atau militer |
+| Oditur / Oditurat | Penuntut umum di lingkungan peradilan militer / instansinya |
+| Papera / Skeppera | Perwira Penyerah Perkara / Surat Keputusan Penyerahan Perkara |
+| Eksaminasi | Penilaian atas mutu penanganan perkara (dakwaan, tuntutan) |
+| Jamwas | Jaksa Agung Muda Bidang Pengawasan |
+| Inkracht | Putusan berkekuatan hukum tetap |
 
 ---
 
-*Seluruh angka perkara pada prototipe adalah data contoh (dummy) untuk keperluan desain dan tidak mencerminkan data sebenarnya.*
+*Seluruh angka perkara pada prototipe adalah data contoh (dummy) untuk keperluan desain.*

@@ -30,15 +30,17 @@
 
   function buildGlobe() {
     if (!window.Globe) return null;
-    const courts = MCS.DILMIL.concat(MCS.DILMILTI);
-    const arcs = MCS.DILMIL.map((d) => { const t = MCS.COURT[d.tinggi]; return { startLat: d.lat, startLng: d.lng, endLat: t.lat, endLng: t.lng }; }).filter((a) => a.startLat !== a.endLat);
+    // titik = 33 Kejaksaan Tinggi; garis = pelaporan ke Jampidmil, Kejaksaan Agung (Jakarta)
+    const AGUNG = { lat: -6.2405, lng: 106.7999, level: 'agung' };
+    const courts = MCS.KEJATI.concat([AGUNG]);
+    const arcs = MCS.KEJATI.filter((k) => k.p !== 31).map((k) => ({ startLat: k.lat, startLng: k.lng, endLat: AGUNG.lat, endLng: AGUNG.lng }));
     const g = Globe()
       .globeImageUrl(window.EARTH_TEX).bumpImageUrl(window.EARTH_BUMP)
       .backgroundColor('rgba(0,0,0,0)')
       .showAtmosphere(true).atmosphereColor('#5cc8e6').atmosphereAltitude(0.16)
       .polygonsData(window.WORLD_GEO.features.filter((f) => f.properties.iso === 'IDN'))
       .polygonCapColor(() => 'rgba(57,135,229,0.28)').polygonSideColor(() => 'rgba(57,135,229,0.05)').polygonStrokeColor(() => '#5cc8e6').polygonAltitude(0.006)
-      .pointsData(courts).pointLat('lat').pointLng('lng').pointColor((c) => (c.level === 'dilmilti' ? '#eef2f6' : '#5cc8e6')).pointAltitude(0.012).pointRadius((c) => (c.level === 'dilmilti' ? 0.32 : 0.2))
+      .pointsData(courts).pointLat('lat').pointLng('lng').pointColor((c) => (c.level === 'agung' ? '#eef2f6' : '#5cc8e6')).pointAltitude(0.012).pointRadius((c) => (c.level === 'agung' ? 0.4 : 0.2))
       .arcsData(arcs).arcColor(() => ['rgba(92,200,230,0.15)', 'rgba(92,200,230,0.85)']).arcStroke(0.35).arcAltitude(0.06)
       .arcDashLength(0.5).arcDashGap(0.25).arcDashAnimateTime(2200)
       ($('globe'));
@@ -56,7 +58,7 @@
     const steps = [
       [12, 'Memuat ' + MCS.fmt(MCS.cases.length) + ' berkas perkara…'],
       [38, 'Memuat batas wilayah ' + MCS.KABS.length + ' kabupaten/kota…'],
-      [64, 'Menyinkronkan ' + MCS.DILMIL.length + ' Pengadilan Militer & ' + MCS.DILMILTI.length + ' Pengadilan Militer Tinggi…'],
+      [64, 'Menyinkronkan data ' + MCS.KEJATI.length + ' Kejaksaan Tinggi…'],
       [88, 'Memeriksa agenda sidang & masa penahanan…'],
       [100, 'Siap'],
     ];

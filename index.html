@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MCS · Military Crime System — Command Center</title>
+  <title>MCS · Military Crime System — Pusat Pemantauan Jampidmil</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/tokens.css" />
@@ -17,7 +17,7 @@
     <div class="intro-copy" id="intro-copy">
       <svg class="intro-mark" viewBox="0 0 48 48" aria-hidden="true"><use href="#mark" /></svg>
       <div class="intro-title">Military Crime System</div>
-      <div class="intro-sub">Sistem Monitoring Perkara Pidana Militer · Republik Indonesia</div>
+      <div class="intro-sub">Sistem Pemantauan Perkara Pidana Militer · Bidang Pidana Militer Kejaksaan RI</div>
       <div class="intro-progress"><i id="intro-bar"></i></div>
       <div class="intro-step" id="intro-step">Memuat data perkara…</div>
     </div>
@@ -33,12 +33,12 @@
     <header class="topbar">
       <a class="brand" href="index.html" title="Military Crime System">
         <svg viewBox="0 0 48 48"><use href="#mark" /></svg>
-        <div><b>MCS</b><span>Command Center</span></div>
+        <div><b>MCS</b><span>Jampidmil · Kejaksaan RI</span></div>
       </a>
       <nav class="crumbs" id="crumbs" aria-label="Wilayah"></nav>
       <button class="search-trigger" id="open-palette">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-        <span>Cari perkara, terdakwa, NRP, pasal, wilayah…</span>
+        <span>Cari perkara, tersangka, NRP, pasal, Kejati…</span>
         <kbd>Ctrl K</kbd>
       </button>
       <div class="top-actions">
@@ -50,17 +50,18 @@
       </div>
       <div class="user">
         <div class="clock"><b id="clock">--.--</b><span id="date">—</span></div>
-        <div class="avatar" title="Admin Pusat · Babinkum TNI">AP</div>
+        <div class="avatar" title="Pimpinan · Jampidmil Kejaksaan Agung">JP</div>
       </div>
     </header>
 
     <div class="filterbar">
-      <div class="seg" id="f-matra" role="group" aria-label="Matra">
-        <button data-v="" class="on">Semua matra</button><button data-v="AD">TNI AD</button><button data-v="AL">TNI AL</button><button data-v="AU">TNI AU</button>
+      <div class="seg" id="f-jenis" role="group" aria-label="Jenis perkara">
+        <button data-v="" class="on">Semua perkara</button><button data-v="koneksitas">Koneksitas</button><button data-v="oditurat">Perkara Oditurat</button>
       </div>
       <label class="sel"><span>Periode</span><select id="f-year"></select></label>
       <label class="sel"><span>Klasifikasi</span><select id="f-cat"></select></label>
-      <label class="sel"><span>Pengadilan</span><select id="f-court"></select></label>
+      <label class="sel"><span>Matra</span><select id="f-matra"></select></label>
+      <label class="sel"><span>Kejati</span><select id="f-kejati"></select></label>
       <div class="chips" id="chips"></div>
       <span class="sp"></span>
       <div class="scope"><span class="live"></span>Data per <b id="asof">—</b> · Cakupan <b>Nasional</b></div>
@@ -73,7 +74,7 @@
           <div class="tiles">
             <div class="tile"><span>Total perkara</span><b id="k-total">0</b><em id="k-total-s">&nbsp;</em></div>
             <div class="tile"><span>Dalam proses</span><b id="k-proses">0</b><em id="k-proses-s">&nbsp;</em></div>
-            <div class="tile"><span>Inkracht</span><b id="k-tetap">0</b><em id="k-tetap-s">&nbsp;</em></div>
+            <div class="tile"><span>Perkara koneksitas</span><b id="k-kon">0</b><em id="k-kon-s">&nbsp;</em></div>
             <div class="tile money"><span>Kerugian negara</span><b id="k-rugi">Rp 0</b><em id="k-rugi-s">&nbsp;</em><div class="meter"><i id="k-rugi-bar"></i></div></div>
           </div>
         </section>
@@ -86,7 +87,7 @@
           <div class="body scroll" id="cats"></div>
         </section>
         <section class="panel" data-reveal>
-          <header><h3>Profil terdakwa</h3><span class="aux">matra &amp; golongan pangkat</span></header>
+          <header><h3>Profil tersangka</h3><span class="aux">militer &amp; sipil</span></header>
           <div class="body" id="profile"></div>
         </section>
       </aside>
@@ -102,7 +103,7 @@
           </div>
           <div class="hud tr layers" id="layers">
             <button data-layer="heat" class="on"><i class="sw heat"></i>Kepadatan perkara</button>
-            <button data-layer="court" class="on"><i class="sw court"></i>Pengadilan militer</button>
+            <button data-layer="court" class="on"><i class="sw court"></i>Kejaksaan Tinggi</button>
             <button data-layer="lbl" class="on"><i class="sw lbl"></i>Label</button>
           </div>
           <div class="hud bl legend" id="legend"></div>
@@ -123,7 +124,7 @@
         </section>
         <section class="panel grow" data-reveal>
           <header>
-            <div class="tabs" id="rank-tabs"><button class="on" data-tab="region">Wilayah</button><button data-tab="court">Pengadilan</button></div>
+            <div class="tabs" id="rank-tabs"><button class="on" data-tab="region">Wilayah</button><button data-tab="court">Kejati</button></div>
             <span class="aux" id="rank-aux">jumlah perkara</span>
           </header>
           <div class="body scroll" id="rank"></div>
@@ -161,7 +162,7 @@
         <div><div class="eyebrow">Agenda sidang</div><h2 id="ag-title">Minggu ini</h2></div>
         <div class="s-tools">
           <button class="btn" id="ag-prev">←</button><button class="btn" id="ag-today">Hari ini</button><button class="btn" id="ag-next">→</button>
-          <label class="sel"><span>Pengadilan</span><select id="ag-court"></select></label>
+          <label class="sel"><span>Kejati</span><select id="ag-court"></select></label>
         </div>
         <button class="x" data-close aria-label="Tutup">×</button>
       </header>
@@ -199,7 +200,7 @@
   <!-- ============ COMMAND PALETTE ============ -->
   <div class="overlay palette-wrap" id="palette" aria-hidden="true">
     <div class="palette">
-      <div class="p-in"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg><input id="p-q" placeholder="Ketik nomor perkara, nama terdakwa, NRP, pasal, wilayah, atau perintah…" autocomplete="off" spellcheck="false" /><kbd>Esc</kbd></div>
+      <div class="p-in"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg><input id="p-q" placeholder="Ketik nomor perkara, nama tersangka, NRP, pasal, Kejati, wilayah, atau perintah…" autocomplete="off" spellcheck="false" /><kbd>Esc</kbd></div>
       <div class="p-res scroll" id="p-res"></div>
       <div class="p-foot"><span><kbd>↑</kbd><kbd>↓</kbd> pilih</span><span><kbd>Enter</kbd> buka</span><span><kbd>Esc</kbd> tutup</span></div>
     </div>

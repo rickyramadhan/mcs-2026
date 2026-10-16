@@ -217,12 +217,9 @@ window.MCSMap = (function () {
   }
 
   // ---------- pengadilan militer ----------
+  // ---------- Kejaksaan Tinggi & wilayahnya ----------
   const juris = {};
-  function jurisIds(id) {
-    const C = MCS.COURT[id];
-    if (C.level === 'dilmilti') return MCS.KABS.filter((x) => MCS.COURT[MCS.kabCourt[x.id]].tinggi === id).map((x) => x.id);
-    return MCS.KABS.filter((x) => MCS.kabCourt[x.id] === id).map((x) => x.id);
-  }
+  const jurisIds = (id) => MCS.KABS.filter((x) => MCS.KJ[id].prov.includes(x.p)).map((x) => x.id);
   function jurisGeom(id) {
     if (!juris[id]) { const set = new Set(jurisIds(id)); juris[id] = { set, geom: topojson.merge(topo, kabObj.geometries.filter((g) => set.has(g.id))) }; }
     return juris[id].geom;
@@ -230,21 +227,20 @@ window.MCSMap = (function () {
   const inJuris = (kabId) => { jurisGeom(courtFocus); return juris[courtFocus].set.has(kabId); };
   const jurisBB = (id) => bbox(jurisGeom(id));
   function renderCourts() {
-    const list = layers.court ? MCS.DILMIL.concat(MCS.DILMILTI).map((c) => { const [x, y] = proj([c.lng, c.lat]); return { ...c, x, y }; }) : [];
+    const list = layers.court ? MCS.KEJATI.map((c) => { const [x, y] = proj([c.lng, c.lat]); return { ...c, x, y }; }) : [];
     const sel = gCourt.selectAll('g.court').data(list, (c) => c.id).join((en) => {
-      const g = en.append('g').attr('class', (c) => 'court' + (c.level === 'dilmilti' ? ' t' : ''));
+      const g = en.append('g').attr('class', 'court t');
       g.append('circle').attr('class', 'halo').attr('r', 11);
-      g.filter((c) => c.level === 'dilmil').append('circle').attr('class', 'pin').attr('r', 4.5);
-      g.filter((c) => c.level === 'dilmilti').append('rect').attr('class', 'pin').attr('x', -5).attr('y', -5).attr('width', 10).attr('height', 10).attr('transform', 'rotate(45)');
-      g.append('text').attr('x', 9).attr('y', (c) => (c.level === 'dilmilti' ? -6 : 3.5));
+      g.append('rect').attr('class', 'pin').attr('x', -4.5).attr('y', -4.5).attr('width', 9).attr('height', 9).attr('transform', 'rotate(45)');
+      g.append('text').attr('x', 9).attr('y', 3.5);
       g.style('opacity', 0).transition().delay((c, i) => 700 + i * 25).duration(400).style('opacity', 1);
       return g;
     });
     sel.classed('on', (c) => c.id === courtFocus)
-      .select('text').text((c) => (c.level === 'dilmilti' ? c.short.split(' ').slice(0, 2).join(' ') : c.code))
-      .style('display', (c) => (depth(focus) === 0 && c.level === 'dilmil' && !courtFocus ? 'none' : null));
+      .select('text').text((c) => c.short)
+      .style('display', (c) => (c.id === courtFocus || (depth(focus) === 1 && c.prov.includes(+String(focus).split('.')[0])) ? null : 'none'));
     sel.on('mouseenter', (e, c) => showCourtTip(e, c)).on('mousemove', moveTip).on('mouseleave', hideTip)
-      .on('click', (e, c) => { e.stopPropagation(); window.App && App.setFilter('court', courtFocus === c.id ? '' : c.id); });
+      .on('click', (e, c) => { e.stopPropagation(); window.App && App.setFilter('kejati', courtFocus === c.id ? '' : c.id); });
   }
   function setCourt(id) {
     courtFocus = id || null;
@@ -289,15 +285,15 @@ window.MCSMap = (function () {
 
   function updateHud() {
     const d = depth(focus);
-    const C = courtFocus && MCS.COURT[courtFocus];
-    document.getElementById('m-lvl').textContent = C && d === 0 ? 'Wilayah hukum' : ['Nasional', 'Provinsi', 'Kabupaten / kota'][d];
-    document.getElementById('m-nm').textContent = C && d === 0 ? C.short : MCS.regionName(focus);
+    const C = courtFocus && MCS.KJ[courtFocus];
+    document.getElementById('m-lvl').textContent = C && d === 0 ? 'Wilayah Kejaksaan Tinggi' : ['Nasional', 'Provinsi', 'Kabupaten / kota'][d];
+    document.getElementById('m-nm').textContent = C && d === 0 ? C.name : MCS.regionName(focus);
     const n = base.filter((c) => MCS.matchRegion(c, focus)).length;
     document.getElementById('m-sub').textContent = C && d === 0
       ? juris[courtFocus].set.size + ' kabupaten/kota · ' + MCS.fmt(n) + ' perkara'
       : d === 0 ? MCS.provIds.length + ' provinsi · ' + MCS.KABS.length + ' kabupaten/kota'
         : d === 1 ? MCS.kabsOf(+focus).length + ' kabupaten/kota · ' + MCS.fmt(n) + ' perkara'
-          : MCS.fmt(n) + ' perkara · ' + MCS.courtOfKab(focus).short;
+          : MCS.fmt(n) + ' perkara · ' + MCS.kejatiOfProv(MCS.KAB[focus].p).short;
     document.getElementById('m-back').classList.toggle('hidden', d === 0 && !C);
   }
 
@@ -305,7 +301,7 @@ window.MCSMap = (function () {
   function regionTip(id, o) {
     const cats = Object.entries(o.cat).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const d = depth(id);
-    const sub = d === 1 ? 'Provinsi · ' + MCS.kabsOf(+id).length + ' kab/kota' : (MCS.PROV[MCS.KAB[id].p] + ' · ' + MCS.courtOfKab(id).short);
+    const sub = d === 1 ? 'Provinsi · ' + MCS.kabsOf(+id).length + ' kab/kota' : (MCS.PROV[MCS.KAB[id].p] + ' · ' + MCS.kejatiOfProv(MCS.KAB[id].p).short);
     return `<div class="t">${MCS.regionName(id)}</div><div class="s">${sub}</div>
       <div class="r"><span>Total perkara</span><b>${MCS.fmt(o.total)}</b></div>
       ${MCS.GROUPS.map((g) => `<div class="r"><span><i style="background:${g.color}"></i>${g.name}</span><b>${MCS.fmt(o[g.id])}</b></div>`).join('')}
@@ -339,15 +335,16 @@ window.MCSMap = (function () {
     tipEl.classList.add('on'); moveTip(e);
   }
   function showCourtTip(e, C) {
-    const list = MCS.filter({ court: C.id }, base);
+    const list = MCS.filter({ kejati: C.id }, base);
     const aktif = list.filter((c) => c.st < 7).length;
+    const kon = list.filter((c) => c.jenis === 'koneksitas').length;
     const sid = MCS.hearings(list).length;
-    const wil = C.level === 'dilmilti' ? MCS.DILMIL.filter((x) => x.tinggi === C.id).map((x) => x.code).join(', ') : C.kabs ? 'Sebagian Jawa Timur (wilayah Madiun & sekitarnya)' : C.prov.map((q) => MCS.PROV[q]).join(', ');
-    tipEl.innerHTML = `<div class="t">${C.name}</div><div class="s">${C.level === 'dilmilti' ? 'Pengadilan tingkat banding · membawahi' : 'Daerah hukum'}: ${wil}</div>
-      <div class="r"><span>Perkara dalam cakupan</span><b>${MCS.fmt(list.length)}</b></div>
-      <div class="r"><span>Belum inkracht</span><b>${MCS.fmt(aktif)}</b></div>
+    tipEl.innerHTML = `<div class="t">${C.name}</div><div class="s">Bidang Pidana Militer (Aspidmil) · wilayah: ${C.prov.map((q) => MCS.PROV[q]).join(', ')}</div>
+      <div class="r"><span>Perkara dalam wilayah</span><b>${MCS.fmt(list.length)}</b></div>
+      <div class="r"><span>Koneksitas</span><b>${MCS.fmt(kon)}</b></div>
+      <div class="r"><span>Belum selesai</span><b>${MCS.fmt(aktif)}</b></div>
       <div class="r"><span>Sidang 7 hari ke depan</span><b>${MCS.fmt(sid)}</b></div>
-      <div class="h">${courtFocus === C.id ? 'Klik untuk melepas saringan' : 'Klik untuk menyaring & melihat wilayah hukum'} →</div>`;
+      <div class="h">${courtFocus === C.id ? 'Klik untuk melepas saringan' : 'Klik untuk menyaring & melihat wilayah Kejati'} →</div>`;
     tipEl.classList.add('on'); moveTip(e);
   }
   function moveTip(e) {
@@ -369,7 +366,7 @@ window.MCSMap = (function () {
     if (!silent) listeners.forEach((f) => f(focus));
   }
   function up() {
-    if (courtFocus && depth(focus) === 0) { window.App && App.setFilter('court', ''); return; }
+    if (courtFocus && depth(focus) === 0) { window.App && App.setFilter('kejati', ''); return; }
     const s = String(focus);
     drill(s.includes('.') ? s.split('.')[0] : 'ID');
   }

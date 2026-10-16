@@ -143,6 +143,8 @@ table.t { width: 100%; border-collapse: collapse; }
 .tabsv svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tabsv em { margin-left: auto; font-style: normal; font-size: 11px; color: var(--txt-4); }
 .aside .card { margin-bottom: 12px; }
+.aside .card > header { padding: 10px 14px 8px; }
+.aside .card > header h3 { font-size: 12.5px; }
 .aside .kv2 { display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; }
 .aside .kv2 span { display: block; font-size: 11.5px; color: var(--txt-4); }
 .mini-map { height: 150px; border-bottom: 1px solid var(--line); }
