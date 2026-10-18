@@ -70,16 +70,16 @@
     <main class="grid">
       <aside class="col">
         <section class="panel" data-reveal>
-          <header><h3>Ringkasan perkara</h3><span class="aux" id="ov-scope">Indonesia</span></header>
+          <header><h3>Ringkasan perkara</h3><span class="aux" id="ov-scope">Indonesia</span><button class="link-btn" data-list="" title="Buka daftar perkara">Lihat daftar →</button></header>
           <div class="tiles">
-            <div class="tile"><span>Total perkara</span><b id="k-total">0</b><em id="k-total-s">&nbsp;</em></div>
-            <div class="tile"><span>Dalam proses</span><b id="k-proses">0</b><em id="k-proses-s">&nbsp;</em></div>
-            <div class="tile"><span>Perkara koneksitas</span><b id="k-kon">0</b><em id="k-kon-s">&nbsp;</em></div>
+            <div class="tile click" data-list="" title="Lihat daftar seluruh perkara"><span>Total perkara</span><b id="k-total">0</b><em id="k-total-s">&nbsp;</em></div>
+            <div class="tile click" data-list="proses" title="Lihat daftar perkara dalam proses"><span>Dalam proses</span><b id="k-proses">0</b><em id="k-proses-s">&nbsp;</em></div>
+            <div class="tile click" data-list="koneksitas" title="Lihat daftar perkara koneksitas"><span>Perkara koneksitas</span><b id="k-kon">0</b><em id="k-kon-s">&nbsp;</em></div>
             <div class="tile money"><span>Kerugian negara</span><b id="k-rugi">Rp 0</b><em id="k-rugi-s">&nbsp;</em><div class="meter"><i id="k-rugi-bar"></i></div></div>
           </div>
         </section>
         <section class="panel" data-reveal>
-          <header><h3>Tahapan perkara</h3><span class="aux">Klik untuk menyaring</span></header>
+          <header><h3>Tahapan perkara</h3><span class="aux"></span><button class="link-btn" data-list="stage" title="Buka daftar perkara per tahap">Daftar →</button></header>
           <div class="stages" id="stages"></div>
         </section>
         <section class="panel grow min" data-reveal>
@@ -99,7 +99,7 @@
             <div class="lvl" id="m-lvl">Nasional</div>
             <div class="nm" id="m-nm">Indonesia</div>
             <div class="sub" id="m-sub">38 provinsi · 514 kabupaten/kota</div>
-            <button class="back hidden" id="m-back">← Kembali</button>
+            <div class="hud-acts"><button class="back hidden" id="m-back">← Kembali</button><button class="back list" data-list="" id="m-list">☰ Daftar perkara</button></div>
           </div>
           <div class="hud tr layers" id="layers">
             <button data-layer="heat" class="on"><i class="sw heat"></i>Kepadatan perkara</button>
@@ -152,6 +152,27 @@
         <div class="d-main scroll" id="d-main"></div>
         <aside class="d-side scroll" id="d-side"></aside>
       </div>
+    </div>
+  </div>
+
+  <!-- ============ DAFTAR PERKARA ============ -->
+  <div class="overlay" id="caselist" aria-hidden="true">
+    <div class="sheet">
+      <header class="s-head">
+        <div><div class="eyebrow" id="cl-scope">Daftar perkara</div><h2 id="cl-title">Daftar perkara</h2></div>
+        <div class="s-tools">
+          <input class="input" id="cl-q" placeholder="Cari nomor, tersangka, satuan…" style="width:260px" />
+          <div class="seg" id="cl-jenis"><button data-v="" class="on">Semua</button><button data-v="koneksitas">Koneksitas</button><button data-v="oditurat">Oditurat</button></div>
+          <label class="sel"><span>Klasifikasi</span><select id="cl-cat"></select></label>
+          <label class="sel"><span>Urutkan</span><select id="cl-sort"><option value="upd">Terakhir diperbarui</option><option value="new">Tanggal terbaru</option><option value="old">Paling lama di tahap</option><option value="rugi">Kerugian terbesar</option><option value="sidang">Sidang terdekat</option></select></label>
+          <button class="btn" id="cl-exp"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>Ekspor</button>
+        </div>
+        <button class="x" data-close aria-label="Tutup">×</button>
+      </header>
+      <div class="cl-sum" id="cl-sum"></div>
+      <div class="cl-tabs" id="cl-tabs"></div>
+      <div class="cl-body scroll"><table class="cl-t"><thead><tr><th>Nomor perkara</th><th>Tersangka</th><th>Jenis &amp; klasifikasi</th><th>Tahap</th><th>Kejati · peradilan</th><th>Sidang berikutnya</th><th class="r">Kerugian</th><th>Diperbarui</th></tr></thead><tbody id="cl-rows"></tbody></table></div>
+      <footer class="cl-foot" id="cl-foot"></footer>
     </div>
   </div>
 
@@ -220,6 +241,7 @@
   <script src="js/app.js"></script>
   <script src="js/case.js"></script>
   <script src="js/panels.js"></script>
+  <script src="js/list.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/boot.js"></script>
 </body>

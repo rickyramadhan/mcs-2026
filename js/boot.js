@@ -14,6 +14,7 @@
     MCSMap.init();
     App.init();
     Panels.init();
+    CaseList.init();
     AI.init();
     const app = $('app');
     app.setAttribute('aria-hidden', 'false');

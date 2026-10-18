@@ -94,7 +94,8 @@ html, body { overflow: hidden; }
 [data-reveal] { opacity: 0; transform: translateY(10px); transition: opacity .6s var(--ease), transform .7s var(--ease); }
 #app.show [data-reveal] { opacity: 1; transform: none; }
 .panel > header { display: flex; align-items: center; gap: 10px; padding: 11px 14px 9px; min-height: 42px; }
-.panel h3 { font-size: 13px; font-weight: 600; letter-spacing: -.005em; }
+.panel h3 { font-size: 13px; font-weight: 600; letter-spacing: -.005em; white-space: nowrap; }
+.panel header .aux { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .panel .aux { margin-left: auto; color: var(--txt-4); font-size: 11.5px; white-space: nowrap; }
 .panel .body { padding: 0 14px 12px; min-height: 0; }
 .scroll { overflow-y: auto; overscroll-behavior: contain; }
@@ -493,3 +494,48 @@ html, body { overflow: hidden; }
   .grid > .col:last-child { display: none; }
   .filterbar .sel:nth-of-type(3) { display: none; }
 }
+
+/* ---------------- Daftar perkara ---------------- */
+.link-btn { margin-left: 8px; font-size: 11.5px; font-weight: 600; color: var(--accent); padding: 2px 6px; border-radius: 6px; white-space: nowrap; transition: background .15s; }
+.link-btn:hover { background: var(--accent-d); }
+.panel header .aux + .link-btn { margin-left: 8px; }
+.tile.click { cursor: pointer; transition: background .15s; }
+.tile.click:hover { background: var(--panel-2); }
+.tile.click:hover > span::after { content: ' →'; color: var(--accent); }
+.hud-acts { display: flex; gap: 6px; pointer-events: auto; }
+.hud .back.list { color: var(--accent); border-color: rgba(92, 200, 230, .35); }
+.cl-sum { display: flex; gap: 8px; padding: 12px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.cs { display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); font-size: 12px; color: var(--txt-3); }
+.cs i { width: 8px; height: 8px; border-radius: 50%; }
+.cs b { color: var(--txt); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 13px; }
+.cs b small { font-weight: 400; color: var(--txt-3); font-size: 11.5px; }
+.cl-tabs { display: flex; gap: 2px; padding: 8px 16px 0; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: thin; flex: none; }
+.cl-tabs button { display: flex; align-items: center; gap: 6px; padding: 8px 9px 10px; color: var(--txt-3); font-weight: 500; white-space: nowrap; position: relative; transition: color .15s; }
+.cl-tabs button:hover { color: var(--txt); }
+.cl-tabs button.on { color: var(--txt); }
+.cl-tabs button.on::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--accent); }
+.cl-tabs i { width: 7px; height: 7px; border-radius: 50%; }
+.cl-tabs em { font-style: normal; font-size: 11px; padding: 0 6px; border-radius: 999px; background: rgba(148, 172, 204, .1); color: var(--txt-3); font-variant-numeric: tabular-nums; }
+.cl-tabs button.on em { background: var(--accent-d); color: var(--accent); }
+.cl-body { flex: 1; min-height: 0; }
+.cl-t { width: 100%; border-collapse: collapse; }
+.cl-t th { position: sticky; top: 0; z-index: 1; background: var(--panel); text-align: left; font-size: 11.5px; font-weight: 600; color: var(--txt-3); padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.cl-t td { padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px; vertical-align: top; }
+.cl-t .r { text-align: right; }
+.cl-t tbody tr { cursor: pointer; transition: background .12s; animation: rowIn .35s var(--ease) both; }
+.cl-t tbody tr:hover { background: rgba(148, 172, 204, .05); }
+.cl-t .mono { color: var(--txt-2); font-size: 11.5px; }
+.cl-t b { font-weight: 500; }
+.cl-t .sub { display: block; font-size: 11.5px; color: var(--txt-3); margin-top: 2px; }
+.cl-t .sub.c { color: var(--crit-txt); }
+.cl-t .w { color: var(--warn); }
+.cl-t .kon { color: var(--accent); font-weight: 500; }
+.cl-t .pill { height: 20px; font-size: 11px; }
+.p8 { display: flex; gap: 2px; margin-top: 5px; }
+.p8 i { width: 11px; height: 3px; border-radius: 2px; background: rgba(148, 172, 204, .14); }
+.p8 i.on { background: var(--accent); }
+.p8 i.cur { background: var(--s2); }
+.cl-foot { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-top: 1px solid var(--line); font-size: 12px; color: var(--txt-3); }
+.cl-foot .pg { font-variant-numeric: tabular-nums; }
+#caselist .s-head { flex-wrap: wrap; }
+#caselist .s-tools { flex-wrap: wrap; }
