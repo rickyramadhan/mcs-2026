@@ -66,6 +66,9 @@ window.UI = (function () {
   function open(el) {
     if (typeof el === 'string') el = document.getElementById(el);
     if (!el || stack.includes(el)) return;
+    // jendela yang dibuka terakhir selalu di depan (mis. berkas perkara di atas daftar perkara)
+    if (!el.dataset.z) el.dataset.z = parseInt(getComputedStyle(el).zIndex, 10) || 50;
+    el.style.zIndex = +el.dataset.z + stack.length * 2;
     el.classList.add('on'); el.setAttribute('aria-hidden', 'false');
     stack.push(el);
   }
