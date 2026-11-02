@@ -1,4 +1,4 @@
-# MCS — Military Crime System
+# MCS — Military Crime Super Apps
 ## Sistem Pemantauan Perkara Pidana Militer · Bidang Pidana Militer Kejaksaan RI
 
 *Dokumen konsep · bahan paparan untuk pemangku kepentingan · versi 2.0, Oktober 2026*

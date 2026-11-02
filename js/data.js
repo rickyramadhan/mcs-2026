@@ -1,5 +1,5 @@
 /* =====================================================================
-   MCS — Military Crime System · Shared data layer
+   MCS — Military Crime Super Apps · Shared data layer
    Model domain peradilan militer (UU 31/1997) + data dummy deterministik.
    Dipakai oleh Command Center (index.html) dan Workspace (admin.html).
 
