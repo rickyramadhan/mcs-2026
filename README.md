@@ -1,4 +1,4 @@
-# MCS — Military Crime Super Apps (prototipe front-end)
+# MCS — Military Crime Superapps (prototipe front-end)
 
 Prototipe sistem pemantauan perkara pidana militer untuk **Bidang Pidana Militer Kejaksaan RI** (Jampidmil & Aspidmil Kejati): perkara koneksitas dan koordinasi teknis penuntutan Oditurat. Konsep lengkap: [docs/KONSEP-MCS.md](docs/KONSEP-MCS.md).
 
