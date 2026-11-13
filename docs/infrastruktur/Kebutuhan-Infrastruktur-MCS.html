@@ -2,493 +2,183 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8" />
-<title>Analisis Kebutuhan Infrastruktur — MCS</title>
+<title>Kebutuhan Infrastruktur — MCS</title>
 <style>
-  @page { size: A4; margin: 16mm 16mm 18mm 16mm; }
-  @page :first { margin: 0; }
-  :root { --navy: #0b1f3a; --teal: #127e9b; --teal-l: #e3f3f7; --amber: #b97700; --amber-l: #fdf3dc; --ink: #1e293b; --muted: #5b6778; --line: #d9dfe7; --soft: #f3f6fa; }
+  @page { size: A4; margin: 15mm 15mm 17mm 15mm; }
+  :root { --navy: #0b1f3a; --teal: #127e9b; --teal-l: #e3f3f7; --amber: #b97700; --amber-l: #fdf3dc; --green: #14865e; --green-l: #e3f4ec; --red-l: #fbe9e9; --ink: #1e293b; --muted: #5b6778; --line: #d9dfe7; --soft: #f3f6fa; }
   * { box-sizing: border-box; }
-  body { font-family: 'Segoe UI', 'Inter', Arial, sans-serif; color: var(--ink); font-size: 10.2pt; line-height: 1.5; margin: 0; }
-  h1, h2, h3 { color: var(--navy); line-height: 1.25; }
-  h2 { font-size: 15pt; margin: 0 0 4mm; padding-top: 2mm; border-bottom: 2px solid var(--navy); padding-bottom: 2mm; }
-  h2 .no { color: var(--teal); margin-right: 3mm; }
-  h3 { font-size: 11.5pt; margin: 5mm 0 2mm; }
-  p { margin: 0 0 2.5mm; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--ink); font-size: 10pt; line-height: 1.45; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  h2 { font-size: 13pt; color: var(--navy); margin: 6mm 0 2.5mm; border-bottom: 2px solid var(--navy); padding-bottom: 1.3mm; page-break-after: avoid; }
+  h2 .no { color: var(--teal); margin-right: 2.5mm; }
+  h3 { font-size: 10.5pt; color: var(--navy); margin: 3mm 0 1.5mm; }
+  p { margin: 0 0 2mm; }
   .muted { color: var(--muted); }
-  section { page-break-before: always; }
-  section.first { page-break-before: auto; }
-  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.2pt; page-break-inside: auto; }
+  table { width: 100%; border-collapse: collapse; margin: 1.5mm 0 2.5mm; font-size: 9.2pt; }
   tr { page-break-inside: avoid; }
-  th { background: var(--navy); color: #fff; text-align: left; font-weight: 600; padding: 2mm 2.4mm; }
-  td { padding: 1.8mm 2.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--navy); color: #fff; text-align: left; font-weight: 600; padding: 1.8mm 2.2mm; }
+  td { padding: 1.5mm 2.2mm; border-bottom: 1px solid var(--line); vertical-align: middle; }
   tbody tr:nth-child(even) td { background: var(--soft); }
   td.r, th.r { text-align: right; white-space: nowrap; }
+  td.c, th.c { text-align: center; }
+  tr.sub td { font-weight: 600; border-top: 1.5px solid var(--navy); background: #fff !important; }
   tr.total td { font-weight: 700; background: var(--teal-l) !important; border-top: 2px solid var(--teal); }
-  tr.hl td { background: var(--amber-l) !important; font-weight: 600; }
-  .note { background: var(--soft); border-left: 3px solid var(--teal); padding: 2.5mm 3.5mm; margin: 2mm 0 4mm; font-size: 9.4pt; }
-  .warn { background: var(--amber-l); border-left: 3px solid var(--amber); padding: 2.5mm 3.5mm; margin: 2mm 0 4mm; font-size: 9.4pt; }
-  ul { margin: 0 0 3mm; padding-left: 5mm; } li { margin-bottom: 1mm; }
-  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin: 4mm 0 5mm; }
-  .kpi { background: var(--soft); border-radius: 2mm; padding: 3mm 3.5mm; border-top: 3px solid var(--teal); }
-  .kpi b { display: block; font-size: 16pt; color: var(--navy); }
-  .kpi span { font-size: 8.6pt; color: var(--muted); }
-  /* cover */
-  .cover { height: 296mm; display: flex; flex-direction: column; background: var(--navy); color: #fff; margin: 0; padding: 45mm 24mm 30mm; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .cover .k { color: #6cc7de; font-weight: 700; letter-spacing: .08em; font-size: 9.5pt; }
-  .cover h1 { color: #fff; font-size: 30pt; margin: 6mm 0 3mm; }
-  .cover .s { font-size: 13pt; color: #d5dfea; max-width: 140mm; }
-  .cover .meta { margin-top: auto; font-size: 10pt; color: #b8c6d6; line-height: 1.7; }
-  .cover .meta b { color: #fff; }
-  .cover .badge { display: inline-block; margin-top: 8mm; padding: 2mm 4mm; border: 1px solid #6cc7de; border-radius: 1.5mm; color: #6cc7de; font-size: 9pt; }
-  /* toc */
-  .toc { columns: 2; column-gap: 10mm; font-size: 10pt; }
-  .toc div { break-inside: avoid; padding: 1.2mm 0; border-bottom: 1px dotted var(--line); }
-  .toc b { color: var(--teal); display: inline-block; width: 8mm; }
-  /* diagram */
-  .arch { border: 1px solid var(--line); border-radius: 2mm; padding: 4mm; margin: 3mm 0 4mm; background: #fbfcfe; }
-  .row { display: flex; gap: 3mm; justify-content: center; align-items: stretch; }
-  .node { border-radius: 1.6mm; padding: 2.2mm 3mm; font-size: 8.6pt; text-align: center; flex: 1; }
-  .node b { display: block; font-size: 9.2pt; }
-  .n-user { background: #e8eef7; color: var(--navy); }
-  .n-edge { background: var(--navy); color: #fff; }
-  .n-app { background: var(--teal); color: #fff; }
-  .n-data { background: #14865e; color: #fff; }
-  .n-sup { background: #fff; border: 1px solid var(--line); color: var(--ink); }
-  .n-bk { background: var(--amber-l); border: 1px solid #e9c97a; color: #6b4a00; }
-  .arrow { text-align: center; color: var(--muted); font-size: 11pt; margin: 1.2mm 0; }
-  .zone { font-size: 8pt; font-weight: 700; color: var(--muted); letter-spacing: .06em; margin: 1mm 0 1.5mm; }
-  .foot { font-size: 8.4pt; color: var(--muted); margin-top: 6mm; border-top: 1px solid var(--line); padding-top: 2mm; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
-  .formula { font-family: Consolas, monospace; font-size: 8.8pt; background: var(--soft); padding: 2.5mm 3.5mm; border-radius: 1.5mm; margin: 2mm 0 3mm; white-space: pre-wrap; }
+  tr.ok td { background: var(--green-l) !important; }
+  tr.bad td { background: var(--red-l) !important; }
+  .note { background: var(--soft); border-left: 3px solid var(--teal); padding: 2mm 3.2mm; margin: 1.5mm 0 2.5mm; font-size: 9pt; }
+  .warn { background: var(--amber-l); border-left: 3px solid var(--amber); padding: 2mm 3.2mm; margin: 1.5mm 0 2.5mm; font-size: 9pt; }
+  ul { margin: 0 0 2.5mm; padding-left: 5mm; } li { margin-bottom: .8mm; }
+  .head { background: var(--navy); color: #fff; border-radius: 2mm; padding: 6mm 8mm 5mm; margin-bottom: 4mm; }
+  .head .k { color: #6cc7de; font-weight: 700; letter-spacing: .08em; font-size: 8.3pt; }
+  .head h1 { font-size: 19pt; margin: 1.5mm 0 1mm; color: #fff; }
+  .head .s { color: #d5dfea; font-size: 10pt; }
+  .head .m { color: #9fb0c4; font-size: 8.5pt; margin-top: 2.5mm; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin: 0 0 3mm; }
+  .kpi { background: var(--soft); border-radius: 2mm; padding: 2.5mm 3.2mm; border-top: 3px solid var(--teal); }
+  .kpi b { display: block; font-size: 14pt; color: var(--navy); line-height: 1.2; }
+  .kpi span { font-size: 8.3pt; color: var(--muted); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .bar { height: 4.5px; background: var(--teal); border-radius: 3px; }
+  .bar.g { background: var(--green); } .bar.a { background: var(--amber); }
+  .unit { background: var(--soft); border-radius: 2mm; padding: 2.4mm 3.5mm; display: flex; gap: 6mm; font-size: 9pt; margin-bottom: 2mm; }
+  .unit b { color: var(--navy); }
+  .foot { font-size: 8.2pt; color: var(--muted); margin-top: 4mm; border-top: 1px solid var(--line); padding-top: 2mm; }
+  .pb { page-break-before: always; }
 </style>
 </head>
 <body>
 
-<!-- ===================== SAMPUL ===================== -->
-<div class="cover">
+<div class="head">
   <div class="k">DOKUMEN TEKNIS · ESTIMASI AWAL</div>
-  <h1>Analisis Kebutuhan Infrastruktur</h1>
-  <div class="s">MCS — Military Crime Superapps<br/>Sistem Pemantauan Perkara Pidana Militer untuk Bidang Pidana Militer Kejaksaan Republik Indonesia</div>
-  <div class="badge">Untuk diskusi bersama tim TI &amp; Bidang Pidana Militer Kejaksaan</div>
-  <div class="meta">
-    <b>Cakupan:</b> Jampidmil Kejaksaan Agung dan bidang Pidana Militer (Aspidmil) pada seluruh Kejaksaan Tinggi<br/>
-    <b>Versi:</b> 1.0 · November 2026<br/>
-    <b>Status:</b> Seluruh angka adalah estimasi berbasis asumsi dan perlu divalidasi dengan data riil Kejaksaan
-  </div>
+  <h1>Kebutuhan Infrastruktur MCS</h1>
+  <div class="s">MCS — Military Crime Superapps · Bidang Pidana Militer Kejaksaan Republik Indonesia</div>
+  <div class="m">Versi 3.0 · November 2026 · Berupa simulasi sederhana; angka akan dikoreksi setelah ada contoh berkas dan data riil dari Kejaksaan</div>
 </div>
 
-<!-- ===================== DAFTAR ISI ===================== -->
-<section class="first">
-  <h2>Daftar isi</h2>
-  <div class="toc">
-    <div><b>1</b>Ringkasan eksekutif</div>
-    <div><b>2</b>Ruang lingkup &amp; asumsi dasar</div>
-    <div><b>3</b>Arsitektur sistem</div>
-    <div><b>4</b>Analisis dokumen yang diunggah</div>
-    <div><b>5</b>Kebutuhan penyimpanan (storage)</div>
-    <div><b>6</b>Spesifikasi server produksi</div>
-    <div><b>7</b>Opsi tahap pilot</div>
-    <div><b>8</b>Jaringan &amp; bandwidth</div>
-    <div><b>9</b>Keamanan</div>
-    <div><b>10</b>Backup &amp; pemulihan bencana</div>
-    <div><b>11</b>Komponen opsional</div>
-    <div><b>12</b>Skalabilitas &amp; pertumbuhan</div>
-    <div><b>13</b>Usulan perangkat lunak</div>
-    <div><b>14</b>Hal yang perlu dikonfirmasi</div>
-    <div><b>L</b>Lampiran: rumus perhitungan</div>
+<h2><span class="no">1</span>Ringkasan</h2>
+<p>MCS dipakai oleh bidang Pidana Militer di Kejaksaan Agung dan 33 Kejaksaan Tinggi (±400 pengguna, ±100 bersamaan). Yang paling memakan tempat adalah <b>berkas perkara yang diunggah</b>. Data perkara itu sendiri sangat kecil.</p>
+<div class="kpis">
+  <div class="kpi"><b>64 / 128</b><span>core CPU (minimum / rekomendasi)</span></div>
+  <div class="kpi"><b>MySQL</b><span>database utama + replika</span></div>
+  <div class="kpi"><b>16 TB</b><span>penyimpanan dokumen</span></div>
+  <div class="kpi"><b>32 TB</b><span>penyimpanan backup</span></div>
+</div>
+
+<h2><span class="no">2</span>Simulasi: satu perkara itu berapa besar?</h2>
+<div class="unit"><span><b>1 halaman</b> scan ≈ 0,2 MB</span><span><b>1 foto</b> ≈ 3 MB</span><span><b>1 menit video</b> HP ≈ 100 MB</span></div>
+<div class="two">
+  <div>
+    <h3>Perkara Oditurat <span class="muted" style="font-weight:400">(salinan untuk koordinasi)</span></h3>
+    <table>
+      <thead><tr><th>Dokumen</th><th class="r">Hal.</th><th class="r">Ukuran</th><th style="width:14mm"></th></tr></thead>
+      <tbody>
+        <tr><td>BAP (tersangka &amp; saksi)</td><td class="r">60</td><td class="r">12 MB</td><td><div class="bar" style="width:100%"></div></td></tr>
+        <tr><td>Putusan</td><td class="r">50</td><td class="r">10 MB</td><td><div class="bar" style="width:83%"></div></td></tr>
+        <tr><td>Dokumen lain*</td><td class="r">30</td><td class="r">6 MB</td><td><div class="bar" style="width:50%"></div></td></tr>
+        <tr><td>Tuntutan</td><td class="r">20</td><td class="r">4 MB</td><td><div class="bar" style="width:33%"></div></td></tr>
+        <tr><td>Dakwaan</td><td class="r">15</td><td class="r">3 MB</td><td><div class="bar" style="width:25%"></div></td></tr>
+        <tr class="sub"><td>Subtotal dokumen</td><td class="r">175</td><td class="r">35 MB</td><td></td></tr>
+        <tr><td>Foto barang bukti (10)</td><td class="r">—</td><td class="r">30 MB</td><td><div class="bar a" style="width:100%"></div></td></tr>
+        <tr class="total"><td>Total per perkara</td><td></td><td class="r">65 MB</td><td></td></tr>
+      </tbody>
+    </table>
   </div>
-
-  <h3 style="margin-top:10mm">Tentang dokumen ini</h3>
-  <p>Dokumen ini menjelaskan perkiraan kebutuhan server, penyimpanan, jaringan, dan keamanan apabila prototipe MCS dikembangkan menjadi sistem yang digunakan seluruh bidang Pidana Militer Kejaksaan di Indonesia.</p>
-  <p>Perhitungan disusun dari asumsi jumlah pengguna, jumlah perkara, dan jenis dokumen yang umum dalam penanganan perkara. Angka akhir akan berubah setelah Kejaksaan memberikan data riil, terutama <b>jumlah perkara per tahun</b> dan <b>kebijakan dokumen yang wajib diunggah</b>.</p>
-  <div class="note">Prototipe yang ada saat ini (<i>mcs-2026.vercel.app</i>) belum memiliki server maupun database; seluruh data di dalamnya adalah data contoh. Dokumen ini menggambarkan kebutuhan untuk sistem final.</div>
-</section>
-
-<!-- ===================== 1 ===================== -->
-<section>
-  <h2><span class="no">1</span>Ringkasan eksekutif</h2>
-  <p>Kebutuhan komputasi MCS tergolong <b>kecil–menengah</b> karena penggunanya ratusan orang, bukan publik. Komponen yang paling menentukan besar investasi adalah <b>penyimpanan dokumen</b> (scan berkas perkara), bukan data perkara itu sendiri.</p>
-  <div class="kpis">
-    <div class="kpi"><b>±400</b><span>pengguna terdaftar (dirancang sampai 1.500)</span></div>
-    <div class="kpi"><b>50–100</b><span>pengguna bersamaan pada jam sibuk</span></div>
-    <div class="kpi"><b>±5.000</b><span>perkara baru per tahun (asumsi)</span></div>
-    <div class="kpi"><b>±0,7 TB</b><span>dokumen baru per tahun (skenario wajar)</span></div>
+  <div>
+    <h3>Perkara koneksitas <span class="muted" style="font-weight:400">(berkas lengkap)</span></h3>
+    <table>
+      <thead><tr><th>Dokumen</th><th class="r">Hal.</th><th class="r">Ukuran</th><th style="width:14mm"></th></tr></thead>
+      <tbody>
+        <tr><td>Berkas lampiran (kontrak, kuitansi, rekening)</td><td class="r">1.000</td><td class="r">200 MB</td><td><div class="bar" style="width:100%"></div></td></tr>
+        <tr><td>BAP (tersangka &amp; saksi)</td><td class="r">600</td><td class="r">120 MB</td><td><div class="bar" style="width:60%"></div></td></tr>
+        <tr><td>Putusan</td><td class="r">300</td><td class="r">60 MB</td><td><div class="bar" style="width:30%"></div></td></tr>
+        <tr><td>Tuntutan, pledoi, replik-duplik</td><td class="r">200</td><td class="r">40 MB</td><td><div class="bar" style="width:20%"></div></td></tr>
+        <tr><td>Berita acara sidang &amp; lainnya</td><td class="r">150</td><td class="r">30 MB</td><td><div class="bar" style="width:15%"></div></td></tr>
+        <tr><td>Audit kerugian negara</td><td class="r">100</td><td class="r">20 MB</td><td><div class="bar" style="width:10%"></div></td></tr>
+        <tr><td>Dakwaan</td><td class="r">50</td><td class="r">10 MB</td><td><div class="bar" style="width:5%"></div></td></tr>
+        <tr class="sub"><td>Subtotal dokumen</td><td class="r">2.400</td><td class="r">480 MB</td><td></td></tr>
+        <tr><td>Foto barang bukti / aset (50)</td><td class="r">—</td><td class="r">150 MB</td><td><div class="bar a" style="width:75%"></div></td></tr>
+        <tr class="total"><td>Total per perkara</td><td></td><td class="r">630 MB</td><td></td></tr>
+      </tbody>
+    </table>
   </div>
-  <table>
-    <thead><tr><th>Kebutuhan</th><th>Rekomendasi (skenario wajar, 5 tahun)</th></tr></thead>
-    <tbody>
-      <tr><td>Server</td><td>±11 mesin virtual: 2 aplikasi, 2 database, 1 pengolah dokumen, 1 storage dokumen, 1 login/SSO, 1 monitoring, 1 backup, 2 gateway</td></tr>
-      <tr><td>Total CPU &amp; memori</td><td>±64 vCPU dan ±230 GB RAM</td></tr>
-      <tr><td>Storage database</td><td>500 GB NVMe SSD (RAID 10)</td></tr>
-      <tr class="hl"><td>Storage dokumen</td><td>8–10 TB usable, dapat ditambah bertahap</td></tr>
-      <tr class="hl"><td>Storage backup</td><td>20–25 TB (termasuk salinan di lokasi lain)</td></tr>
-      <tr><td>Jaringan</td><td>10–20 Mbps per Kejati melalui jaringan internal/VPN; uplink pusat 100 Mbps – 1 Gbps</td></tr>
-      <tr><td>Lokasi</td><td>Pusat data Kejaksaan Agung (on-premise) atau pusat data pemerintah yang ditetapkan</td></tr>
-      <tr><td>Tahap pilot (3–5 Kejati)</td><td>1 VM 8 vCPU / 32 GB RAM / 1 TB SSD + 2 TB backup</td></tr>
-    </tbody>
-  </table>
-  <div class="warn"><b>Faktor penentu terbesar:</b> bila rekaman video wajib disimpan dan dokumen dipindai berwarna (skenario penuh), kebutuhan storage dokumen naik menjadi ±25–30 TB dan backup ±60–80 TB.</div>
-</section>
+</div>
+<p class="muted" style="font-size:8.6pt">* Pendapat hukum, Skeppera, laporan sidang. Jumlah halaman adalah perkiraan umum berkas perkara; akan dikoreksi dengan contoh berkas asli dari Kejaksaan. Satu perkara koneksitas ≈ 10 perkara Oditurat.</p>
 
-<!-- ===================== 2 ===================== -->
-<section>
-  <h2><span class="no">2</span>Ruang lingkup &amp; asumsi dasar</h2>
-  <h3>2.1 Pengguna</h3>
-  <table>
-    <thead><tr><th>Kelompok</th><th>Satuan kerja</th><th class="r">Perkiraan jumlah</th></tr></thead>
-    <tbody>
-      <tr><td>Operator &amp; jaksa bidang Pidana Militer</td><td>33 Kejaksaan Tinggi × ±7 orang</td><td class="r">±230</td></tr>
-      <tr><td>Aspidmil (verifikator)</td><td>33 Kejaksaan Tinggi</td><td class="r">±40</td></tr>
-      <tr><td>Sekretariat &amp; Direktorat</td><td>Jampidmil, Kejaksaan Agung</td><td class="r">±60–80</td></tr>
-      <tr><td>Pimpinan</td><td>Jaksa Agung, Jampidmil, Direktur</td><td class="r">±15–20</td></tr>
-      <tr><td>Pengawas</td><td>Jaksa Agung Muda Bidang Pengawasan</td><td class="r">±10</td></tr>
-      <tr class="total"><td>Total terdaftar</td><td></td><td class="r">±400</td></tr>
-      <tr><td>Cadangan bila tingkat Kejari ikut</td><td>±500 Kejaksaan Negeri × 2 orang</td><td class="r">+1.000</td></tr>
-    </tbody>
-  </table>
-  <p>Pengguna bersamaan pada jam sibuk diperkirakan 15–25% dari pengguna terdaftar, yaitu <b>±50–100 orang</b>. Sistem dirancang mampu melayani <b>±200 pengguna bersamaan</b> agar tetap lancar bila Kejari bergabung.</p>
+<h2><span class="no">3</span>Simulasi: dalam setahun</h2>
+<table>
+  <thead><tr><th>Perhitungan (asumsi ±5.000 perkara baru per tahun)</th><th class="r">Hasil</th></tr></thead>
+  <tbody>
+    <tr><td>4.500 perkara Oditurat × 65 MB</td><td class="r">292 GB</td></tr>
+    <tr><td>500 perkara koneksitas × 630 MB</td><td class="r">315 GB</td></tr>
+    <tr><td>Tambahan 15% untuk dokumen yang direvisi</td><td class="r">91 GB</td></tr>
+    <tr class="total"><td>Dokumen baru per tahun ≈ <b>3 GB per hari kerja</b></td><td class="r">±0,7 TB</td></tr>
+  </tbody>
+</table>
 
-  <h3>2.2 Volume perkara</h3>
-  <table>
-    <thead><tr><th>Jenis perkara</th><th class="r">Per tahun (asumsi)</th><th>Peran Kejaksaan</th></tr></thead>
-    <tbody>
-      <tr><td>Perkara Oditurat (dipantau &amp; dikoordinasikan)</td><td class="r">±4.500</td><td>Menyimpan salinan dokumen untuk koordinasi</td></tr>
-      <tr><td>Perkara koneksitas (ditangani langsung)</td><td class="r">±500</td><td>Menyimpan berkas lengkap</td></tr>
-      <tr class="total"><td>Total</td><td class="r">±5.000</td><td></td></tr>
-    </tbody>
-  </table>
-  <div class="note">Angka ±5.000 perkara/tahun adalah perkiraan beban perkara pidana militer nasional ditambah cadangan. <b>Angka riil perlu diperoleh dari Jampidmil</b>, karena storage berbanding lurus dengan jumlah perkara, terutama perkara koneksitas.</div>
+<h2><span class="no">4</span>Simulasi: bagaimana kalau foto dan video diwajibkan?</h2>
+<p>Dari 16 TB, ±3 TB dipakai untuk memasukkan perkara lama (3 tahun terakhir), sisa <b>±13 TB</b> untuk perkara baru. Berapa lama cukup?</p>
+<table>
+  <thead><tr><th>Yang wajib diunggah</th><th class="r">Per tahun</th><th class="r">13 TB cukup untuk</th></tr></thead>
+  <tbody>
+    <tr class="ok"><td>Dokumen saja (tanpa foto)</td><td class="r">0,46 TB</td><td class="r"><b>±28 tahun</b></td></tr>
+    <tr class="ok"><td><b>Dokumen + foto barang bukti</b> (yang kami perhitungkan)</td><td class="r">0,7 TB</td><td class="r"><b>±18 tahun</b></td></tr>
+    <tr><td>+ video barang bukti <b>hanya perkara koneksitas</b><br/><span class="muted">(500 perkara × 1 GB, mis. 2 video × 5 menit)</span></td><td class="r">1,2 TB</td><td class="r"><b>±10 tahun</b></td></tr>
+    <tr class="bad"><td>+ video barang bukti <b>semua perkara</b><br/><span class="muted">(5.000 perkara × 1 GB)</span></td><td class="r">5,7 TB</td><td class="r"><b>±2 tahun</b></td></tr>
+  </tbody>
+</table>
+<div class="warn"><b>Kesimpulan sederhana:</b> 16 TB cukup untuk dokumen dan foto selama belasan tahun. Video adalah yang paling boros: bila video wajib untuk semua perkara, 16 TB habis dalam ±2 tahun dan perlu tambahan storage khusus video (±25 TB per 5 tahun) atau video dibatasi untuk perkara tertentu.</div>
 
-  <h3>2.3 Asumsi teknis lain</h3>
-  <ul>
-    <li>Aplikasi berbasis web, diakses melalui browser dari kantor Kejati dan Kejaksaan Agung.</li>
-    <li>Jam operasional utama hari kerja 07.00–17.00 WIB; sistem tetap tersedia 24 jam.</li>
-    <li>Masa perencanaan kapasitas: <b>5 tahun</b>.</li>
-    <li>Retensi data perkara diasumsikan minimal 10 tahun (perlu ketetapan Kejaksaan).</li>
-  </ul>
-</section>
+<h2><span class="no">5</span>Simulasi: saat unggah ramai dan saat koneksi lambat</h2>
+<h3>Waktu unggah satu berkas (menurut kecepatan internet Kejati)</h3>
+<table>
+  <thead><tr><th>Yang diunggah</th><th class="r">Ukuran</th><th class="r">Lambat<br/>2 Mbps</th><th class="r">Normal<br/>10 Mbps</th><th class="r">Bagus<br/>20 Mbps</th></tr></thead>
+  <tbody>
+    <tr><td>Surat dakwaan</td><td class="r">3 MB</td><td class="r">12 detik</td><td class="r">2 detik</td><td class="r">1 detik</td></tr>
+    <tr><td>Putusan</td><td class="r">10 MB</td><td class="r">40 detik</td><td class="r">8 detik</td><td class="r">4 detik</td></tr>
+    <tr><td>Satu perkara koneksitas lengkap</td><td class="r">630 MB</td><td class="r">42 menit</td><td class="r">8 menit</td><td class="r">4 menit</td></tr>
+    <tr><td>Satu video barang bukti (1 GB)</td><td class="r">1 GB</td><td class="r">67 menit</td><td class="r">13 menit</td><td class="r">7 menit</td></tr>
+  </tbody>
+</table>
+<p class="muted" style="font-size:8.6pt">Waktu teoritis; dalam praktik tambah ±20–30%.</p>
 
-<!-- ===================== 3 ===================== -->
-<section>
-  <h2><span class="no">3</span>Arsitektur sistem</h2>
-  <p>Arsitektur dirancang dengan dua prinsip: <b>tetap berjalan bila satu server bermasalah</b> (komponen utama dibuat berpasangan) dan <b>data perkara tidak keluar dari jaringan Kejaksaan</b>.</p>
-  <div class="arch">
-    <div class="zone">PENGGUNA</div>
-    <div class="row">
-      <div class="node n-user"><b>33 Kejaksaan Tinggi</b>Operator &amp; Aspidmil</div>
-      <div class="node n-user"><b>Kejaksaan Agung</b>Jampidmil, Direktorat, Pimpinan</div>
-      <div class="node n-user"><b>Pengawas</b>Jamwas</div>
-    </div>
-    <div class="arrow">▼ jaringan internal / VPN Kejaksaan (HTTPS)</div>
-    <div class="zone">GERBANG</div>
-    <div class="row">
-      <div class="node n-edge"><b>Firewall + WAF</b>penyaring serangan</div>
-      <div class="node n-edge"><b>Reverse proxy ×2</b>HTTPS, pembagi beban</div>
-      <div class="node n-sup"><b>Login terpusat (SSO)</b>autentikasi dua faktor</div>
-    </div>
-    <div class="arrow">▼</div>
-    <div class="zone">APLIKASI</div>
-    <div class="row">
-      <div class="node n-app"><b>Server aplikasi 1</b>Command Center &amp; Workspace</div>
-      <div class="node n-app"><b>Server aplikasi 2</b>Command Center &amp; Workspace</div>
-      <div class="node n-app"><b>Pengolah dokumen</b>kompresi, OCR, antivirus, pratinjau</div>
-    </div>
-    <div class="arrow">▼</div>
-    <div class="zone">DATA</div>
-    <div class="row">
-      <div class="node n-data"><b>Database utama</b>PostgreSQL</div>
-      <div class="node n-data"><b>Database cadangan</b>replikasi langsung</div>
-      <div class="node n-data"><b>Storage dokumen</b>NAS / object storage terenkripsi</div>
-    </div>
-    <div class="arrow">▼ salinan terjadwal</div>
-    <div class="row">
-      <div class="node n-bk"><b>Server backup</b>di pusat data utama</div>
-      <div class="node n-bk"><b>Salinan di lokasi lain</b>pemulihan bencana</div>
-      <div class="node n-sup"><b>Monitoring &amp; log</b>kinerja, keamanan, audit</div>
-    </div>
-  </div>
-  <h3>Penjelasan singkat komponen</h3>
-  <table>
-    <thead><tr><th>Komponen</th><th>Fungsi</th></tr></thead>
-    <tbody>
-      <tr><td>Firewall + WAF</td><td>Membatasi akses hanya dari jaringan Kejaksaan dan menyaring serangan web.</td></tr>
-      <tr><td>Reverse proxy</td><td>Mengamankan koneksi (HTTPS) dan membagi beban ke dua server aplikasi.</td></tr>
-      <tr><td>Login terpusat (SSO)</td><td>Satu akun per orang, autentikasi dua faktor, pengaturan peran &amp; wilayah Kejati.</td></tr>
-      <tr><td>Server aplikasi</td><td>Menjalankan Command Center dan Workspace. Dua server agar tetap tersedia bila satu bermasalah.</td></tr>
-      <tr><td>Pengolah dokumen</td><td>Memproses unggahan: pindai virus, kompresi, OCR (teks untuk pencarian), pratinjau, watermark saat dibuka.</td></tr>
-      <tr><td>Database</td><td>Menyimpan data perkara, pengguna, dan log audit. Ada salinan langsung (replika).</td></tr>
-      <tr><td>Storage dokumen</td><td>Menyimpan file scan, foto, dan (bila diwajibkan) video. Terenkripsi.</td></tr>
-      <tr><td>Backup &amp; salinan di lokasi lain</td><td>Menjamin data dapat dipulihkan bila terjadi kerusakan atau bencana.</td></tr>
-      <tr><td>Monitoring &amp; log</td><td>Memantau kesehatan server dan mencatat aktivitas keamanan.</td></tr>
-    </tbody>
-  </table>
-</section>
+<h3>Saat puncak: seluruh 33 Kejati mengunggah bersamaan (mis. akhir bulan)</h3>
+<table>
+  <tbody>
+    <tr><td style="width:62mm">Yang terjadi</td><td>33 Kejati masing-masing mengunggah 1 perkara koneksitas (630 MB)</td></tr>
+    <tr><td>Total yang masuk</td><td><b>±21 GB</b>, selesai dalam <b>±8 menit</b> (setiap Kejati memakai jalurnya sendiri)</td></tr>
+    <tr><td>Beban ke server pusat</td><td>33 × 10 Mbps = <b>330 Mbps</b> (bila semua 20 Mbps: 660 Mbps) → server pusat perlu <b>minimum 500 Mbps, rekomendasi 1 Gbps</b></td></tr>
+    <tr><td>Beban ke storage</td><td>330–660 Mbps ≈ 41–83 MB/detik; storage ditetapkan mampu menulis ≥ 200 MB/detik</td></tr>
+  </tbody>
+</table>
 
-<!-- ===================== 4 ===================== -->
-<section>
-  <h2><span class="no">4</span>Analisis dokumen yang diunggah</h2>
-  <p>Dokumen adalah komponen penyimpanan terbesar. Satu perkara koneksitas dapat setara 10–20 perkara Oditurat dari sisi ukuran berkas.</p>
-  <h3>4.1 Dasar ukuran file</h3>
-  <table>
-    <thead><tr><th>Jenis file</th><th class="r">Ukuran rata-rata</th><th>Keterangan</th></tr></thead>
-    <tbody>
-      <tr><td>Scan PDF hitam-putih / abu-abu, 200–300 dpi, terkompresi</td><td class="r">±0,2 MB / halaman</td><td>Standar yang disarankan</td></tr>
-      <tr><td>Scan PDF berwarna atau tidak dikompresi</td><td class="r">±0,5–1 MB / halaman</td><td>3–5× lebih besar</td></tr>
-      <tr><td>Foto barang bukti (JPEG)</td><td class="r">±3 MB / foto</td><td></td></tr>
-      <tr><td>Rekaman video (CCTV, pemeriksaan, sidang)</td><td class="r">±100 MB – 2 GB / file</td><td>Paling boros, perlu kebijakan khusus</td></tr>
-    </tbody>
-  </table>
+<h3>Saat koneksi lambat atau putus</h3>
+<ul>
+  <li><b>Unggah dilanjutkan otomatis</b> dari bagian yang terakhir terkirim bila koneksi putus; tidak perlu mengulang dari awal.</li>
+  <li><b>Data perkara disimpan lebih dulu</b>, dokumen menyusul di latar belakang. Pekerjaan operator tidak tertahan oleh unggahan besar.</li>
+  <li><b>Dashboard tetap cepat</b> karena database dan storage dokumen dipisah: unggahan besar tidak memperlambat peta, daftar perkara, dan laporan.</li>
+</ul>
+<p class="muted" style="font-size:8.6pt">Tiga hal di atas adalah fitur yang akan dibangun pada sistem final (belum ada di prototipe).</p>
 
-  <h3>4.2 Perkara Oditurat — salinan untuk koordinasi</h3>
-  <table>
-    <thead><tr><th>Dokumen</th><th class="r">Halaman</th><th class="r">Ukuran</th></tr></thead>
-    <tbody>
-      <tr><td>Pemberitahuan penyidikan dari Polisi Militer</td><td class="r">2–5</td><td class="r">±1 MB</td></tr>
-      <tr><td>BAP / ringkasan berkas</td><td class="r">50–100</td><td class="r">±10–20 MB</td></tr>
-      <tr><td>Pendapat hukum kepada Papera &amp; Skeppera</td><td class="r">10–15</td><td class="r">±3 MB</td></tr>
-      <tr><td>Surat dakwaan</td><td class="r">10–20</td><td class="r">±3 MB</td></tr>
-      <tr><td>Laporan perkembangan sidang (±7 sidang)</td><td class="r">15–25</td><td class="r">±4 MB</td></tr>
-      <tr><td>Surat tuntutan</td><td class="r">15–30</td><td class="r">±5 MB</td></tr>
-      <tr><td>Salinan putusan</td><td class="r">40–80</td><td class="r">±12 MB</td></tr>
-      <tr><td>Laporan pelaksanaan putusan</td><td class="r">2–5</td><td class="r">±1 MB</td></tr>
-      <tr><td>Foto barang bukti (bila ada, ±10 foto)</td><td class="r">—</td><td class="r">±30 MB</td></tr>
-      <tr class="total"><td>Total per perkara</td><td class="r">±150–280</td><td class="r">±40–80 MB</td></tr>
-    </tbody>
-  </table>
+<h2><span class="no">6</span>Spesifikasi server</h2>
+<table>
+  <thead><tr><th>Server</th><th class="c">Jumlah</th><th class="r">Minimum<br/>(core / RAM)</th><th class="r">Rekomendasi<br/>(core / RAM)</th><th>Disk</th><th>Fungsi</th></tr></thead>
+  <tbody>
+    <tr><td><b>Aplikasi</b></td><td class="c">2</td><td class="r">16 core / 32 GB<br/><span class="muted">per server</span></td><td class="r">32 core / 64 GB<br/><span class="muted">per server</span></td><td>500 GB SSD</td><td>Command Center &amp; Workspace; dua server agar tetap jalan bila satu bermasalah</td></tr>
+    <tr><td><b>Database (MySQL)</b></td><td class="c">2</td><td class="r">12 core / 64 GB<br/><span class="muted">per server</span></td><td class="r">24 core / 128 GB<br/><span class="muted">per server</span></td><td>1 TB NVMe SSD (min.)<br/>2 TB (rek.), RAID 10</td><td>Data perkara, pengguna, log audit; server kedua sebagai replika</td></tr>
+    <tr><td><b>Storage</b></td><td class="c">1</td><td class="r">8 core / 32 GB</td><td class="r">16 core / 64 GB</td><td><b>16 TB</b> dokumen<br/><b>32 TB</b> backup</td><td>Berkas perkara (PDF, foto, video) dan backup</td></tr>
+    <tr class="total"><td>Total</td><td class="c">5</td><td class="r">64 core / 224 GB</td><td class="r">128 core / 448 GB</td><td>±3–5 TB SSD + 48 TB</td><td></td></tr>
+  </tbody>
+</table>
+<div class="note"><b>Minimum</b> cukup untuk ±400 pengguna. <b>Rekomendasi</b> memberi ruang bila Kejari ikut memakai (hingga ±1.500 pengguna). Backup 32 TB = 2× kapasitas dokumen: backup harian ditambah salinan di lokasi lain. Server dapat berupa mesin virtual di infrastruktur Kejaksaan.</div>
 
-  <h3>4.3 Perkara koneksitas — berkas lengkap (contoh korupsi)</h3>
-  <table>
-    <thead><tr><th>Dokumen</th><th class="r">Halaman</th><th class="r">Ukuran</th></tr></thead>
-    <tbody>
-      <tr><td>Surat perintah penyidikan &amp; administrasi</td><td class="r">5–20</td><td class="r">±3 MB</td></tr>
-      <tr><td>BAP tersangka (militer &amp; sipil) dan saksi</td><td class="r">300–1.000</td><td class="r">±60–200 MB</td></tr>
-      <tr><td>Berkas perkara lengkap (kontrak, kuitansi, rekening)</td><td class="r">500–2.000</td><td class="r">±100–400 MB</td></tr>
-      <tr><td>Laporan audit kerugian negara (BPK/BPKP/Itjen)</td><td class="r">50–200</td><td class="r">±10–40 MB</td></tr>
-      <tr><td>Berita acara penelitian bersama</td><td class="r">5–15</td><td class="r">±2 MB</td></tr>
-      <tr><td>Surat dakwaan</td><td class="r">30–80</td><td class="r">±10 MB</td></tr>
-      <tr><td>Berita acara sidang (±12 sidang)</td><td class="r">100–200</td><td class="r">±30 MB</td></tr>
-      <tr><td>Tuntutan, pledoi, replik/duplik</td><td class="r">100–300</td><td class="r">±40 MB</td></tr>
-      <tr><td>Salinan putusan (termasuk banding/kasasi)</td><td class="r">200–600</td><td class="r">±80 MB</td></tr>
-      <tr><td>Berita acara eksekusi &amp; pemulihan aset</td><td class="r">20–50</td><td class="r">±8 MB</td></tr>
-      <tr><td>Foto barang bukti / aset sitaan (30–80 foto)</td><td class="r">—</td><td class="r">±150 MB</td></tr>
-      <tr class="total"><td>Total per perkara (tanpa video)</td><td class="r">±1.300–4.400</td><td class="r">±0,5–1 GB</td></tr>
-      <tr><td>Tambahan bila ada rekaman video</td><td class="r">—</td><td class="r">+1–2 GB</td></tr>
-    </tbody>
-  </table>
-</section>
+<h2><span class="no">7</span>Perlu dikonfirmasi ke Kejaksaan</h2>
+<ul>
+  <li>Contoh berkas asli (jumlah halaman BAP, dakwaan, putusan) untuk mengoreksi simulasi di atas.</li>
+  <li>Jumlah riil perkara per tahun, terutama perkara koneksitas.</li>
+  <li><b>Foto dan video barang bukti</b>: wajib atau tidak, dan untuk perkara apa saja. Ini keputusan yang paling menentukan kebutuhan storage.</li>
+  <li>Kecepatan internet tiap Kejati dan lokasi penempatan server.</li>
+</ul>
 
-<!-- ===================== 5 ===================== -->
-<section>
-  <h2><span class="no">5</span>Kebutuhan penyimpanan (storage)</h2>
-  <h3>5.1 Tiga skenario</h3>
-  <table>
-    <thead><tr><th>Skenario</th><th>Aturan unggah</th><th class="r">Oditurat / perkara</th><th class="r">Koneksitas / perkara</th><th class="r">Per tahun</th><th class="r">5 tahun</th></tr></thead>
-    <tbody>
-      <tr><td><b>A. Hemat</b></td><td>Hanya dokumen kunci (dakwaan, tuntutan, putusan, berita acara), hitam-putih, tanpa foto &amp; video</td><td class="r">±25 MB</td><td class="r">±300 MB</td><td class="r">±0,3 TB</td><td class="r">±1,5 TB</td></tr>
-      <tr class="hl"><td><b>B. Wajar</b> (rekomendasi)</td><td>Dokumen lengkap + foto barang bukti, scan standar, tanpa video</td><td class="r">±70 MB</td><td class="r">±0,8 GB</td><td class="r">±0,7 TB</td><td class="r">±3,5 TB</td></tr>
-      <tr><td><b>C. Penuh</b></td><td>Semua dokumen, scan berwarna, termasuk video</td><td class="r">±150 MB</td><td class="r">±3 GB</td><td class="r">±2,2 TB</td><td class="r">±11 TB</td></tr>
-    </tbody>
-  </table>
-
-  <h3>5.2 Tambahan di luar dokumen utama</h3>
-  <table>
-    <thead><tr><th>Komponen</th><th class="r">Besaran</th><th>Keterangan</th></tr></thead>
-    <tbody>
-      <tr><td>Versi revisi dokumen</td><td class="r">+10–20%</td><td>Dakwaan atau berkas yang diperbarui</td></tr>
-      <tr><td>Pratinjau &amp; teks OCR untuk pencarian</td><td class="r">+5–10%</td><td></td></tr>
-      <tr><td>Migrasi perkara lama (mis. 3 tahun terakhir, ±15.000 perkara)</td><td class="r">±1–3 TB</td><td>Sekali di awal (skenario B)</td></tr>
-      <tr><td>Data perkara di database</td><td class="r">±0,25 GB/tahun</td><td>Sangat kecil dibanding dokumen</td></tr>
-      <tr><td>Log audit &amp; riwayat perubahan</td><td class="r">±5–10 GB/tahun</td><td>Disimpan permanen</td></tr>
-    </tbody>
-  </table>
-
-  <h3>5.3 Rekomendasi kapasitas</h3>
-  <table>
-    <thead><tr><th>Kebutuhan</th><th class="r">Skenario A</th><th class="r">Skenario B (rekomendasi)</th><th class="r">Skenario C</th></tr></thead>
-    <tbody>
-      <tr><td>Database (NVMe SSD)</td><td class="r">500 GB</td><td class="r">500 GB</td><td class="r">500 GB</td></tr>
-      <tr><td>Storage dokumen utama (usable)</td><td class="r">±4 TB</td><td class="r"><b>±8–10 TB</b></td><td class="r">±25–30 TB</td></tr>
-      <tr><td>Backup (termasuk di lokasi lain)</td><td class="r">±10 TB</td><td class="r"><b>±20–25 TB</b></td><td class="r">±60–80 TB</td></tr>
-    </tbody>
-  </table>
-  <p class="muted">Kapasitas skenario B = dokumen 5 tahun (±3,5 TB) + revisi &amp; OCR (±0,9 TB) + migrasi data lama (±1–3 TB) + cadangan pertumbuhan ±30%.</p>
-
-  <h3>5.4 Strategi agar hemat</h3>
-  <ul>
-    <li><b>Penyimpanan berjenjang:</b> dokumen perkara yang sudah eksekusi lebih dari 2 tahun dipindah ke storage arsip (HDD kapasitas besar) yang lebih murah.</li>
-    <li><b>Kompresi otomatis saat unggah:</b> ukuran scan turun 40–70% tanpa mengurangi keterbacaan.</li>
-    <li><b>Satu file disimpan sekali:</b> dokumen identik yang diunggah ulang tidak disimpan ganda.</li>
-    <li><b>Watermark dibuat saat dokumen dibuka:</b> tidak menambah file baru.</li>
-    <li><b>Batas ukuran unggah:</b> misalnya maksimal 100 MB per PDF; video melalui jalur unggah khusus.</li>
-    <li><b>Standar scan baku:</b> hitam-putih / abu-abu 200–300 dpi untuk berkas teks; warna hanya untuk foto.</li>
-  </ul>
-</section>
-
-<!-- ===================== 6 ===================== -->
-<section>
-  <h2><span class="no">6</span>Spesifikasi server produksi</h2>
-  <p>Spesifikasi untuk skenario B, dirancang untuk ±200 pengguna bersamaan dan masa pakai 5 tahun. Seluruh server dapat berupa <b>mesin virtual (VM)</b> di infrastruktur yang sudah dimiliki Kejaksaan.</p>
-  <table>
-    <thead><tr><th>Server</th><th class="r">Jumlah</th><th class="r">vCPU</th><th class="r">RAM</th><th>Disk</th><th>Fungsi</th></tr></thead>
-    <tbody>
-      <tr><td>Aplikasi / web</td><td class="r">2</td><td class="r">8</td><td class="r">32 GB</td><td>100 GB SSD</td><td>Command Center &amp; Workspace, pembagian beban</td></tr>
-      <tr><td>Database (PostgreSQL)</td><td class="r">2</td><td class="r">8</td><td class="r">32 GB</td><td>500 GB NVMe SSD, RAID 10</td><td>Utama + replika</td></tr>
-      <tr><td>Pengolah dokumen</td><td class="r">1</td><td class="r">8</td><td class="r">32 GB</td><td>200 GB SSD</td><td>Kompresi, OCR, antivirus, pratinjau</td></tr>
-      <tr><td>Storage dokumen (NAS / object storage)</td><td class="r">1 cluster</td><td class="r">4</td><td class="r">16 GB</td><td>8–10 TB usable, RAID 6</td><td>File scan, foto, video</td></tr>
-      <tr><td>Login terpusat (SSO + 2FA)</td><td class="r">1</td><td class="r">4</td><td class="r">8 GB</td><td>100 GB SSD</td><td>Akun, peran, wilayah</td></tr>
-      <tr><td>Monitoring &amp; log</td><td class="r">1</td><td class="r">4</td><td class="r">16 GB</td><td>500 GB</td><td>Kinerja &amp; log keamanan</td></tr>
-      <tr><td>Backup</td><td class="r">1</td><td class="r">4</td><td class="r">16 GB</td><td>20–25 TB</td><td>Backup harian + salinan ke lokasi lain</td></tr>
-      <tr><td>Reverse proxy / WAF</td><td class="r">2</td><td class="r">4</td><td class="r">8 GB</td><td>50 GB</td><td>HTTPS, penyaring serangan</td></tr>
-      <tr class="total"><td>Total</td><td class="r">±11 VM</td><td class="r">±64</td><td class="r">±232 GB</td><td>±1,5 TB SSD + ±10 TB dokumen + ±25 TB backup</td><td></td></tr>
-    </tbody>
-  </table>
-  <div class="note">Jika Kejaksaan sudah memiliki perangkat firewall/WAF, SSO, atau sistem backup terpusat, komponen tersebut dapat memakai yang sudah ada sehingga kebutuhan VM berkurang.</div>
-
-  <h3>Mengapa spesifikasi ini cukup</h3>
-  <ul>
-    <li>Satu server aplikasi 8 vCPU sanggup melayani ratusan pengguna bersamaan untuk aplikasi kerja seperti MCS; dua server memberikan cadangan sekaligus kapasitas dua kali lipat.</li>
-    <li>Database 32 GB RAM mampu menampung seluruh data aktif perkara di memori sehingga pencarian &amp; dashboard tetap cepat.</li>
-    <li>Pengolah dokumen dipisah agar proses OCR/kompresi berkas besar tidak memperlambat layar pengguna.</li>
-  </ul>
-</section>
-
-<!-- ===================== 7 & 8 ===================== -->
-<section>
-  <h2><span class="no">7</span>Opsi tahap pilot</h2>
-  <p>Untuk uji coba pada 3–5 Kejati percontohan (±50 pengguna), seluruh komponen dapat dijalankan dalam satu server.</p>
-  <table>
-    <thead><tr><th>Komponen</th><th>Spesifikasi</th></tr></thead>
-    <tbody>
-      <tr><td>1 VM gabungan (aplikasi, database, dokumen, SSO)</td><td>8 vCPU, 32 GB RAM, 1 TB SSD</td></tr>
-      <tr><td>Backup</td><td>2 TB di lokasi terpisah</td></tr>
-      <tr><td>Durasi</td><td>±3 bulan, kemudian dipecah ke susunan produksi</td></tr>
-    </tbody>
-  </table>
-
-  <h2 style="margin-top:9mm"><span class="no">8</span>Jaringan &amp; bandwidth</h2>
-  <table>
-    <thead><tr><th>Titik</th><th>Kebutuhan</th><th>Keterangan</th></tr></thead>
-    <tbody>
-      <tr><td>Setiap Kejati ke pusat</td><td>10–20 Mbps stabil</td><td>Melalui jaringan internal/VPN Kejaksaan; beban terbesar adalah unggah scan</td></tr>
-      <tr><td>Server pusat</td><td>Uplink dedicated 100 Mbps – 1 Gbps</td><td>Antar server di pusat data: 1–10 Gbps</td></tr>
-      <tr><td>Total unggahan nasional</td><td>±3 GB per hari kerja</td><td>Skenario B (±0,7 TB/tahun ÷ ±250 hari kerja)</td></tr>
-      <tr><td>Unggah 1 berkas koneksitas besar</td><td>±12 menit</td><td>±800 MB pada koneksi 10 Mbps; perlu fitur unggah yang bisa dilanjutkan bila koneksi putus</td></tr>
-      <tr><td>Memuat tampilan aplikasi</td><td>±2,5 MB sekali muat</td><td>Peta &amp; animasi; selanjutnya tersimpan di cache browser</td></tr>
-    </tbody>
-  </table>
-</section>
-
-<!-- ===================== 9 & 10 ===================== -->
-<section>
-  <h2><span class="no">9</span>Keamanan</h2>
-  <table>
-    <thead><tr><th>Aspek</th><th>Penerapan yang diusulkan</th></tr></thead>
-    <tbody>
-      <tr><td>Akses jaringan</td><td>Hanya dari jaringan internal/VPN Kejaksaan; tidak dibuka ke internet publik</td></tr>
-      <tr><td>Autentikasi</td><td>Akun per orang, autentikasi dua faktor, sesi otomatis berakhir</td></tr>
-      <tr><td>Otorisasi</td><td>Berbasis peran dan wilayah Kejati</td></tr>
-      <tr><td>Enkripsi</td><td>TLS untuk seluruh koneksi; enkripsi database &amp; storage dokumen</td></tr>
-      <tr><td>Dokumen</td><td>Pindai antivirus saat unggah; watermark nama pengguna saat dibuka/diunduh; NRP &amp; NIK disamarkan</td></tr>
-      <tr><td>Integritas</td><td>Verifikasi Aspidmil (maker–checker); log audit tidak dapat diubah</td></tr>
-      <tr><td>Pemantauan</td><td>Log keamanan terpusat, peringatan login mencurigakan</td></tr>
-      <tr><td>Kepatuhan</td><td>Mengikuti kebijakan keamanan informasi Kejaksaan serta ketentuan BSSN dan SPBE yang berlaku; uji penetrasi sebelum operasional</td></tr>
-    </tbody>
-  </table>
-
-  <h2 style="margin-top:9mm"><span class="no">10</span>Backup &amp; pemulihan bencana</h2>
-  <table>
-    <thead><tr><th>Komponen</th><th>Usulan</th></tr></thead>
-    <tbody>
-      <tr><td>Prinsip</td><td>3 salinan data, 2 jenis media, 1 salinan di lokasi lain</td></tr>
-      <tr><td>Database</td><td>Replikasi langsung ke server cadangan + backup penuh harian + log transaksi tiap 15 menit</td></tr>
-      <tr><td>Dokumen</td><td>Backup harian bertahap (hanya file baru/berubah), salinan mingguan ke lokasi lain</td></tr>
-      <tr><td>Masa simpan backup</td><td>Harian 30 hari, bulanan 12 bulan, tahunan sesuai retensi</td></tr>
-      <tr><td>Target data maksimal hilang (RPO)</td><td>≤ 15 menit (database), ≤ 24 jam (dokumen)</td></tr>
-      <tr><td>Target waktu pulih (RTO)</td><td>≤ 4 jam untuk layanan utama</td></tr>
-      <tr><td>Uji pemulihan</td><td>Minimal 2 kali setahun</td></tr>
-    </tbody>
-  </table>
-  <p class="muted">Target RPO/RTO adalah usulan awal dan dapat disesuaikan dengan kebijakan Kejaksaan.</p>
-</section>
-
-<!-- ===================== 11–13 ===================== -->
-<section>
-  <h2><span class="no">11</span>Komponen opsional</h2>
-  <table>
-    <thead><tr><th>Fitur</th><th>Tambahan kebutuhan</th><th>Catatan</th></tr></thead>
-    <tbody>
-      <tr><td>Asisten AI on-premise (tanpa mengirim data ke luar)</td><td>1 server GPU (mis. 1–2× NVIDIA L40S / A100), 64–128 GB RAM, 1 TB SSD</td><td>Komponen paling mahal; dapat ditunda ke fase lanjutan</td></tr>
-      <tr><td>Pencarian teks penuh di isi dokumen</td><td>+8 vCPU, 32 GB RAM, +500 GB SSD</td><td>Mencari kata di dalam BAP, putusan, dll.</td></tr>
-      <tr><td>Pusat data cadangan aktif (DR site)</td><td>Duplikat susunan produksi dengan spesifikasi lebih kecil</td><td>Untuk ketersediaan sangat tinggi</td></tr>
-      <tr><td>Integrasi dengan sistem pengadilan, TNI, dan aplikasi internal Kejaksaan</td><td>+1 server integrasi 4 vCPU, 8 GB RAM</td><td>Bergantung pada sistem mitra</td></tr>
-    </tbody>
-  </table>
-
-  <h2 style="margin-top:9mm"><span class="no">12</span>Skalabilitas &amp; pertumbuhan</h2>
-  <table>
-    <thead><tr><th>Kondisi</th><th>Dampak</th><th>Penanganan</th></tr></thead>
-    <tbody>
-      <tr><td>Tingkat Kejari ikut menggunakan (+±1.000 pengguna)</td><td>Pengguna bersamaan naik ke ±200–300</td><td>Tambah 1–2 server aplikasi; database cukup</td></tr>
-      <tr><td>Jumlah perkara 2× lipat</td><td>Storage dokumen 2×</td><td>Tambah kapasitas storage bertahap</td></tr>
-      <tr><td>Video diwajibkan</td><td>Storage naik ±3×</td><td>Storage video terpisah berbasis HDD</td></tr>
-      <tr><td>Masa simpan &gt; 5 tahun</td><td>Storage terus bertambah</td><td>Penyimpanan berjenjang (arsip)</td></tr>
-    </tbody>
-  </table>
-
-  <h2 style="margin-top:9mm"><span class="no">13</span>Usulan perangkat lunak</h2>
-  <p>Diusulkan menggunakan perangkat lunak <b>sumber terbuka</b> yang matang dan banyak dipakai instansi pemerintah, sehingga tidak ada biaya lisensi tahunan. Pilihan akhir menyesuaikan standar TI Kejaksaan.</p>
-  <table>
-    <thead><tr><th>Lapisan</th><th>Usulan</th></tr></thead>
-    <tbody>
-      <tr><td>Sistem operasi</td><td>Linux server (mis. Ubuntu LTS / Rocky Linux)</td></tr>
-      <tr><td>Reverse proxy</td><td>Nginx</td></tr>
-      <tr><td>Database</td><td>PostgreSQL (dengan ekstensi spasial PostGIS untuk peta)</td></tr>
-      <tr><td>Storage dokumen</td><td>MinIO (object storage) atau NAS yang sudah ada</td></tr>
-      <tr><td>Login terpusat</td><td>Keycloak (SSO + autentikasi dua faktor)</td></tr>
-      <tr><td>Pengolah dokumen</td><td>Ghostscript/OCRmyPDF (kompresi &amp; OCR), ClamAV (antivirus)</td></tr>
-      <tr><td>Monitoring &amp; log</td><td>Prometheus + Grafana, Loki/OpenSearch</td></tr>
-      <tr><td>Backup</td><td>pgBackRest (database), restic/Borg (dokumen)</td></tr>
-    </tbody>
-  </table>
-</section>
-
-<!-- ===================== 14 + Lampiran ===================== -->
-<section>
-  <h2><span class="no">14</span>Hal yang perlu dikonfirmasi</h2>
-  <table>
-    <thead><tr><th style="width:8mm">#</th><th>Pertanyaan</th><th>Pengaruh terhadap spesifikasi</th></tr></thead>
-    <tbody>
-      <tr><td>1</td><td>Berapa jumlah riil perkara per tahun (koneksitas dan perkara Oditurat)?</td><td>Storage dokumen &amp; backup</td></tr>
-      <tr><td>2</td><td>Dokumen apa yang wajib diunggah — semua atau dokumen kunci saja?</td><td>Pilihan skenario A / B / C</td></tr>
-      <tr><td>3</td><td>Apakah rekaman video perlu disimpan di sistem?</td><td>Storage naik hingga ±3×</td></tr>
-      <tr><td>4</td><td>Standar scan dokumen (hitam-putih/berwarna, resolusi)?</td><td>Ukuran per halaman</td></tr>
-      <tr><td>5</td><td>Berapa lama data &amp; dokumen harus disimpan (retensi)?</td><td>Kapasitas jangka panjang &amp; arsip</td></tr>
-      <tr><td>6</td><td>Berapa jumlah pengguna per Kejati dan di pusat? Apakah Kejari ikut dalam waktu dekat?</td><td>Jumlah server aplikasi</td></tr>
-      <tr><td>7</td><td>Di mana sistem akan ditempatkan, dan standar keamanan apa yang diwajibkan?</td><td>Desain jaringan &amp; keamanan</td></tr>
-      <tr><td>8</td><td>Infrastruktur apa yang sudah tersedia (VM, firewall, SSO, backup terpusat)?</td><td>Pengurangan kebutuhan baru</td></tr>
-      <tr><td>9</td><td>Berapa toleransi gangguan layanan dan kehilangan data (RPO/RTO)?</td><td>Backup &amp; pusat data cadangan</td></tr>
-    </tbody>
-  </table>
-
-  <h2 style="margin-top:9mm"><span class="no">L</span>Lampiran: rumus perhitungan</h2>
-  <div class="formula">Storage dokumen per tahun
-  = (jumlah perkara Oditurat × ukuran per perkara Oditurat)
-  + (jumlah perkara koneksitas × ukuran per perkara koneksitas)
-
-Skenario B = (4.500 × 70 MB) + (500 × 800 MB)
-           = 315 GB + 400 GB ≈ 0,7 TB / tahun
-
-Kapasitas 5 tahun (skenario B)
-  = 0,7 TB × 5            ≈ 3,5 TB   (dokumen baru)
-  + 25%                   ≈ 0,9 TB   (revisi + pratinjau/OCR)
-  + migrasi data lama     ≈ 1–3 TB
-  + cadangan pertumbuhan  ≈ 30%
-  ≈ 8–10 TB usable
-
-Backup ≈ 2,5 × storage utama ≈ 20–25 TB</div>
-  <div class="foot">Dokumen ini adalah estimasi awal untuk keperluan perencanaan dan diskusi. Angka final ditetapkan setelah validasi kebutuhan bersama Bidang Pidana Militer dan unit TI Kejaksaan RI.</div>
-</section>
+<div class="foot">Estimasi awal berbentuk simulasi untuk perencanaan dan diskusi. Angka final ditetapkan setelah validasi bersama Bidang Pidana Militer dan unit TI Kejaksaan RI.</div>
 
 </body>
 </html>
