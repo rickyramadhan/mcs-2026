@@ -171,10 +171,7 @@
   @keyframes swap { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
   .fmedia { position: relative; aspect-ratio: 16/9; width: min(100%, calc(((100vh - 92px) * .94 / var(--z, 1) - 150px) * 1.7778)); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.13); box-shadow: 0 40px 90px rgba(0,0,0,.6), 0 0 60px rgba(61,123,255,.12); background: #05070c; }
   .fmedia img, .fmedia video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top left; opacity: 0; transition: opacity .7s var(--ease); background: #05070c; }
-  .fmedia img { transform-origin: var(--fx, 50%) var(--fy, 50%); }
   .fmedia img.on, .fmedia video.on { opacity: 1; }
-  .fmedia img.on { animation: kb 7s ease-in-out forwards; }
-  @keyframes kb { from { transform: scale(1); } to { transform: scale(1.16); } }
   .fmedia .grp { position: absolute; right: 14px; bottom: 14px; z-index: 2; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #fff; background: rgba(10,10,10,.7); border: 1px solid var(--stroke); backdrop-filter: blur(6px); border-radius: 99px; padding: 6px 12px; }
 
   /* scope of work */
