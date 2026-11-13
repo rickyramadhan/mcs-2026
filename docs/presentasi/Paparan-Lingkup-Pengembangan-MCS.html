@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Paparan Pengembangan MCS — GoVirtual</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  :root {
+    --navy: #0b1f3a; --navy2: #13305a; --teal: #127e9b; --teal-l: #e3f3f7; --sky: #6cc7de;
+    --amber: #b97700; --amber-l: #fdf3dc; --green: #14865e; --green-l: #e3f4ec;
+    --ink: #1e293b; --muted: #5b6778; --line: #d9dfe7; --soft: #f3f6fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .slide { width: 1280px; height: 720px; position: relative; overflow: hidden; page-break-after: always; break-after: page; background: #fff; padding: 56px 72px 64px; }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+  .slide::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 100%; background: linear-gradient(var(--teal), var(--navy)); }
+  .kick { font-size: 13px; font-weight: 700; letter-spacing: .14em; color: var(--teal); text-transform: uppercase; margin-bottom: 10px; }
+  h1 { font-size: 36px; line-height: 1.2; color: var(--navy); font-weight: 700; margin-bottom: 10px; }
+  .lead { font-size: 18px; color: var(--muted); line-height: 1.55; max-width: 1040px; }
+  .foot { position: absolute; left: 72px; right: 72px; bottom: 24px; display: flex; justify-content: space-between; font-size: 11.5px; color: #8a96a8; border-top: 1px solid var(--line); padding-top: 9px; }
+  .foot b { color: var(--navy); font-weight: 600; }
+  .shot { border-radius: 10px; overflow: hidden; box-shadow: 0 12px 32px rgba(11,31,58,.20), 0 0 0 1px rgba(11,31,58,.08); background: #0b1220; }
+  .shot img { display: block; width: 100%; }
+  .cap { font-size: 14px; color: var(--muted); margin-top: 12px; line-height: 1.45; }
+  .cap b { color: var(--navy); }
+
+  /* Cover & end */
+  .dark { background: radial-gradient(circle at 78% 30%, #1d4a7a 0%, var(--navy) 55%); color: #fff; padding: 0; }
+  .dark::before { display: none; }
+  .cover .l { position: absolute; left: 80px; top: 0; bottom: 0; width: 540px; display: flex; flex-direction: column; justify-content: center; }
+  .cover .kick { color: var(--sky); }
+  .cover h1 { color: #fff; font-size: 58px; line-height: 1.06; margin: 8px 0 30px; }
+  .cover h1 span { color: var(--sky); }
+  .cover .meta { font-size: 16px; color: #b8c6d8; line-height: 1.75; border-left: 3px solid var(--teal); padding-left: 16px; }
+  .cover .meta b { color: #fff; font-size: 18px; }
+  .cover .r { position: absolute; right: -130px; top: 105px; width: 720px; transform: perspective(1400px) rotateY(-14deg) rotateX(4deg); }
+  .cover .r .shot { box-shadow: 0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08); }
+  .cover .r2 { position: absolute; right: 250px; top: 400px; width: 340px; transform: perspective(1400px) rotateY(-14deg) rotateX(4deg); }
+  .cover .r2 .shot { box-shadow: 0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.12); }
+
+  /* Flow */
+  .flow { display: flex; align-items: stretch; gap: 14px; margin: 30px 0 22px; }
+  .flow .st { flex: 1; background: var(--soft); border-radius: 12px; padding: 24px; border-top: 4px solid var(--teal); }
+  .flow .st .n { font-size: 13px; font-weight: 700; color: var(--teal); letter-spacing: .06em; }
+  .flow .st h3 { font-size: 23px; color: var(--navy); margin: 4px 0 6px; }
+  .flow .st p { font-size: 16px; color: var(--muted); line-height: 1.45; }
+  .flow .ar { display: flex; align-items: center; color: #9aa6b6; font-size: 26px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .box { border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; }
+  .box h4 { font-size: 18px; color: var(--navy); margin-bottom: 6px; }
+  .box p { font-size: 15.5px; line-height: 1.5; }
+
+  /* SOW cards */
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 26px; }
+  .card { background: var(--soft); border-radius: 14px; padding: 22px 20px 18px; border-top: 4px solid var(--teal); }
+  .card .ic { width: 42px; height: 42px; border-radius: 10px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin-bottom: 14px; }
+  .card h3 { font-size: 20px; color: var(--navy); margin-bottom: 3px; }
+  .card .what { font-size: 13.5px; color: var(--teal); font-weight: 600; margin-bottom: 12px; }
+  .card li { font-size: 14.5px; line-height: 1.45; margin: 0 0 7px 16px; }
+  .also { margin-top: 18px; border: 1px dashed #9fb0c4; border-radius: 12px; padding: 14px 20px; font-size: 15px; display: flex; gap: 14px; align-items: center; }
+  .also b { color: var(--navy); white-space: nowrap; }
+
+  .screens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 16px; }
+
+  /* Tech */
+  .arch { display: flex; align-items: center; gap: 12px; margin: 26px 0 22px; }
+  .arch .n { flex: 1; border-radius: 12px; padding: 16px 14px; text-align: center; color: #fff; font-size: 13.5px; line-height: 1.4; }
+  .arch .n b { display: block; font-size: 17px; margin-bottom: 3px; }
+  .arch .a { color: #9aa6b6; font-size: 24px; }
+  .n.u { background: #e8eef7; color: var(--navy) !important; }
+  .n.fe { background: var(--teal); }
+  .n.be { background: var(--navy2); }
+  .stack { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .n.db { background: var(--green); }
+  .n.st { background: #6b4fa3; }
+  table.t { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  table.t th { text-align: left; background: var(--navy); color: #fff; font-weight: 600; padding: 9px 14px; font-size: 13.5px; }
+  table.t td { padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.4; }
+  table.t tr:nth-child(even) td { background: var(--soft); }
+  table.t td:first-child { font-weight: 600; color: var(--navy); white-space: nowrap; }
+  table.t td.why { color: var(--muted); }
+  .note { margin-top: 14px; font-size: 14px; background: var(--teal-l); border-left: 4px solid var(--teal); padding: 10px 16px; border-radius: 0 8px 8px 0; }
+
+  /* Responsibility */
+  .resp { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 24px; }
+  .resp .col { border-radius: 14px; padding: 32px 34px 18px; }
+  .resp .gv { background: var(--teal-l); border: 1px solid #b6dde8; }
+  .resp .kj { background: var(--soft); border: 1px solid var(--line); }
+  .resp h3 { font-size: 22px; color: var(--navy); margin-bottom: 2px; }
+  .resp .who { font-size: 13.5px; color: var(--muted); margin-bottom: 12px; }
+  .resp { grid-template-columns: 1fr 1fr 1fr !important; gap: 18px !important; }
+  .resp .col { padding: 26px 26px 14px !important; }
+  .resp .pl { background: var(--amber-l); border: 1px solid #ecd59a; }
+  .resp li { font-size: 15.5px; line-height: 1.42; margin: 0 0 12px 18px; }
+  .resp h3 { font-size: 23px !important; } .resp .who { font-size: 14px !important; margin-bottom: 18px !important; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+  .kpi { background: #fff; border-radius: 10px; padding: 14px 18px; border: 1px solid var(--line); border-top: 3px solid var(--navy); }
+  .kpi b { display: block; font-size: 26px; color: var(--navy); line-height: 1.2; }
+  .kpi span { font-size: 13px; color: var(--muted); }
+
+  /* Gantt */
+  .gantt { margin-top: 26px; display: grid; grid-template-columns: 290px repeat(8, 1fr); row-gap: 8px; }
+  .gantt .h { font-size: 14px; font-weight: 700; color: var(--navy); text-align: center; padding: 8px 0; background: var(--soft); border-radius: 6px; margin: 0 2px; }
+  .gantt .h.first { text-align: left; background: none; color: var(--muted); padding-left: 0; }
+  .gantt .h.m { grid-column: span 2; }
+  .gantt .lbl { grid-column: 1; padding: 6px 12px 6px 0; color: var(--navy); font-weight: 600; font-size: 15px; line-height: 1.25; }
+  .gantt .lbl small { display: block; font-weight: 400; color: var(--muted); font-size: 12.5px; }
+  .gantt .bar { margin: 5px 3px; border-radius: 8px; background: var(--teal); color: #fff; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; padding: 0 12px; }
+  .gantt .bar.dark { background: var(--navy2); }
+  .gantt .bar.green { background: var(--green); }
+  .gantt .bar.amber { background: var(--amber); }
+  .miles { display: flex; gap: 16px; margin-top: 22px; }
+  .mile { flex: 1; border-radius: 10px; padding: 12px 16px; font-size: 14px; line-height: 1.4; background: var(--green-l); border-left: 4px solid var(--green); }
+  .mile b { color: var(--navy); display: block; font-size: 15px; }
+  .mile.warn { background: var(--amber-l); border-left-color: var(--amber); }
+
+  /* Next */
+  .asks { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
+  .ask { display: flex; gap: 16px; background: var(--soft); border-radius: 12px; padding: 24px; }
+  .ask .no { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--navy); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .ask h4 { font-size: 19px; color: var(--navy); margin-bottom: 4px; }
+  .ask p { font-size: 15.5px; color: var(--muted); line-height: 1.45; }
+  .banner { margin-top: 22px; background: var(--navy); color: #fff; border-radius: 12px; padding: 16px 24px; font-size: 18px; }
+  .banner b { color: var(--sky); }
+
+  .end { display: flex; flex-direction: column; justify-content: center; padding-left: 96px; }
+  .end .kick { color: var(--sky); }
+  .end h1 { color: #fff; font-size: 64px; margin-bottom: 30px; }
+  .end .meta { font-size: 17px; color: #b8c6d8; border-left: 3px solid var(--teal); padding-left: 16px; line-height: 1.75; }
+  .end .meta b { color: #fff; font-size: 19px; }
+</style>
+</head>
+<body>
+
+<!-- 1. Sampul -->
+<section class="slide dark cover">
+  <div class="l">
+    <div class="kick">Paparan Pengembangan Aplikasi</div>
+    <h1>MCS<br/><span>Military Crime Superapps</span></h1>
+    <div class="meta"><b>GoVirtual</b><br/>Bidang Pidana Militer Kejaksaan RI<br/>November 2026</div>
+  </div>
+  <div class="r"><div class="shot"><img src="../tangkapan-layar/01-command-center-nasional.png" alt="" /></div></div>
+  <div class="r2"><div class="shot"><img src="../tangkapan-layar/05-berkas-perkara-koneksitas.png" alt="" /></div></div>
+</section>
+
+<!-- 2. Tentang MCS -->
+<section class="slide">
+  <div class="kick">Tentang MCS</div>
+  <h1>Satu sistem untuk perkara pidana militer</h1>
+  <p class="lead">MCS mencatat dan memantau seluruh perkara pidana militer secara nasional. Setiap Kejaksaan Tinggi mengisi langsung, sehingga Jampidmil dapat melihat kondisi perkara kapan saja tanpa menunggu rekap manual.</p>
+  <div class="flow">
+    <div class="st"><div class="n">1 · MENGISI</div><h3>Kejaksaan Tinggi</h3><p>Operator di 33 Kejati menginput perkara dan memperbarui perkembangannya.</p></div>
+    <div class="ar">→</div>
+    <div class="st"><div class="n">2 · MEMERIKSA</div><h3>Aspidmil</h3><p>Setiap perubahan diverifikasi sebelum tampil secara nasional.</p></div>
+    <div class="ar">→</div>
+    <div class="st"><div class="n">3 · MEMANTAU</div><h3>Jampidmil &amp; pimpinan</h3><p>Peta sebaran, tahapan, jadwal sidang, kerugian negara, dan peringatan dini.</p></div>
+  </div>
+  <div class="two">
+    <div class="box"><h4>Perkara koneksitas</h4><p>Prajurit TNI <b>bersama</b> warga sipil. Ditangani langsung oleh Kejaksaan, dari penyidikan sampai eksekusi.</p></div>
+    <div class="box"><h4>Perkara Oditurat</h4><p>Prajurit TNI, dituntut oleh Oditur. Kejaksaan mengkoordinasikan dan memantau.</p></div>
+  </div>
+  <div class="foot"><span><b>MCS</b> · Military Crime Superapps</span><span>2</span></div>
+</section>
+
+<!-- 3. Dua aplikasi -->
+<section class="slide">
+  <div class="kick">Tentang MCS</div>
+  <h1>Dua aplikasi, satu data</h1>
+  <div class="two" style="gap:28px; margin-top:24px;">
+    <div>
+      <div class="shot"><img src="../tangkapan-layar/01-command-center-nasional.png" alt="" /></div>
+      <div class="cap"><b>Command Center</b> untuk pimpinan dan Jampidmil: peta sebaran 38 provinsi sampai kabupaten, ringkasan, agenda sidang, peringatan dini.</div>
+    </div>
+    <div>
+      <div class="shot"><img src="../tangkapan-layar/14-workspace-input-perkara-koneksitas.png" alt="" /></div>
+      <div class="cap"><b>Workspace Kejaksaan</b> untuk operator Kejati dan Aspidmil: input perkara, pembaruan tahap, verifikasi, laporan.</div>
+    </div>
+  </div>
+  <div class="foot"><span><b>MCS</b> · Military Crime Superapps</span><span>3</span></div>
+</section>
+
+<!-- 4. Lingkup -->
+<section class="slide">
+  <div class="kick">Lingkup pekerjaan</div>
+  <h1>Yang dibangun oleh GoVirtual</h1>
+  <div class="cards">
+    <div class="card">
+      <div class="ic">FE</div><h3>Front-end</h3><div class="what">Tampilan yang dipakai pengguna</div>
+      <ul><li>Command Center (pemantauan nasional)</li><li>Workspace Kejaksaan (input &amp; verifikasi)</li><li>Untuk laptop, tablet, dan ponsel</li></ul>
+    </div>
+    <div class="card">
+      <div class="ic">BE</div><h3>Back-end</h3><div class="what">Mesin di belakang layar</div>
+      <ul><li>Database perkara (MySQL)</li><li>Alur 8 tahap &amp; verifikasi Aspidmil</li><li>Unggah &amp; simpan berkas</li><li>Peringatan otomatis</li></ul>
+    </div>
+    <div class="card">
+      <div class="ic">DB</div><h3>Dashboard &amp; laporan</h3><div class="what">Informasi untuk pimpinan</div>
+      <ul><li>Peta, ringkasan, tahapan, tren</li><li>Agenda sidang &amp; peringatan</li><li>Laporan PDF/Excel dengan watermark</li></ul>
+    </div>
+    <div class="card">
+      <div class="ic">SA</div><h3>Keamanan &amp; akses</h3><div class="what">Data rahasia tetap terjaga</div>
+      <ul><li>Akun per orang + verifikasi dua langkah</li><li>Hak akses per peran &amp; wilayah Kejati</li><li>Log audit yang tidak bisa diubah</li></ul>
+    </div>
+  </div>
+  <div class="also"><b>Juga termasuk</b><span>Pemasangan aplikasi di server MCS · impor data perkara lama · pelatihan &amp; panduan pengguna · pendampingan dan pemeliharaan</span></div>
+  <div class="foot"><span><b>MCS</b> · Military Crime Superapps</span><span>4</span></div>
+</section>
+
+<!-- 5. Fitur utama -->
+<section class="slide">
+  <div class="kick">Lingkup pekerjaan</div>
+  <h1>Fitur utama</h1>
+  <div class="screens">
+    <div><div class="shot"><img src="../tangkapan-layar/05-berkas-perkara-koneksitas.png" alt="" /></div><div class="cap"><b>Berkas perkara</b>: tersangka militer &amp; sipil, pasal, sidang, kerugian, dan dokumen dalam satu layar.</div></div>
+    <div><div class="shot"><img src="../tangkapan-layar/15-workspace-verifikasi-aspidmil.png" alt="" /></div><div class="cap"><b>Verifikasi Aspidmil</b>: membandingkan data lama &amp; baru, lalu menyetujui atau menolak.</div></div>
+    <div><div class="shot"><img src="../tangkapan-layar/17-workspace-laporan-per-kejati.png" alt="" /></div><div class="cap"><b>Laporan per Kejati</b>: rekap perkara, kerugian, penahanan, dan putusan, siap diekspor.</div></div>
+  </div>
+  <div class="screens" style="margin-top:22px">
+    <div><div class="shot"><img src="../tangkapan-layar/03-wilayah-kejati-jawa-timur.png" alt="" /></div><div class="cap"><b>Peta per wilayah</b>: dari nasional sampai kabupaten/kota.</div></div>
+    <div><div class="shot"><img src="../tangkapan-layar/09-agenda-sidang-mingguan.png" alt="" /></div><div class="cap"><b>Agenda sidang</b>: jadwal mingguan seluruh Kejati.</div></div>
+    <div><div class="shot"><img src="../tangkapan-layar/11-workspace-beranda-operator-kejati.png" alt="" /></div><div class="cap"><b>Beranda operator</b>: tugas harian menurut urgensi.</div></div>
+  </div>
+  <div class="foot"><span><b>MCS</b> · Military Crime Superapps</span><span>5</span></div>
+</section>
+
+<!-- 6. Teknologi -->
+<section class="slide">
+  <div class="kick">Teknologi</div>
+  <h1>Teknologi yang kami gunakan</h1>
+  <div class="arch">
+    <div class="n u"><b>Pengguna</b>Kejati &amp; Kejaksaan Agung<br/>jaringan internal / VPN</div>
+    <div class="a">→</div>
+    <div class="n fe"><b>Front-end</b>React + TypeScript<br/>peta D3</div>
+    <div class="a">→</div>
+    <div class="n be"><b>Back-end</b>Node.js + NestJS<br/>(TypeScript)</div>
+    <div class="a">→</div>
+    <div class="stack">
+      <div class="n db"><b>Database</b>MySQL 8 + replika</div>
+      <div class="n st"><b>Penyimpanan berkas</b>MinIO di server storage</div>
+    </div>
+  </div>
+  <table class="t">
+    <thead><tr><th style="width:190px">Bagian</th><th style="width:330px">Teknologi</th><th>Keterangan</th></tr></thead>
+    <tbody>
+      <tr><td>Tampilan</td><td>React, TypeScript, D3</td><td class="why">Peta wilayah 38 provinsi dan 514 kabupaten/kota</td></tr>
+      <tr><td>Aplikasi</td><td>Node.js, NestJS</td><td class="why">Satu bahasa (TypeScript) untuk tampilan dan aplikasi</td></tr>
+      <tr><td>Data &amp; berkas</td><td>MySQL 8, MinIO</td><td class="why">Data perkara dan berkas tersimpan di server MCS sendiri</td></tr>
+      <tr><td>Pemasangan</td><td>Docker, Nginx, HTTPS</td><td class="why">Mudah dipasang, diperbarui, dan dipindah antarserver</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>Seluruhnya open-source:</b> tanpa biaya lisensi, dan berjalan di server internal, bukan cloud publik.</div>
+  <div class="foot"><span><b>MCS</b> · Military Crime Superapps</span><span>6</span></div>
+</section>
+
+<!-- 7. Tanggung jawab -->
+<section class="slide">
+  <div class="kick">Batas lingkup</div>
+  <h1>Pembagian tanggung jawab</h1>
+  <div class="resp">
+    <div class="col gv">
+      <h3>GoVirtual</h3><div class="who">Pengembang aplikasi</div>
+      <ul>
+        <li>Membangun front-end, back-end, dashboard, dan laporan</li>
+        <li>Memasang aplikasi di server yang disediakan</li>
+        <li>Impor data lama, pelatihan, panduan pengguna</li>
+        <li>Pendampingan dan pemeliharaan aplikasi</li>
+      </ul>
+    </div>
+    <div class="col kj">
+      <h3>Kejaksaan</h3><div class="who">Pemilik dan pengguna sistem</div>
+      <ul>
+        <li>Menetapkan kebutuhan dan menyetujui desain</li>
+        <li>Menunjuk PIC Jampidmil dan setiap Kejati</li>
+        <li>Menyediakan data induk, contoh berkas, dan data perkara lama</li>
+        <li>Mendaftarkan pengguna dan menetapkan hak akses</li>
+        <li>Mengikuti uji coba, pelatihan, dan menyetujui go-live</li>
+        <li>Menyediakan internet di setiap Kejati</li>
+      </ul>
+    </div>
+    <div class="col pl">
+      <h3>Pihak lain</h3><div class="who">Penyedia server dan infrastruktur</div>
+      <ul>
+        <li>Instalasi server</li>
+        <li>Sistem operasi dan virtualisasi</li>
+        <li>Jaringan ke server dan VPN</li>
+        <li>Firewall dan keamanan jaringan</li>
+        <li>Storage dan perangkat backup</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span><b>MCS</b> · Military Crime Superapps</span><span>7</span></div>
+</section>
+
+<!-- 8. Timeline -->
+<section class="slide">
+  <div class="kick">Estimasi waktu</div>
+  <h1>4 bulan sampai aplikasi berjalan</h1>
+  <div class="gantt">
+    <div class="h first">Pekerjaan</div><div class="h m">Bulan 1</div><div class="h m">Bulan 2</div><div class="h m">Bulan 3</div><div class="h m">Bulan 4</div>
+
+    <div class="lbl">Analisis &amp; desain<small>alur, data, dan tampilan bersama Jampidmil</small></div>
+    <div class="bar dark" style="grid-column: 2 / span 2">Desain</div>
+
+    <div class="lbl">Back-end &amp; database<small>data perkara, berkas, keamanan</small></div>
+    <div class="bar" style="grid-column: 3 / span 4">Pengembangan</div>
+
+    <div class="lbl">Workspace Kejaksaan<small>input, pembaruan tahap, verifikasi</small></div>
+    <div class="bar" style="grid-column: 4 / span 4">Pengembangan</div>
+
+    <div class="lbl">Command Center &amp; laporan<small>dashboard, peta, peringatan, ekspor</small></div>
+    <div class="bar" style="grid-column: 5 / span 4">Pengembangan</div>
+
+    <div class="lbl">Pemasangan di server<small>termasuk uji keamanan</small></div>
+    <div class="bar amber" style="grid-column: 7 / span 2">Instalasi</div>
+
+    <div class="lbl">Uji coba &amp; pelatihan<small>bersama pengguna Kejati</small></div>
+    <div class="bar green" style="grid-column: 8 / span 2">UAT &amp; pelatihan</div>
+
+    <div class="lbl">Go-live<small>aplikasi resmi dipakai Kejati</small></div>
+    <div class="bar dark" style="grid-column: 9 / span 1">Go-live</div>
+  </div>
+  <div class="miles">
+    <div class="mile"><b>Akhir bulan 4</b>Aplikasi berjalan di server MCS dan dipakai Kejati</div>
+    <div class="mile warn"><b>Syarat: server siap pertengahan bulan 3</b>Termasuk akses jaringan untuk pemasangan</div>
+  </div>
+  <div class="foot"><span><b>MCS</b> · Military Crime Superapps</span><span>8</span></div>
+</section>
+
+<!-- 9. Langkah berikutnya -->
+<section class="slide">
+  <div class="kick">Langkah berikutnya</div>
+  <h1>Yang kami perlukan untuk mulai</h1>
+  <div class="asks">
+    <div class="ask"><div class="no">1</div><div><h4>Kesepakatan lingkup</h4><p>Daftar pekerjaan GoVirtual dan pembagian tugas dengan tim infrastruktur.</p></div></div>
+    <div class="ask"><div class="no">2</div><div><h4>Penanggung jawab</h4><p>PIC dari Jampidmil dan dari Kejati yang menjadi pengguna awal.</p></div></div>
+    <div class="ask"><div class="no">3</div><div><h4>Contoh berkas dan format data</h4><p>Contoh BAP, dakwaan, putusan (disamarkan), format nomor surat, dan data induk Kejati.</p></div></div>
+    <div class="ask"><div class="no">4</div><div><h4>Server dan jaringan</h4><p>Siap pertengahan bulan 3, sesuai dokumen kebutuhan server.</p></div></div>
+  </div>
+  <div class="banner">Setelah lingkup disepakati, <b>pengerjaan bulan 1 bisa langsung dimulai.</b></div>
+  <div class="foot"><span><b>MCS</b> · Military Crime Superapps</span><span>9</span></div>
+</section>
+
+<!-- 10. Penutup -->
+<section class="slide dark end">
+  <div class="kick">MCS · Military Crime Superapps</div>
+  <h1>Terima kasih</h1>
+  <div class="meta"><b>GoVirtual</b></div>
+</section>
+
+</body>
+</html>
