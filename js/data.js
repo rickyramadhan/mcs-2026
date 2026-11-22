@@ -418,7 +418,7 @@
     const absentia = cat === 'DES' && r2() < 0.55;
     // tersangka sipil (koneksitas)
     const sipil = jenis === 'koneksitas' ? Array.from({ length: 1 + Math.floor(r2() * (cat === 'KOR' ? 3 : 2)) }, () => ({ nama: person(r2), pekerjaan: pick(cat === 'KOR' ? ['Direktur PT rekanan pengadaan', 'Rekanan pengadaan', 'PNS Kementerian Pertahanan', 'Pegawai BUMN', 'Konsultan proyek'] : ['Wiraswasta', 'Karyawan swasta', 'Pengemudi', 'Tidak bekerja', 'Pedagang'], r2), umur: Math.floor(between(24, 60, r2)) })) : [];
-    // forum: koneksitas diadili peradilan umum kecuali kerugian terutama pada kepentingan militer (KUHAP Pasal 89–91)
+    // forum: koneksitas diadili peradilan umum kecuali kerugian terutama pada kepentingan militer (UU 31/1997 Pasal 198–200; KUHAP baru UU 20/2025 Pasal 170–172)
     const forum = jenis === 'koneksitas' && r2() < (cat === 'KOR' ? 0.75 : 0.6) ? 'umum' : 'militer';
     const ditahan = !absentia && st >= 1 && st <= 6 && r2() < ({ NAR: 0.7, PMB: 1, ASU: 0.6, ANI: 0.45, SEN: 0.6, KOR: 0.5 }[cat] || 0.2);
 
@@ -476,7 +476,7 @@
       }
       const hs = new Set([pick(sameKorps(ro.hakim), r)]); while (hs.size < 3) hs.add(pick(ro.hakim, r));
       c.majelis = [...hs];
-      // majelis koneksitas: gabungan hakim peradilan umum & militer (KUHAP Pasal 94)
+      // majelis koneksitas: gabungan hakim peradilan umum & militer (UU 31/1997 Pasal 203)
       if (c.jenis === 'koneksitas') {
         const hu = () => person(r) + ', S.H., M.H.';
         c.majelis = c.forum === 'umum' ? [hu(), hu(), c.majelis[0]] : [c.majelis[0], hu(), c.majelis[1]];

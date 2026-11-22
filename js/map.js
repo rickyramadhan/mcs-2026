@@ -29,9 +29,11 @@ window.MCSMap = (function () {
   };
 
   // ---------- skala warna (sekuensial satu hue) ----------
-  const RAMP = ['#101b28', '#104281', '#1c5cab', '#2a78d6', '#5598e7', '#9ec5f4'];
-  const interp = d3.interpolateRgbBasis(RAMP);
-  const EMPTY_FILL = '#0f1925';
+  // warna peta mengikuti tema (terang/gelap) lewat variabel CSS
+  const cssv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let RAMP = [], EMPTY_FILL = '', OFF_FILL = '';
+  const readTheme = () => { RAMP = [0, 1, 2, 3, 4, 5].map((i) => cssv('--q' + i)); EMPTY_FILL = cssv('--map-empty'); OFF_FILL = cssv('--map-off'); };
+  readTheme();
 
   // ---------- state ----------
   let svg, root, zoom, k = 1, vb = [0, 0, W0, H0];
@@ -150,7 +152,7 @@ window.MCSMap = (function () {
     // kelas kuantil (5 kelas) — perbedaan antarwilayah lebih terbaca daripada skala linear
     const vals = d === 0 ? MCS.provIds.map((q) => (cnt.prov.get(q) || EMPTY).total) : MCS.kabsOf(p).map((x) => (cnt.kab.get(x.id) || EMPTY).total);
     const sc = d3.scaleQuantile().domain(vals.filter((v) => v > 0).concat([1])).range(RAMP.slice(1));
-    const fillOf = (v) => (!layers.heat ? '#13202e' : v ? sc(v) : EMPTY_FILL);
+    const fillOf = (v) => (!layers.heat ? OFF_FILL : v ? sc(v) : EMPTY_FILL);
 
     const isOut = (f) => d > 0 && f.properties.p !== p;
     const isDim = (f) => (d === 2 && f.id !== focus && f.properties.p === p) || (courtFocus && d === 0 && !inJuris(f.id));
@@ -391,13 +393,15 @@ window.MCSMap = (function () {
     const pa = d3.geoPath(pj);
     const s = d3.select(el).html('').append('svg').attr('width', w).attr('height', h);
     s.selectAll('path').data(fc.features).join('path').attr('d', pa)
-      .attr('fill', (f) => (f.id === kabId ? '#2a78d6' : '#152233')).attr('stroke', '#0a121b').attr('stroke-width', 0.6);
+      .attr('fill', (f) => (f.id === kabId ? cssv('--q3') : cssv('--map-mini'))).attr('stroke', cssv('--map-mini-line')).attr('stroke-width', 0.6);
     const k2 = MCS.KAB[kabId]; const [x, y] = pj([k2.lng, k2.lat]);
-    s.append('circle').attr('cx', x).attr('cy', y).attr('r', 3.5).attr('fill', '#fff');
-    s.append('circle').attr('cx', x).attr('cy', y).attr('r', 4).attr('fill', 'none').attr('stroke', '#fff').attr('stroke-width', 1.2)
+    s.append('circle').attr('cx', x).attr('cy', y).attr('r', 3.5).attr('fill', cssv('--txt'));
+    s.append('circle').attr('cx', x).attr('cy', y).attr('r', 4).attr('fill', 'none').attr('stroke', cssv('--txt')).attr('stroke-width', 1.2)
       .append('animate').attr('attributeName', 'r').attr('from', 4).attr('to', 16).attr('dur', '1.8s').attr('repeatCount', 'indefinite');
     s.select('circle:last-child').append('animate').attr('attributeName', 'opacity').attr('from', 1).attr('to', 0).attr('dur', '1.8s').attr('repeatCount', 'indefinite');
   }
+
+  document.addEventListener('mcs-theme', () => { readTheme(); if (rendered) render(false); });
 
   return {
     init, refresh, drill, up, ping, setCourt, miniMap,

@@ -3,16 +3,19 @@
    Warna data mengikuti palet tervalidasi (aman buta warna di latar gelap):
    seri 1–3 #3987e5 / #d95926 / #199e70 · status kritis/peringatan/baik.
    ===================================================================== */
-:root {
+:root, [data-theme="light"] #intro {
   color-scheme: dark;
   --bg: #070b11;
   --bg-2: #0a1018;
   --panel: #0d141d;
   --panel-2: #111a25;
   --panel-3: #16212e;
-  --line: rgba(148, 172, 204, 0.10);
-  --line-2: rgba(148, 172, 204, 0.18);
-  --line-3: rgba(148, 172, 204, 0.28);
+  --tint: 148, 172, 204;   /* warna garis & hover (kanal RGB) */
+  --ink: 255, 255, 255;    /* lapisan transparan di atas panel */
+  --sh: 0, 0, 0;           /* warna bayangan */
+  --line: rgba(var(--tint), 0.10);
+  --line-2: rgba(var(--tint), 0.18);
+  --line-3: rgba(var(--tint), 0.28);
 
   --txt: #eef2f6;
   --txt-2: #b6c1cd;
@@ -22,12 +25,13 @@
   --accent: #5cc8e6;          /* interaksi: fokus, terpilih, tautan */
   --accent-d: rgba(92, 200, 230, 0.12);
   --accent-2: rgba(92, 200, 230, 0.22);
+  --on-accent: #031018;       /* teks di atas tombol aksen */
 
   /* seri data (urutan tetap) */
   --s1: #3987e5;
   --s2: #d95926;
   --s3: #199e70;
-  /* skala sekuensial biru (gelap → terang = sedikit → banyak) */
+  /* skala sekuensial biru (sedikit → banyak) */
   --q0: #101b28; --q1: #104281; --q2: #1c5cab; --q3: #2a78d6; --q4: #5598e7; --q5: #9ec5f4;
 
   /* status — selalu disertai ikon/teks */
@@ -35,7 +39,16 @@
   --warn: #fab219;
   --serious: #ec835a;
   --crit: #d03b3b;
+  --ok-txt: #46c88c;
+  --warn-txt: #f0b43c;
+  --serious-txt: #f0a07e;
   --crit-txt: #ff7b7b;
+
+  /* peta */
+  --map-empty: #0f1925; --map-off: #13202e; --map-mini: #152233; --map-mini-line: #0a121b;
+  --map-bg-a: #0d1824; --map-bg-b: #090f17;
+  --map-edge: 170, 196, 228; --map-focus: 238, 242, 246;
+  --scrim: 3, 6, 10; --scrim-a: .78;
 
   --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
   --sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -45,6 +58,52 @@
   --ease: cubic-bezier(.2, .8, .2, 1);
   --ease-io: cubic-bezier(.65, 0, .35, 1);
 }
+/* Mode terang: latar abu sejuk, panel putih, teks gelap, aksen biru-teal yang lebih dalam agar tetap terbaca */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eef1f5;
+  --bg-2: #f7f9fb;
+  --panel: #ffffff;
+  --panel-2: #f5f7fa;
+  --panel-3: #ebeff4;
+  --tint: 15, 23, 42;
+  --ink: 15, 23, 42;
+  --sh: 15, 23, 42;
+  --line: rgba(var(--tint), 0.09);
+  --line-2: rgba(var(--tint), 0.15);
+  --line-3: rgba(var(--tint), 0.26);
+
+  --txt: #0f1b2a;
+  --txt-2: #36465a;
+  --txt-3: #586779;
+  --txt-4: #8290a1;
+
+  --accent: #0a6f96;
+  --accent-d: rgba(10, 111, 150, 0.09);
+  --accent-2: rgba(10, 111, 150, 0.18);
+  --on-accent: #ffffff;
+
+  --s1: #2a6fd0;
+  --s2: #c4501c;
+  --s3: #14825c;
+  --q0: #e6edf6; --q1: #cddff5; --q2: #9bbfee; --q3: #5f9be3; --q4: #2f6fc6; --q5: #143f86;
+
+  --good: #0d8f0d;
+  --warn: #f0a30a;
+  --serious: #d4622f;
+  --crit: #c53030;
+  --ok-txt: #0f7a3d;
+  --warn-txt: #94570a;
+  --serious-txt: #b4481b;
+  --crit-txt: #b42318;
+
+  --map-empty: #e1e8f1; --map-off: #d8e0ea; --map-mini: #dce4ee; --map-mini-line: #ffffff;
+  --map-bg-a: #f6f8fb; --map-bg-b: #e7edf4;
+  --map-edge: 71, 85, 105; --map-focus: 15, 23, 42;
+  --scrim: 15, 23, 42; --scrim-a: .42;
+
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 28px rgba(15, 23, 42, 0.09);
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: var(--bg); color: var(--txt); font: 13px/1.45 var(--sans); -webkit-font-smoothing: antialiased; font-feature-settings: 'cv11', 'ss01'; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
@@ -53,8 +112,8 @@ a { color: inherit; text-decoration: none; }
 svg { display: block; }
 ::selection { background: var(--accent-2); }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: rgba(148, 172, 204, 0.16); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
-::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 172, 204, 0.3); }
+::-webkit-scrollbar-thumb { background: rgba(var(--tint), 0.16); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--tint), 0.3); }
 ::-webkit-scrollbar-track { background: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
@@ -62,27 +121,27 @@ svg { display: block; }
 .num { font-variant-numeric: tabular-nums; }
 .muted { color: var(--txt-3); }
 .hidden { display: none !important; }
-kbd { font: 500 10.5px var(--mono); color: var(--txt-3); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; background: rgba(255, 255, 255, .02); }
+kbd { font: 500 10.5px var(--mono); color: var(--txt-3); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; background: rgba(var(--ink), .02); }
 
 /* Badges / pills */
-.pill { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 11.5px; font-weight: 500; color: var(--txt-2); background: rgba(148, 172, 204, .08); border: 1px solid var(--line); white-space: nowrap; }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 11.5px; font-weight: 500; color: var(--txt-2); background: rgba(var(--tint), .08); border: 1px solid var(--line); white-space: nowrap; }
 .pill i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
-.pill.crit { color: var(--crit-txt); background: rgba(208, 59, 59, .12); border-color: rgba(208, 59, 59, .3); }
-.pill.warn { color: var(--warn); background: rgba(250, 178, 25, .1); border-color: rgba(250, 178, 25, .28); }
-.pill.good { color: #3fd13f; background: rgba(12, 163, 12, .12); border-color: rgba(12, 163, 12, .3); }
-.pill.info { color: var(--accent); background: var(--accent-d); border-color: rgba(92, 200, 230, .28); }
+.pill.crit { color: var(--crit-txt); background: color-mix(in srgb, var(--crit) 12%, transparent); border-color: color-mix(in srgb, var(--crit) 30%, transparent); }
+.pill.warn { color: var(--warn-txt); background: color-mix(in srgb, var(--warn) 10%, transparent); border-color: color-mix(in srgb, var(--warn) 28%, transparent); }
+.pill.good { color: var(--ok-txt); background: color-mix(in srgb, var(--good) 12%, transparent); border-color: color-mix(in srgb, var(--good) 30%, transparent); }
+.pill.info { color: var(--accent); background: var(--accent-d); border-color: color-mix(in srgb, var(--accent) 28%, transparent); }
 .ico-s { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 32px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line-2); background: var(--panel-2); color: var(--txt); font-weight: 500; transition: background .15s, border-color .15s, transform .1s; white-space: nowrap; }
 .btn:hover { background: var(--panel-3); border-color: var(--line-3); }
 .btn:active { transform: translateY(1px); }
-.btn.primary { background: var(--accent); border-color: transparent; color: #031018; font-weight: 600; }
+.btn.primary { background: var(--accent); border-color: transparent; color: var(--on-accent); font-weight: 600; }
 .btn.primary:hover { background: #7dd6ee; }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--txt-2); }
-.btn.ghost:hover { background: rgba(148, 172, 204, .08); color: var(--txt); }
-.btn.danger { color: var(--crit-txt); border-color: rgba(208, 59, 59, .35); background: rgba(208, 59, 59, .08); }
-.btn.danger:hover { background: rgba(208, 59, 59, .16); }
+.btn.ghost:hover { background: rgba(var(--tint), .08); color: var(--txt); }
+.btn.danger { color: var(--crit-txt); border-color: color-mix(in srgb, var(--crit) 35%, transparent); background: color-mix(in srgb, var(--crit) 8%, transparent); }
+.btn.danger:hover { background: color-mix(in srgb, var(--crit) 16%, transparent); }
 .btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 
@@ -93,8 +152,15 @@ kbd { font: 500 10.5px var(--mono); color: var(--txt-3); border: 1px solid var(-
 /* Toast */
 #toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 400; background: var(--panel-3); border: 1px solid var(--line-2); color: var(--txt); padding: 10px 16px; border-radius: 10px; box-shadow: var(--shadow); transition: opacity .25s, transform .35s var(--ease); display: flex; gap: 10px; align-items: center; }
 #toast.on { opacity: 1; transform: translate(-50%, 0); }
-#toast .ok { color: #3fd13f; }
+#toast .ok { color: var(--ok-txt); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
+
+/* Pilihan tema (terang / gelap) */
+.theme-seg { display: inline-flex; align-items: center; gap: 2px; height: 34px; padding: 3px; border: 1px solid var(--line-2); border-radius: 9px; background: var(--panel); flex: none; }
+.theme-seg button { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 6px; color: var(--txt-3); transition: background .15s, color .15s; }
+.theme-seg button:hover { color: var(--txt); background: rgba(var(--tint), .08); }
+.theme-seg button.on { background: var(--accent-d); color: var(--accent); }
+.theme-seg svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }

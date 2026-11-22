@@ -123,7 +123,7 @@
   function stageBars(list) {
     const s = MCS.stats(list); const mx = Math.max(...s.byStage) || 1;
     return MCS.TAHAP.map((t, i) => `<div style="display:grid;grid-template-columns:150px 1fr 54px;gap:10px;align-items:center;padding:4px 0;font-size:12.5px">
-      <span style="color:var(--txt-2)">${i + 1}. ${t.name}</span><div style="height:7px;background:rgba(148,172,204,.07);border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:${(s.byStage[i] / mx) * 100}%;background:${MCS.GROUP[MCS.groupOf(i)].color};border-radius:0 4px 4px 0;transition:width .8s"></i></div><b style="text-align:right;font-variant-numeric:tabular-nums">${MCS.fmt(s.byStage[i])}</b></div>`).join('');
+      <span style="color:var(--txt-2)">${i + 1}. ${t.name}</span><div style="height:7px;background:rgba(var(--tint), .07);border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:${(s.byStage[i] / mx) * 100}%;background:${MCS.GROUP[MCS.groupOf(i)].color};border-radius:0 4px 4px 0;transition:width .8s"></i></div><b style="text-align:right;font-variant-numeric:tabular-nums">${MCS.fmt(s.byStage[i])}</b></div>`).join('');
   }
   function bindHref(root = page) {
     root.querySelectorAll('[data-href]').forEach((el) => (el.onclick = (e) => {
@@ -168,7 +168,7 @@
       </div>
       <div class="tw"><table class="t"><thead><tr><th>Nomor perkara</th><th>Tersangka</th><th>Jenis &amp; klasifikasi</th><th>Tahap</th><th>Sidang berikutnya</th><th>Diperbarui</th><th></th></tr></thead>
       <tbody>${slice.length ? slice.map((c) => { const ns = MCS.nextSidang(c); const crit = c.tahanan && c.tahanan.sampai - MCS.TODAY <= 2 * MCS.DAY; return `<tr class="click" data-href="#perkara/${c.id}">
-        <td><span class="mono">${c.reg || c.lp}</span><span class="sub">${c.id}${c.verified ? '' : ' · <span style="color:var(--warn)">belum diverifikasi</span>'}</span></td>
+        <td><span class="mono">${c.reg || c.lp}</span><span class="sub">${c.id}${c.verified ? '' : ' · <span style="color: var(--warn-txt)">belum diverifikasi</span>'}</span></td>
         <td><b style="font-weight:500">${E(MCS.terdakwaLabel(c.terdakwa[0]))}</b>${c.terdakwa.length + c.sipil.length > 1 ? ` <span class="muted">+${c.terdakwa.length + c.sipil.length - 1}</span>` : ''}<span class="sub">${E(c.kesatuan)} · ${MCS.matraName(c.matra)}</span></td>
         <td>${c.jenis === 'koneksitas' ? '<b style="color:var(--accent);font-weight:500">Koneksitas</b> · ' : ''}${MCS.CAT[c.cat].name}<span class="sub">${c.arts.map(MCS.artLabel).join(', ')}</span></td>
         <td>${UI.stagePill(c.st)}<div class="prog8">${MCS.TAHAP.map((t, i) => `<i class="${i < c.st ? 'on' : i === c.st ? 'cur' : ''}"></i>`).join('')}</div></td>
@@ -189,7 +189,51 @@
   }
 
   // ================= Editor perkara =================
-  const ED_TABS = [['ringkas', 'Ringkasan', 'file'], ['terdakwa', 'Tersangka', 'user'], ['pasal', 'Pasal', 'scale'], ['sidang', 'Persidangan', 'cal'], ['kerugian', 'Kerugian', 'cash'], ['tahanan', 'Penahanan', 'lock'], ['dokumen', 'Dokumen', 'folder'], ['riwayat', 'Riwayat', 'history']];
+  // ---- format rupiah ----
+  const fmtNum = (v) => String(v == null ? '' : v).replace(/\D/g, '').replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const SAT = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+  const tb = (n) => {
+    if (n < 12) return SAT[n];
+    if (n < 20) return tb(n - 10) + ' belas';
+    if (n < 100) return tb(Math.floor(n / 10)) + ' puluh' + (n % 10 ? ' ' + tb(n % 10) : '');
+    if (n < 200) return 'seratus' + (n % 100 ? ' ' + tb(n % 100) : '');
+    if (n < 1000) return tb(Math.floor(n / 100)) + ' ratus' + (n % 100 ? ' ' + tb(n % 100) : '');
+    if (n < 2000) return 'seribu' + (n % 1000 ? ' ' + tb(n % 1000) : '');
+    if (n < 1e6) return tb(Math.floor(n / 1000)) + ' ribu' + (n % 1000 ? ' ' + tb(n % 1000) : '');
+    if (n < 1e9) return tb(Math.floor(n / 1e6)) + ' juta' + (n % 1e6 ? ' ' + tb(n % 1e6) : '');
+    if (n < 1e12) return tb(Math.floor(n / 1e9)) + ' miliar' + (n % 1e9 ? ' ' + tb(n % 1e9) : '');
+    return tb(Math.floor(n / 1e12)) + ' triliun' + (n % 1e12 ? ' ' + tb(n % 1e12) : '');
+  };
+  const terbilang = (n) => (n > 0 && n < 1e15 ? tb(n).replace(/^./, (c) => c.toUpperCase()) + ' rupiah' : '');
+  const AUDITORS = ['BPK RI', 'BPKP', 'Inspektorat Jenderal TNI', 'Inspektorat Daerah', 'Akuntan publik', 'Lembaga berwenang lainnya'];
+
+  // ---- berkas & barang bukti ----
+  const FKIND = {
+    doc: { ext: /\.pdf$/i, max: 20, label: 'PDF · maks. 20 MB', accept: '.pdf,application/pdf' },
+    img: { ext: /\.(jpe?g|png)$/i, max: 20, label: 'Foto JPG/PNG · maks. 20 MB', accept: '.jpg,.jpeg,.png,image/jpeg,image/png' },
+    vid: { ext: /\.(mp4|mov)$/i, max: 200, label: 'Video MP4/MOV · maks. 200 MB', accept: '.mp4,.mov,video/mp4,video/quicktime' },
+  };
+  const ADD_KINDS = PROSES.DOCT.map(([id, label, kind]) => [label, kind, id]);
+  const defDocIdx = (c) => Math.max(0, PROSES.DOCT.findIndex((d) => d[3] === c.st));
+  const slotsOf = (K, ditahan, audit) => [
+    ['lp', K ? 'Surat perintah penyidikan koneksitas' : 'Laporan Polisi Militer', 'doc', 'Disarankan'],
+    ['bap', 'Berita Acara Pemeriksaan (BAP) tersangka', 'doc', 'Disarankan'],
+    ['bapsaksi', 'BAP saksi', 'doc', ''],
+    ...(audit ? [['audit', 'Laporan hasil audit kerugian', 'doc', 'Disarankan']] : []),
+    ...(ditahan ? [['tahan', 'Surat perintah penahanan', 'doc', 'Disarankan']] : []),
+    ['foto', 'Foto barang bukti', 'img', ''],
+    ['video', 'Video barang bukti', 'vid', ''],
+    ['visum', 'Hasil visum / laboratorium', 'doc', ''],
+    ['lain', 'Berkas pendukung lainnya', 'doc', ''],
+  ];
+  const fmtSize = (b) => (b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB');
+  const filterFiles = (files, kind) => {
+    const k = FKIND[kind], ok = [], bad = [];
+    files.forEach((f) => { if (!k.ext.test(f.name)) bad.push(f.name + ': format tidak didukung (' + k.label + ')'); else if (f.size > k.max * 1048576) bad.push(f.name + ': ukuran melebihi ' + k.max + ' MB'); else ok.push(f); });
+    return { ok, bad };
+  };
+
+  const ED_TABS = [['ringkas', 'Ringkasan', 'file'], ['proses', 'Proses & syarat', 'checkc'], ['terdakwa', 'Tersangka', 'user'], ['pasal', 'Pasal', 'scale'], ['sidang', 'Persidangan', 'cal'], ['kerugian', 'Kerugian', 'cash'], ['tahanan', 'Penahanan', 'lock'], ['dokumen', 'Dokumen', 'folder'], ['riwayat', 'Riwayat', 'history']];
   function editor(id) {
     const c = MCS.byId(id);
     if (!c) { page.innerHTML = '<div class="empty">Perkara tidak ditemukan.</div>'; return; }
@@ -200,13 +244,13 @@
     const pending = MCS.getApprovals().find((a) => a.caseId === c.id && a.status === 'menunggu' && a.field === 'Tahap');
     page.innerHTML = `
       <div class="ch"><div style="min-width:0">
-        <div class="meta"><span class="mono" style="color:var(--txt-3);font-size:12px">${c.id} · ${c.reg || c.lp}</span>${UI.stagePill(c.st)}<span class="pill ${c.jenis === 'koneksitas' ? 'info' : ''}">${MCS.JN[c.jenis].name}</span><span class="pill">${MCS.CAT[c.cat].name}</span>${c.verified ? '<span class="pill good">Terverifikasi Aspidmil</span>' : '<span class="pill warn">Belum diverifikasi</span>'}</div>
+        <div class="meta"><span class="mono" style="color:var(--txt-3);font-size:12px">${c.id} · ${c.reg || c.lp}</span>${UI.stagePill(c.st)}<span class="pill ${c.jenis === 'koneksitas' ? 'info' : ''}">${MCS.JN[c.jenis].name}</span><span class="pill">${MCS.CAT[c.cat].name}</span>${c.verified ? '<span class="pill good">Terverifikasi Aspidmil</span>' : '<span class="pill warn">Belum diverifikasi</span>'}${c.closed ? '<span class="pill crit">Tidak dilanjutkan ke pengadilan</span>' : ''}</div>
         <h1>${E(c.title)}</h1><p>${E(MCS.terdakwaLabel(c.terdakwa[0]))}${c.sipil.length ? ' + ' + c.sipil.length + ' tersangka sipil' : ''} · ${MCS.KJ[c.kejati].short} · ${MCS.forumShort(c)}</p></div>
         <div class="acts">
           <a class="btn ghost" href="index.html" title="Lihat di Command Center">${I('ext')}</a>
           ${!ro && c.st >= 4 && c.st <= 4 ? `<button class="btn" id="a-jadwal">${I('cal')}Jadwalkan sidang</button>` : ''}
           ${!ro && ns ? `<button class="btn" id="a-hasil">${I('gavel')}Catat hasil sidang</button>` : ''}
-          ${!ro && nextSt <= 7 ? (pending ? `<span class="pill warn" style="height:32px">${I('clock')}Menunggu verifikasi: ${pending.to}</span>` : `<button class="btn primary" id="a-tahap" ${canMoveTo(nextSt) ? '' : 'disabled title="Peran Anda hanya dapat membaca"'}>${I('arrow')}Lanjut ke ${MCS.TAHAP[nextSt].name}</button>`) : ''}
+          ${!ro && nextSt <= 7 && !c.closed ? (pending ? `<span class="pill warn" style="height:32px">${I('clock')}Menunggu verifikasi: ${pending.to}</span>` : `<button class="btn primary" id="a-tahap" ${canMoveTo(nextSt) ? '' : 'disabled title="Peran Anda hanya dapat membaca"'}>${I('arrow')}Lanjut ke ${MCS.TAHAP[nextSt].name}</button>`) : ''}
         </div></div>
       <div class="stepper">${MCS.TAHAP.map((t, i) => `<div class="sp ${i < c.st ? 'done' : i === c.st ? 'cur' : ''}" title="${MCS.tahapLong(i, c)}"><span class="d"></span><b>${t.name}</b><span>${c.sd[i] ? MCS.fmtDate(c.sd[i]) : MCS.tahapActor(i, c)}</span></div>`).join('')}</div>
       <div class="ed">
@@ -219,13 +263,13 @@
             <div><span>${c.jenis === 'koneksitas' ? 'Jaksa penuntut' : 'Jaksa koordinator'}</span>${c.jaksa}</div>
             <div><span>Oditurat mitra</span>${c.otmil} · ${c.oditur}</div>
             <div><span>Peradilan</span>${MCS.forumName(c)}${c.jenis === 'koneksitas' && c.st < 3 ? ' <span class="muted">(menunggu penelitian bersama)</span>' : ''}</div></div></div>
-          ${ns ? `<div class="card"><div class="cb"><div style="font-size:11.5px;color:#f0a07e;font-weight:500">Sidang berikutnya</div><div style="font-size:15px;font-weight:600;margin-top:2px">${MCS.fmtDay(ns.t)}, ${MCS.fmtTime(ns.t)} WIB</div><div class="muted" style="font-size:12px">${ns.agenda} · ${ns.ruang}</div></div></div>` : ''}
+          ${ns ? `<div class="card"><div class="cb"><div style="font-size:11.5px;color:var(--serious-txt);font-weight:500">Sidang berikutnya</div><div style="font-size:15px;font-weight:600;margin-top:2px">${MCS.fmtDay(ns.t)}, ${MCS.fmtTime(ns.t)} WIB</div><div class="muted" style="font-size:12px">${ns.agenda} · ${ns.ruang}</div></div></div>` : ''}
           ${c.tahanan ? `<div class="card"><div class="cb"><div style="font-size:11.5px;color:var(--txt-3)">Penahanan berakhir</div><div style="font-size:15px;font-weight:600;margin-top:2px;${c.tahanan.sampai - MCS.TODAY <= 5 * MCS.DAY ? 'color:var(--crit-txt)' : ''}">${MCS.fmtDate(c.tahanan.sampai)}</div><div class="muted" style="font-size:12px">${c.tahanan.tempat}</div></div></div>` : ''}
           ${can('Eksaminasi & catatan evaluasi') ? `<div class="card"><header><h3>Catatan eksaminasi</h3><span class="aux">${(c.eksaminasi || []).length}</span></header><div class="cb">
             ${(c.eksaminasi || []).slice(-3).reverse().map((x) => `<div style="font-size:12.5px;margin-bottom:10px"><div style="color:var(--txt-2)">${E(x.teks)}</div><div class="muted" style="font-size:11.5px">${E(x.oleh)} · ${MCS.fmtAgo(x.t)}</div></div>`).join('')}
             <div class="f"><textarea id="ek-txt" placeholder="Evaluasi kualitas dakwaan/tuntutan, arahan untuk Kejati…" style="min-height:64px"></textarea></div>
             <button class="btn" id="ek-save" style="margin-top:8px;width:100%">${I('edit')}Simpan catatan</button></div></div>` : ''}
-          <div class="card"><div class="cb" style="font-size:12px;color:var(--txt-3)">Terakhir diperbarui ${MCS.fmtAgo(c.updated)} oleh ${E(c.updatedBy)}.${ro ? '<br><br><b style="color:var(--warn)">Mode baca</b> — peran Anda tidak dapat mengubah perkara ini.' : needsApproval() ? '<br><br>Perubahan tahap dari peran Anda diverifikasi Aspidmil sebelum tampil di dashboard nasional Jampidmil.' : ''}</div></div>
+          <div class="card"><div class="cb" style="font-size:12px;color:var(--txt-3)">Terakhir diperbarui ${MCS.fmtAgo(c.updated)} oleh ${E(c.updatedBy)}.${c.catatan ? '<br><br><b style="color:var(--txt-2)">Catatan awal</b><br>' + E(c.catatan) : ''}${ro ? '<br><br><b style="color: var(--warn-txt)">Mode baca</b> — peran Anda tidak dapat mengubah perkara ini.' : needsApproval() ? '<br><br>Perubahan tahap dari peran Anda diverifikasi Aspidmil sebelum tampil di dashboard nasional Jampidmil.' : ''}</div></div>
         </div></div>`;
     page.querySelectorAll('.tabsv button').forEach((b) => (b.onclick = () => { edTab = b.dataset.t; page.querySelectorAll('.tabsv button').forEach((x) => x.classList.toggle('on', x === b)); edBody(c, ro); }));
     if ($('a-tahap')) $('a-tahap').onclick = () => stageModal(c);
@@ -264,6 +308,8 @@
         ${field('Nomor register pengadilan', `<div class="ro mono">${c.reg || 'Diterbitkan saat pelimpahan ke pengadilan'}</div>`)}
         ${field('Jenis perkara', sel('f-kon', [['oditurat', 'Perkara Oditurat — koordinasi teknis penuntutan'], ['koneksitas', 'Koneksitas — melibatkan tersangka sipil']], c.jenis, dis))}
       </div></div>${foot('s-ringkas')}</div>`;
+    } else if (edTab === 'proses') {
+      h = procPanel(c);
     } else if (edTab === 'terdakwa') {
       h = `<div class="card"><header><h3>Tersangka</h3><span class="aux">${c.terdakwa.length} militer${c.sipil.length ? ' · ' + c.sipil.length + ' sipil' : ''}</span></header><div class="cb">${c.terdakwa.map((t, i) => `<div class="tcard"><header>Tersangka militer ${i + 1}</header><div class="form">
         ${field('Pangkat', sel('t-pk' + i, MCS.PANGKAT[c.matra].map((p) => p[0]), t.pangkat, dis))}
@@ -286,16 +332,16 @@
     } else if (edTab === 'sidang') {
       h = `<div class="card"><header><h3>Persidangan</h3>${c.reg ? `<span class="aux mono">${c.reg}</span>` : ''}</header><div class="cb">
         ${c.majelis ? `<div class="form" style="margin-bottom:16px">${field('Hakim ketua', `<div class="ro">${c.majelis[0]}</div>`)}${field('Hakim anggota', `<div class="ro">${c.majelis[1]}; ${c.majelis[2]}</div>`)}${field('Oditur', `<div class="ro">${c.oditur}</div>`)}${field('Panitera pengganti', `<div class="ro">${c.panitera}</div>`)}</div>` : ''}
-        ${c.sidang.length ? `<div class="tl">${c.sidang.map((s) => `<div class="e ${s.status === 'jadwal' ? 'next' : s.status === 'tunda' ? 'tunda' : ''}"><b>${s.agenda}</b> ${s.status === 'jadwal' ? '<span class="pill" style="height:18px;font-size:10.5px;color:#f0a07e">Terjadwal</span>' : s.status === 'tunda' ? '<span class="pill warn" style="height:18px;font-size:10.5px">Ditunda</span>' : ''}<span>${MCS.fmtDate(s.t, true)} WIB · ${s.ruang}${s.ket ? ' · ' + s.ket : ''}</span></div>`).join('')}</div>` : '<div class="empty">Perkara belum dilimpahkan ke pengadilan.</div>'}
+        ${c.sidang.length ? `<div class="tl">${c.sidang.map((s) => `<div class="e ${s.status === 'jadwal' ? 'next' : s.status === 'tunda' ? 'tunda' : ''}"><b>${s.agenda}</b> ${s.status === 'jadwal' ? '<span class="pill" style="height:18px;font-size:10.5px;color:var(--serious-txt)">Terjadwal</span>' : s.status === 'tunda' ? '<span class="pill warn" style="height:18px;font-size:10.5px">Ditunda</span>' : ''}<span>${MCS.fmtDate(s.t, true)} WIB · ${s.ruang}${s.ket ? ' · ' + s.ket : ''}</span></div>`).join('')}</div>` : '<div class="empty">Perkara belum dilimpahkan ke pengadilan.</div>'}
       </div>${!ro && c.st === 4 ? `<div class="form-foot"><button class="btn" id="s-j2">${I('cal')}Jadwalkan sidang</button>${MCS.nextSidang(c) ? `<button class="btn primary" id="s-h2">${I('gavel')}Catat hasil sidang</button>` : ''}</div>` : ''}</div>`;
     } else if (edTab === 'kerugian') {
       h = `<div class="card"><header><h3>${c.kn === 'negara' ? 'Kerugian keuangan negara' : 'Kerugian korban'}</h3></header><div class="cb"><div class="form">
-        ${field('Nilai kerugian (Rp)', inp('k-nilai', c.kerugian, dis + ' type="number"'), { hint: c.kn === 'negara' ? 'Berdasarkan hasil audit BPK/BPKP atau Itjen TNI' : 'Berdasarkan laporan korban' })}
+        ${field('Nilai kerugian (Rp)', inp('k-nilai', c.kerugian, dis + ' type="number"'), { hint: c.auditKerugian ? (c.auditKerugian.st === 'sudah' ? 'Sudah diaudit · ' + E(c.auditKerugian.lembaga) + (c.auditKerugian.no ? ' · ' + E(c.auditKerugian.no) : '') : 'Belum diaudit — perkiraan awal') : (c.kn === 'negara' ? 'Berdasarkan hasil audit BPK/BPKP atau Itjen TNI' : 'Berdasarkan laporan korban') })}
         ${field('Telah dipulihkan (Rp)', inp('k-pulih', c.pulih, dis + ' type="number"'), { hint: 'Penyitaan, pengembalian sukarela, atau uang pengganti' })}
         ${field('Bentuk pemulihan', sel('k-bentuk', ['Pengembalian sukarela', 'Penyitaan aset', 'Uang pengganti (putusan)', 'Lelang barang rampasan', 'Setoran ke kas negara (PNBP)'], 'Pengembalian sukarela', dis))}
         ${field('Tanggal pencatatan', inp('k-tgl', toDateInput(MCS.NOW), dis + ' type="date"'))}
       </div><div style="margin-top:16px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txt-3);margin-bottom:6px"><span>Progres pemulihan</span><b style="color:var(--txt)">${c.kerugian ? ((c.pulih / c.kerugian) * 100).toFixed(1) : 0}%</b></div>
-        <div style="height:10px;background:rgba(148,172,204,.1);border-radius:5px;overflow:hidden"><i style="display:block;height:100%;width:${c.kerugian ? (c.pulih / c.kerugian) * 100 : 0}%;background:var(--s3)"></i></div></div></div>${foot('s-rugi')}</div>`;
+        <div style="height:10px;background:rgba(var(--tint), .1);border-radius:5px;overflow:hidden"><i style="display:block;height:100%;width:${c.kerugian ? (c.pulih / c.kerugian) * 100 : 0}%;background:var(--s3)"></i></div></div></div>${foot('s-rugi')}</div>`;
     } else if (edTab === 'tahanan') {
       h = `<div class="card"><header><h3>Penahanan</h3></header><div class="cb">${c.tahanan ? `<div class="form">
         ${field('Status', `<div class="ro">Ditahan</div>`)}
@@ -310,9 +356,9 @@
       const st = [0, 0, 1, 2, 3, 4, 5, 5, 7];
       const extra = MCS.LS.get('mcs3_docs_' + c.id, []);
       h = `<div class="card"><header><h3>Dokumen perkara</h3><span class="aux">PDF · maks. 20 MB · tersimpan terenkripsi</span></header><div class="cb">
-        ${ro ? '' : `<div class="drop" id="drop">${I('upload')}<div><b style="color:var(--txt)">Tarik berkas ke sini</b> atau klik untuk memilih</div><div style="font-size:12px;margin-top:2px">Dokumen dipindai otomatis dan diberi watermark</div></div>`}
+        ${ro ? '<div class="smart" style="margin:0 0 12px"><div class="t">Mode baca</div>Berkas tambahan hanya dapat diunggah oleh Operator Kejati, Aspidmil, atau Admin Pusat.</div>' : `<div class="up-row"><div class="f"><label>Jenis berkas yang ditambahkan</label>${sel('dk-jenis', ADD_KINDS.map((k, i) => [i, k[0]]), defDocIdx(c))}</div><div class="drop" id="drop">${I('upload')}<div><b style="color:var(--txt)">Tarik berkas ke sini</b> atau klik untuk memilih</div><div style="font-size:12px;margin-top:2px" id="dk-hint">PDF · maks. 20 MB · dipindai otomatis</div></div><input type="file" id="dk-file" multiple hidden /></div>`}
         <table class="t" style="margin-top:12px"><tbody>${D.map((n, i) => `<tr><td>${I('file')}</td><td>${n}</td><td>${c.st > st[i] || (c.st === st[i] && st[i] < 5) ? `<span class="pill good">Tersedia</span>` : '<span class="pill">Belum ada</span>'}</td></tr>`).join('')}
-        ${extra.map((d) => `<tr><td>${I('file')}</td><td>${E(d.n)}<span class="sub">diunggah ${MCS.fmtAgo(d.t)} oleh ${E(d.by)}</span></td><td><span class="pill info">Baru</span></td></tr>`).join('')}</tbody></table></div></div>`;
+        ${extra.map((d) => `<tr><td>${I('file')}</td><td>${E(d.n)}<span class="sub">${d.jenis ? E(d.jenis) + ' · ' : ''}${d.size ? fmtSize(d.size) + ' · ' : ''}diunggah ${MCS.fmtAgo(d.t)} oleh ${E(d.by)}</span></td><td><span class="pill info">Baru</span></td></tr>`).join('')}</tbody></table></div></div>`;
     } else if (edTab === 'riwayat') {
       const ev = MCS.getAudit().filter((a) => a.target === c.id);
       MCS.TAHAP.forEach((t, i) => { if (c.sd[i]) ev.push({ t: c.sd[i], user: MCS.tahapActor(i, c), action: 'Tahap ' + t.name, detail: '' }); });
@@ -368,12 +414,26 @@
       commit(c, 'Perpanjang penahanan', 's.d. ' + MCS.fmtDate(t) + ' · ' + $('h-dasar').value, { tahanan: { ...c.tahanan, sampai: t } });
       UI.toast('Perpanjangan penahanan disimpan'); editor(c.id);
     });
-    on('drop', () => {
-      const n = prompt('Nama dokumen (simulasi unggah):', 'Surat perpanjangan penahanan');
-      if (!n) return;
-      const ex = MCS.LS.get('mcs3_docs_' + c.id, []); ex.unshift({ n, t: Date.now(), by: me.name }); MCS.LS.set('mcs3_docs_' + c.id, ex);
-      MCS.audit(me.name, 'Unggah dokumen', c.id, n); UI.toast('Dokumen diunggah dan dipindai'); edBody(c, false);
-    });
+    on('p-next', () => stageModal(c));
+    const dkSync = () => { const k = ADD_KINDS[+$('dk-jenis').value]; $('dk-file').accept = FKIND[k[1]].accept; $('dk-hint').textContent = FKIND[k[1]].label + ' · dipindai otomatis'; };
+    if ($('dk-jenis')) { dkSync(); $('dk-jenis').onchange = dkSync; }
+    const dkAdd = (files) => {
+      const k = ADD_KINDS[+$('dk-jenis').value]; const { ok, bad } = filterFiles(files, k[1]);
+      if (bad.length) UI.toast(bad[0], false);
+      if (!ok.length) return;
+      const ex = MCS.LS.get('mcs3_docs_' + c.id, []);
+      ok.forEach((f) => ex.unshift({ n: f.name, jenis: k[0], k: k[2], size: f.size, t: Date.now(), by: me.name }));
+      MCS.LS.set('mcs3_docs_' + c.id, ex);
+      MCS.audit(me.name, 'Unggah dokumen', c.id, k[0] + ' · ' + ok.map((f) => f.name).join(', '));
+      UI.toast(ok.length + ' berkas diunggah dan dipindai'); edBody(c, false);
+    };
+    on('drop', () => $('dk-file').click());
+    if ($('dk-file')) $('dk-file').onchange = (e) => dkAdd([...e.target.files]);
+    if ($('drop')) {
+      $('drop').ondragover = (e) => { e.preventDefault(); $('drop').classList.add('over'); };
+      $('drop').ondragleave = () => $('drop').classList.remove('over');
+      $('drop').ondrop = (e) => { e.preventDefault(); $('drop').classList.remove('over'); dkAdd([...e.dataTransfer.files]); };
+    }
   }
 
   // ---------- Modal ----------
@@ -386,48 +446,152 @@
   }
   function stageModal(c) {
     const to = c.st + 1;
-    const K = c.jenis === 'koneksitas';
-    const court = MCS.COURT[c.court];
-    const mo = MCS.ROMAN[new Date().getMonth()], yr = new Date().getFullYear();
-    const tgl = (label) => field(label, inp('m-tgl', toDateInput(MCS.NOW), 'type="date"'), { req: true });
-    const FIELDS = {
-      1: `${tgl('Tanggal berkas diterima')}${field('Hasil penelitian', sel('m-a', ['Lengkap', 'Perlu pemeriksaan tambahan'], 'Lengkap'), { req: true })}${field('Catatan penelitian', inp('m-b', '', 'placeholder="Kekurangan alat bukti, saksi, dsb."'), { full: true })}`,
-      2: K
-        ? `${tgl('Tanggal penelitian bersama')}${field('Peradilan yang berwenang', sel('m-a', [['umum', 'Peradilan umum — kerugian terutama kepentingan umum'], ['militer', 'Peradilan militer — kerugian terutama kepentingan militer']], c.cat === 'KOR' ? 'umum' : 'militer'), { req: true, full: true, hint: 'Berdasarkan penelitian bersama Jaksa dan Oditur (KUHAP Pasal 90–91)' })}${field('Nomor berita acara', inp('m-b', 'BA-' + (10 + Math.floor(Math.random() * 90)) + '/Kon/' + mo + '/' + yr), { req: true })}`
-        : `${tgl('Tanggal pendapat hukum')}${field('Nomor pendapat hukum Oditur', inp('m-b', 'PH-' + (10 + Math.floor(Math.random() * 90)) + '/' + mo + '/' + yr), { req: true })}${field('Nomor Skeppera', inp('m-a', 'Kep/' + (100 + Math.floor(Math.random() * 800)) + '/' + mo + '/' + yr), { hint: 'Diisi setelah Papera menerbitkan keputusan' })}`,
-      3: `${tgl('Tanggal pelimpahan ke pengadilan')}${field('Nomor surat dakwaan', inp('m-a', 'PDM-' + (10 + Math.floor(Math.random() * 300)) + '/' + yr), { req: true })}${field('Penuntut', `<div class="ro">${E(MCS.penuntutOf(c))}</div>`, { full: true })}`,
-      4: `${field('Nomor register', inp('m-a', c.forum === 'umum' ? `${1 + Math.floor(Math.random() * 120)}/${c.cat === 'KOR' ? 'Pid.Sus-TPK' : 'Pid.B'}/${yr}/PN ${MCS.KJ[c.kejati].city}` : `${1 + Math.floor(Math.random() * 300)}-K/PM.${court.code}/${c.matra}/${mo}/${yr}`), { req: true, hint: 'Nomor register dari pengadilan' })}${tgl('Tanggal register')}${field('Sidang pertama', inp('m-b', toDateInput(MCS.TODAY + 7 * MCS.DAY), 'type="date"'), { req: true })}${field('Jam', sel('m-c', ['09.00', '10.00', '13.00'], '09.00'))}`,
-      5: `${tgl('Tanggal putusan')}${field('Pidana penjara (bulan)', inp('m-a', '12', 'type="number" min="0"'), { req: true, hint: 'Isi 0 untuk putusan bebas/lepas' })}${field('Pidana tambahan', sel('m-b', [['', 'Tidak ada'], ['Dipecat dari dinas militer', 'Pemecatan dari dinas militer (Pasal 26 KUHPM)'], ['Uang pengganti', 'Pembayaran uang pengganti']], ''), { full: true })}`,
-      6: `${field('Jenis upaya hukum', sel('m-a', ['Banding', 'Kasasi', 'Peninjauan kembali'], 'Banding'), { req: true })}${field('Diajukan oleh', sel('m-b', ['Terdakwa', K ? 'Penuntut umum' : 'Oditur'], 'Terdakwa'))}${tgl('Tanggal permohonan')}`,
-      7: `${tgl('Tanggal berkekuatan hukum tetap')}${field('Status eksekusi', sel('m-a', ['Menunggu eksekusi', 'Sudah dieksekusi', 'Pengawasan putusan bersyarat'], 'Menunggu eksekusi'))}${field('Pelaksana eksekusi', `<div class="ro">${K ? 'Jaksa ' + MCS.KJ[c.kejati].short : c.otmil + ' (dipantau ' + MCS.KJ[c.kejati].short + ')'}</div>`, { full: true })}`,
+    const sp = PROSES.spec(c, to);
+    const yesV = (x) => x === 'Ya' || x === true;
+    const exDocs = () => MCS.LS.get('mcs3_docs_' + c.id, []);
+    const pend = {};
+    const fid = (f) => f.id || 'm-' + f.k.replace(/\./g, '_');
+    const cur = (f) => { const x = (c.td || {})[f.k]; return x != null ? x : typeof f.def === 'function' ? f.def() : f.def; };
+    const fieldHtml = (f) => {
+      if (f.sec) return `<div class="f full"><h4 class="msec">${E(f.sec)}</h4></div>`;
+      if (f.type === 'ro') return field(f.label, `<div class="ro">${E(f.value)}</div>`, { full: true });
+      const id = fid(f), val = cur(f) == null ? '' : cur(f);
+      if (f.type === 'check') return `<div class="f full" data-fk="${f.k}"><label class="cbx"><input type="checkbox" id="${id}" ${yesV(val) ? 'checked' : ''} /><span>${E(f.label)}</span></label></div>`;
+      let ctl;
+      if (f.type === 'select') ctl = sel(id, f.opts, val);
+      else if (f.type === 'date') ctl = inp(id, val, 'type="date"');
+      else if (f.type === 'num') ctl = inp(id, val, 'type="number" min="0"' + (f.ph ? ` placeholder="${E(f.ph)}"` : ''));
+      else ctl = inp(id, val, f.ph ? `placeholder="${E(f.ph)}"` : '');
+      return field(f.label, ctl, { req: f.req, full: f.full, hint: f.hint }).replace('<div class="f ', `<div data-fk="${f.k}" class="f `);
     };
-    modal(`Lanjut ke tahap ${MCS.TAHAP[to].name}`, MCS.tahapLong(to, c), `<div class="form">${FIELDS[to]}</div>${needsApproval() ? '<div class="smart"><div class="t">' + I('shield') + 'Perlu verifikasi</div>Pembaruan akan dikirim ke Aspidmil ' + MCS.KJ[c.kejati].short.replace('Kejati ', '') + ' untuk diverifikasi sebelum terbit di dashboard Jampidmil.</div>' : ''}`, () => {
-      const req = $('mbox').querySelectorAll('.f label i');
+    const hasDoc = (id) => exDocs().some((d) => d.k === id) || (pend[id] || []).length > 0;
+    const box = (k) => $('mbox').querySelector(`[data-fk="${CSS.escape(k)}"]`);
+    const readVals = () => {
+      const raw = {};
+      sp.fields.forEach((f) => { if (f.sec || f.type === 'ro') return; const el = $(fid(f)); if (el) raw[f.k] = f.type === 'check' ? (el.checked ? 'Ya' : '') : el.value; });
+      sp.fields.forEach((f) => { if (f.showWhen && box(f.k)) box(f.k).style.display = f.showWhen(raw) ? '' : 'none'; });
+      const vals = {};
+      Object.keys(raw).forEach((k) => { const b = box(k); if (!b || b.style.display !== 'none') vals[k] = raw[k]; });
+      return vals;
+    };
+    const nextName = MCS.TAHAP[to].name;
+    const refresh = () => {
+      const vals = readVals();
+      const res = PROSES.evalChecks(c, sp, vals, hasDoc);
+      const loop = !!(sp.loopWhen && sp.loopWhen(vals));
+      $('m-gate').innerHTML = `<h4>${loop ? 'Hasil ini hanya dicatat' : 'Syarat untuk lanjut ke ' + E(nextName)}</h4>${loop ? `<div class="gi warn"><i>!</i><span>${E(sp.loopLabel)}<small>Perkara tidak pindah ke ${E(nextName)} sampai syaratnya terpenuhi.</small></span></div>` : ''}${res.map((x) => `<div class="gi ${x.ok ? 'ok' : x.req ? 'no' : 'warn'}"><i>${x.ok ? '✓' : x.req ? '✕' : '!'}</i><span>${E(x.label)}${x.basis ? `<small>${E(x.basis)}</small>` : ''}${!x.req && !x.ok ? '<small>Disarankan, tidak menghalangi</small>' : ''}</span></div>`).join('')}`;
+      const blocked = !loop && res.some((x) => x.req && !x.ok);
+      $('m-ok').disabled = blocked;
+      $('m-ok').textContent = loop ? 'Catat hasil' : needsApproval() ? 'Ajukan verifikasi' : 'Lanjut ke ' + nextName;
+      return { vals, res, loop };
+    };
+    const paintDocs = () => {
+      const m = $('m-docs'); if (!m) return;
+      m.innerHTML = sp.docs.map((id) => {
+        const kind = PROSES.DOCT.find((d) => d[0] === id)[2];
+        const have = exDocs().filter((d) => d.k === id), pd = pend[id] || [];
+        return `<div class="slot ${have.length || pd.length ? 'has' : ''}"><div class="slot-h"><div><b>${E(PROSES.DOCL[id])}</b><span>${FKIND[kind].label}</span></div><button class="btn" type="button" data-mp="${id}">${I('upload')}${have.length || pd.length ? 'Tambah' : 'Pilih berkas'}</button><input type="file" id="m-f-${id}" data-id="${id}" data-kind="${kind}" accept="${FKIND[kind].accept}" multiple hidden /></div>${have.length || pd.length ? `<ul>${have.map((d) => `<li>${I('file')}<span>${E(d.n)}<small>tersimpan</small></span></li>`).join('')}${pd.map((f, i) => `<li>${I('file')}<span>${E(f.name)}<small>${fmtSize(f.size)} · baru</small></span><button class="btn ghost" type="button" data-mr="${id}:${i}" aria-label="Hapus berkas">${I('x')}</button></li>`).join('')}</ul>` : ''}</div>`;
+      }).join('');
+      m.querySelectorAll('[data-mp]').forEach((b) => (b.onclick = () => $('m-f-' + b.dataset.mp).click()));
+      m.querySelectorAll('input[type=file]').forEach((x) => (x.onchange = () => {
+        const { ok, bad } = filterFiles([...x.files], x.dataset.kind);
+        if (bad.length) UI.toast(bad[0], false);
+        pend[x.dataset.id] = (pend[x.dataset.id] || []).concat(ok.map((f) => ({ name: f.name, size: f.size })));
+        paintDocs(); refresh();
+      }));
+      m.querySelectorAll('[data-mr]').forEach((b) => (b.onclick = () => { const [id, i] = b.dataset.mr.split(':'); pend[id].splice(+i, 1); paintDocs(); refresh(); }));
+    };
+    const body = `${sp.basis.length ? `<details class="basis"><summary>Dasar hukum (${sp.basis.length}) <small>klik untuk membuka</small></summary><ul>${sp.basis.map((b) => `<li>${E(b.t)}${b.v ? ' <em>· perlu validasi tim hukum</em>' : ''}</li>`).join('')}</ul></details>` : ''}
+      ${sp.info ? `<div class="smart" style="margin:0 0 12px">${E(sp.info)}</div>` : ''}
+      <div class="form">${field(sp.dateLabel, inp('m-tgl', toDateInput(MCS.NOW), 'type="date"'), { req: true })}${sp.fields.map(fieldHtml).join('')}</div>
+      ${sp.docs.length ? '<div class="fs" style="margin-top:14px"><h4>Berkas untuk tahap ini</h4><div id="m-docs"></div></div>' : ''}
+      <div class="gate" id="m-gate"></div>
+      ${needsApproval() ? '<div class="smart"><div class="t">' + I('shield') + 'Perlu verifikasi</div>Pembaruan akan dikirim ke Aspidmil ' + MCS.KJ[c.kejati].short.replace('Kejati ', '') + ' untuk diverifikasi sebelum terbit di dashboard Jampidmil.</div>' : ''}`;
+    modal(sp.title, 'Tahap ' + MCS.TAHAP[c.st].name + ' → ' + nextName + ' · ' + MCS.tahapLong(to, c), body, () => {
+      const { vals, res, loop } = refresh();
       let ok = true;
-      req.forEach((r) => { const f = r.closest('.f'); const v = f.querySelector('input,select'); if (v && !String(v.value).trim()) { f.classList.add('err'); ok = false; } });
+      $('mbox').querySelectorAll('.f label i').forEach((r) => { const f = r.closest('.f'); if (f.style.display === 'none') return; const v = f.querySelector('input,select'); if (v && !String(v.value).trim()) { f.classList.add('err'); ok = false; } else f.classList.remove('err'); });
       if (!ok) { $('m-note').textContent = 'Lengkapi isian wajib.'; return false; }
+      if (!loop && res.some((x) => x.req && !x.ok)) { $('m-note').textContent = 'Syarat untuk lanjut belum terpenuhi.'; return false; }
+      if (loop && sp.loopKind === 'close' && needsApproval()) { $('m-note').textContent = 'Penutupan perkara hanya dapat dicatat oleh Aspidmil atau Admin Pusat.'; return false; }
       const t = new Date($('m-tgl').value).getTime() || Date.now();
+      const ex = exDocs(); let nDocs = 0;
+      Object.keys(pend).forEach((id) => pend[id].forEach((f) => { ex.unshift({ n: f.name, jenis: PROSES.DOCL[id], k: id, size: f.size, t: Date.now(), by: me.name }); nDocs++; }));
+      if (nDocs) MCS.LS.set('mcs3_docs_' + c.id, ex);
+      if (loop) { recordLoop(c, sp, vals, t); return; }
       const val = (id) => ($(id) ? $(id).value : '');
-      const detail = MCS.TAHAP[c.st].name + ' → ' + MCS.TAHAP[to].name + (val('m-a') ? ' · ' + (to === 2 && K ? 'peradilan ' + val('m-a') : val('m-a')) : '');
-      const form = { a: val('m-a'), b: val('m-b'), c: val('m-c') };
+      const brief = to === 2 ? vals['1.hasil'] : to === 3 ? vals['2.titik'] || vals['2.keputusan'] : val('m-a');
+      const detail = MCS.TAHAP[c.st].name + ' → ' + nextName + (brief ? ' · ' + brief : '') + (nDocs ? ' · ' + nDocs + ' berkas' : '');
+      const form = { a: val('m-a'), b: val('m-b'), c: val('m-c'), vals };
       if (needsApproval()) {
         const ap = MCS.getApprovals();
-        ap.unshift({ id: 'APR-' + (2000 + ap.length), caseId: c.id, by: me.name + ' (' + me.unit + ')', t: Date.now(), field: 'Tahap', from: MCS.TAHAP[c.st].name, to: MCS.TAHAP[to].name, note: detail, status: 'menunggu', apply: { st: to, t, form } });
+        ap.unshift({ id: 'APR-' + (2000 + ap.length), caseId: c.id, by: me.name + ' (' + me.unit + ')', t: Date.now(), field: 'Tahap', from: MCS.TAHAP[c.st].name, to: nextName, note: detail, status: 'menunggu', apply: { st: to, t, form } });
         MCS.saveApprovals(ap); MCS.audit(me.name, 'Ajukan perubahan tahap', c.id, detail);
         UI.toast('Diajukan untuk verifikasi Aspidmil'); editor(c.id); renderNav('perkara');
         return;
       }
       applyStage(c, to, t, form);
       MCS.audit(me.name, 'Perbarui tahap', c.id, detail);
-      UI.toast(`Tahap diperbarui: ${MCS.TAHAP[to].name}`); editor(c.id);
-    });
+      UI.toast(`Tahap diperbarui: ${nextName}`); editor(c.id);
+    }, 'Lanjut');
+    $('mbox').querySelectorAll('input,select').forEach((el) => { el.addEventListener('input', refresh); el.addEventListener('change', refresh); });
+    paintDocs(); refresh();
+  }
+  /** Hasil yang dicatat tanpa pindah tahap: berkas dikembalikan, perbedaan pendapat, atau perkara ditutup. */
+  function recordLoop(c, sp, vals, t) {
+    c.td = Object.assign(c.td || {}, vals);
+    c.rounds = c.rounds || [];
+    if (sp.loopKind === 'return') {
+      c.rounds.push({ t, st: 1, txt: vals['1.hasil'], cat: vals['1.catatan'] || '' });
+      MCS.audit(me.name, 'Catat hasil penelitian berkas', c.id, vals['1.hasil'] + (vals['1.catatan'] ? ' · ' + vals['1.catatan'] : ''));
+      UI.toast('Hasil penelitian dicatat. Perkara tetap di Penelitian Berkas');
+    } else if (sp.loopKind === 'report') {
+      c.rounds.push({ t, st: 2, txt: 'Perbedaan pendapat Jaksa dan Oditur dilaporkan ke Jaksa Agung dan Oditur Jenderal', cat: '' });
+      MCS.audit(me.name, 'Catat perbedaan pendapat penelitian bersama', c.id, 'Dilaporkan ke Jaksa Agung dan Oditur Jenderal');
+      UI.toast('Perbedaan pendapat dicatat. Menunggu keputusan Jaksa Agung dan Oditur Jenderal');
+    } else if (sp.loopKind === 'close') {
+      c.closed = { jenis: vals['2.keputusan'], nomor: vals['2.skep'] || '', t };
+      MCS.audit(me.name, 'Perkara tidak dilanjutkan ke pengadilan', c.id, vals['2.keputusan']);
+      UI.toast('Keputusan dicatat. Perkara tidak dilanjutkan ke pengadilan');
+    }
+    commit(c, null, null); editor(c.id); renderNav('perkara');
+  }
+
+  /** Tab "Proses & syarat": isi dan syarat tiap tahap sesuai jenis perkara. */
+  function procPanel(c) {
+    const lab = PROSES.labelsFor(c);
+    const docs = MCS.LS.get('mcs3_docs_' + c.id, []);
+    const hasDoc = (id) => docs.some((d) => d.k === id);
+    const K = c.jenis === 'koneksitas';
+    const banner = c.closed ? `<div class="smart" style="margin:0 0 14px;border-color:color-mix(in srgb, var(--crit-txt) 40%, transparent)"><div class="t">${I('x')}Perkara tidak dilanjutkan ke pengadilan</div>${E(c.closed.jenis)}${c.closed.nomor ? ' · ' + E(c.closed.nomor) : ''} · ${MCS.fmtDate(c.closed.t)}</div>` : '';
+    const card = (i) => {
+      const t = MCS.TAHAP[i], state = i < c.st ? 'done' : i === c.st ? 'cur' : 'todo';
+      const sp = i < 7 ? PROSES.spec(c, i + 1) : null;
+      const facts = Object.keys(c.td || {}).filter((k) => lab[k] && lab[k].stage === i && c.td[k] !== '').map((k) => [lab[k].label, lab[k].type === 'check' ? 'Ya' : c.td[k]]);
+      const dl = docs.filter((d) => { const x = PROSES.DOCT.find((y) => y[0] === d.k); return x && x[3] === i; });
+      const rounds = (c.rounds || []).filter((r) => r.st === i);
+      let h = `<div class="pcard ${state}"><div class="pc-h"><span class="pc-n">${i + 1}</span><div><b>${t.name}</b><span>${E(MCS.tahapActor(i, c))}</span></div><span class="pill ${state === 'done' ? 'good' : state === 'cur' ? 'info' : ''}">${state === 'done' ? 'Selesai · ' + (c.sd[i] ? MCS.fmtDate(c.sd[i]) : '') : state === 'cur' ? 'Sedang berjalan' : 'Belum'}</span></div>`;
+      if (sp && sp.basis.length) h += `<details class="basis" ${state === 'cur' ? 'open' : ''}><summary>Dasar hukum${K ? ' · koneksitas' : ' · perkara Oditurat'} <small>(${sp.basis.length})</small></summary><ul>${sp.basis.map((b) => `<li>${E(b.t)}${b.v ? ' <em>· perlu validasi tim hukum</em>' : ''}</li>`).join('')}</ul></details>`;
+      if (facts.length) h += `<div class="sum">${facts.map(([k, v]) => `<div class="row"><span>${E(k)}</span><b>${E(v)}</b></div>`).join('')}</div>`;
+      if (rounds.length) h += `<div class="rounds"><h4>Catatan proses</h4>${rounds.map((r) => `<div>${MCS.fmtDate(r.t)} · ${E(r.txt)}${r.cat ? ' — ' + E(r.cat) : ''}</div>`).join('')}</div>`;
+      if (dl.length) h += `<div class="fs" style="margin-top:10px"><h4>Berkas tahap ini</h4><ul class="dlist">${dl.map((d) => `<li>${I('file')}<span>${E(d.n)}<small>${E(d.jenis || '')}${d.size ? ' · ' + fmtSize(d.size) : ''}</small></span></li>`).join('')}</ul></div>`;
+      if (state === 'cur' && sp && !c.closed) {
+        const res = PROSES.evalChecks(c, sp, {}, hasDoc);
+        const need = sp.fields.filter((f) => f.req && f.type !== 'ro' && !f.sec).map((f) => f.label);
+        h += `<div class="gate"><h4>Untuk lanjut ke ${MCS.TAHAP[i + 1].name}</h4>${need.length ? `<div class="need">Yang perlu diinput: ${need.map(E).join(' · ')}</div>` : ''}${res.map((x) => `<div class="gi ${x.ok ? 'ok' : x.req ? 'no' : 'warn'}"><i>${x.ok ? '✓' : x.req ? '✕' : '!'}</i><span>${E(x.label)}${x.basis ? `<small>${E(x.basis)}</small>` : ''}</span></div>`).join('')}${canMoveTo(c.st + 1) ? '<div style="margin-top:10px"><button class="btn primary" id="p-next">' + I('arrow') + 'Isi & lanjut ke ' + MCS.TAHAP[i + 1].name + '</button></div>' : ''}</div>`;
+      }
+      return h + '</div>';
+    };
+    return banner + `<div class="pgrid">${MCS.TAHAP.map((t, i) => card(i)).join('')}</div>`;
   }
   /** form: nilai isian modal {a, b, c} — dipakai langsung atau saat Aspidmil menyetujui */
   function applyStage(c, to, t, form = {}) {
     c.sd = c.sd.slice(0, to); c.sd[to] = t; c.st = to;
     const kj = MCS.KJ[c.kejati];
-    if (to === 2 && c.jenis === 'koneksitas' && form.a) {
-      c.forum = form.a;
+    const vals = form.vals || {};
+    if (Object.keys(vals).length) c.td = Object.assign(c.td || {}, vals);
+    if (to === 3 && c.jenis === 'koneksitas' && vals['2.titik']) {
+      c.forum = vals['2.titik'] === PROSES.UMUM ? 'umum' : 'militer';
       c.pn = c.forum === 'umum' ? (c.cat === 'KOR' ? 'Pengadilan Tipikor pada PN ' + kj.city : 'Pengadilan Negeri ' + MCS.KAB[c.kab].short.replace(/^Kota /, '')) : null;
     }
     if (to === 4) {
@@ -439,7 +603,7 @@
     }
     if (to === 5) {
       const bln = +form.a || 0;
-      c.putusan = { t, amar: bln ? 'Pidana penjara ' + MCS.fmtBulan(bln) : 'Bebas', pidana: bln, tambahan: form.b === 'Dipecat dari dinas militer' ? form.b : null, uangPengganti: form.b === 'Uang pengganti' ? c.kerugian - c.pulih : 0, tuntutan: '—' };
+      c.putusan = { t, amar: bln ? 'Pidana penjara ' + MCS.fmtBulan(bln) : 'Bebas', pidana: bln, tambahan: form.b === 'Dipecat dari dinas militer' ? form.b : null, uangPengganti: form.b === 'Uang pengganti' ? c.kerugian - c.pulih : 0, tuntutan: vals['4.tuntutan'] ? MCS.fmtBulan(+vals['4.tuntutan']) : '—' };
       c.sidang.forEach((s) => { if (s.status === 'jadwal') s.status = 'selesai'; });
     }
     if (to === 6) c.upaya = { jenis: form.a || 'Banding', oleh: form.b || 'Terdakwa', t };
@@ -483,13 +647,13 @@
 
   // ================= Wizard perkara baru =================
   let wz = null;
-  const WSTEPS = [['Perkara & lokasi', 'Jenis, sumber, locus delicti'], ['Tersangka', 'Militer & sipil'], ['Pasal', 'Klasifikasi & sangkaan'], ['Kerugian & catatan', 'Bila ada'], ['Tinjau & kirim', 'Periksa kembali']];
+  const WSTEPS = [['Perkara & lokasi', 'Jenis, sumber, locus delicti'], ['Tersangka', 'Militer & sipil'], ['Pasal', 'Klasifikasi & sangkaan'], ['Kerugian & catatan', 'Bila ada'], ['Berkas & barang bukti', 'Unggah dokumen, foto, video'], ['Tinjau & kirim', 'Periksa kembali']];
   function wizard() {
     crumb(['Perkara', '#perkara'], ['Input perkara baru']);
     if (!can('Input perkara baru')) { page.innerHTML = '<div class="empty">Peran Anda tidak dapat menginput perkara baru.</div>'; return; }
     if (!wz) {
       const defKab = regional() ? MCS.kabsOf(MCS.KJ[me.kejati].p)[0].id : scoped[0] ? scoped[scoped.length - 1].kab : MCS.KABS[0].id;
-      wz = { step: 0, d: { jenis: 'oditurat', lp: 'LP-' + (10 + Math.floor(Math.random() * 150)) + '/A-' + (1 + Math.floor(Math.random() * 40)) + '/' + MCS.ROMAN[new Date().getMonth()] + '/' + new Date().getFullYear() + '/Idik', tgl: toDateInput(MCS.NOW), tglk: toDateInput(MCS.NOW - 2 * MCS.DAY), sumber: 'Pemberitahuan penyidikan dari Polisi Militer', p: MCS.KAB[defKab].p, kab: defKab, loc: '', title: '', matra: 'AD', terdakwa: [{ pangkat: 'Serda', nama: '', nrp: '', jabatan: '', kesatuan: '', ditahan: '0' }], sipil: [], cat: '', arts: [], kerugian: '', catatan: '' } };
+      wz = { step: 0, d: { jenis: 'oditurat', lp: 'LP-' + (10 + Math.floor(Math.random() * 150)) + '/A-' + (1 + Math.floor(Math.random() * 40)) + '/' + MCS.ROMAN[new Date().getMonth()] + '/' + new Date().getFullYear() + '/Idik', tgl: toDateInput(MCS.NOW), tglk: toDateInput(MCS.NOW - 2 * MCS.DAY), sumber: 'Pemberitahuan penyidikan dari Polisi Militer', p: '', kab: '', loc: '', title: '', matra: 'AD', terdakwa: [{ pangkat: 'Serda', nama: '', nrp: '', jabatan: '', kesatuan: '', ditahan: '0' }], sipil: [], cat: '', arts: [], kerugian: '', catatan: '', files: {}, audit: { st: '', lembaga: 'BPK RI', no: '', tgl: '' } } };
     }
     renderWizard();
   }
@@ -500,20 +664,20 @@
   }
   function renderWizard() {
     const d = wz.d, s = wz.step;
-    const court = courtFor(d);
+    const court = d.kab ? courtFor(d) : { name: '—', level: '', code: '', id: null };
     let body = '';
     const K = d.jenis === 'koneksitas';
-    const kjW = MCS.kejatiOfProv(d.p);
-    if (s === 0) body = `${field('Jenis perkara', `<div class="chipset">${MCS.JENIS.map((j) => `<span class="chk ${d.jenis === j.id ? 'on' : ''}" data-j="${j.id}" title="${j.long}">${j.name}</span>`).join('')}</div>`, { hint: K ? 'Pelaku militer bersama sipil — penyidikan & penuntutan ditangani tim koneksitas' : 'Perkara yang dituntut Oditurat — Kejati melakukan koordinasi teknis & pemantauan' })}
+    const kjW = d.p ? MCS.kejatiOfProv(d.p) : { name: 'Kejaksaan Tinggi (sesuai wilayah yang dipilih)', short: 'Kejati (pilih wilayah dulu)' };
+    if (s === 0) body = `<div class="demo-bar"><label for="w-ex">${I('plus')}Mau coba cepat? Isi otomatis dengan contoh perkara</label><select class="select" id="w-ex"><option value="">Pilih contoh perkara (data simulasi 1–3 tahun lalu)…</option>${SARAN.EXAMPLES.map((e) => `<option value="${e.id}">${E(SARAN.exDate(e).getFullYear() + ' · ' + SARAN.exLabel(e))}</option>`).join('')}</select></div>${field('Jenis perkara', `<div class="chipset">${MCS.JENIS.map((j) => `<span class="chk ${d.jenis === j.id ? 'on' : ''}" data-j="${j.id}" title="${j.long}">${j.name}</span>`).join('')}</div>`, { hint: K ? 'Pelaku militer bersama sipil — penyidikan & penuntutan ditangani tim koneksitas' : 'Perkara yang dituntut Oditurat — Kejati melakukan koordinasi teknis & pemantauan' })}
       <div style="height:14px"></div><div class="form">
+      ${field('Ceritakan singkat kejadiannya', '<textarea id="w-title" placeholder="Tulis dengan kalimat sehari-hari. Contoh: anggota memakai sabu, hasil tes urine positif">' + E(d.title) + '</textarea><div id="w-sg"></div>', { full: true, req: true })}
       ${field(K ? 'Nomor surat perintah penyidikan koneksitas' : 'Nomor laporan Polisi Militer', inp('w-lp', d.lp), { req: true })}
       ${field('Sumber perkara', sel('w-sumber', K ? ['Surat perintah penyidikan koneksitas', 'Pelimpahan dari Jampidmil', 'Laporan masyarakat', 'Temuan audit BPK/BPKP'] : ['Pemberitahuan penyidikan dari Polisi Militer', 'Koordinasi dengan Oditurat', 'Laporan masyarakat', 'Temuan Itjen / audit'], d.sumber))}
       ${field('Tanggal diterima Kejati', inp('w-tgl', d.tgl, 'type="date"'), { req: true })}
       ${field('Tanggal kejadian (tempus delicti)', inp('w-tglk', d.tglk, 'type="date"'), { req: true, hint: new Date(d.tglk).getTime() < new Date('2026-01-02').getTime() ? 'Sebelum 2 Jan 2026 — berlaku KUHP lama' : 'Sejak 2 Jan 2026 — berlaku KUHP 2023 (UU 1/2023)' })}
-      ${field('Provinsi', sel('w-prov', (regional() ? MCS.KJ[me.kejati].prov : MCS.provIds).map((p) => [p, MCS.PROV[p]]), d.p), { req: true, hint: regional() ? 'Sesuai wilayah ' + me.unit : '' })}
-      ${field('Kabupaten/kota', sel('w-kab', MCS.kabsOf(d.p).map((k) => [k.id, k.name]), d.kab), { req: true })}
+      ${field('Provinsi', sel('w-prov', [['', 'Pilih provinsi…']].concat((regional() ? MCS.KJ[me.kejati].prov : MCS.provIds).map((p) => [p, MCS.PROV[p]])), d.p), { req: true, hint: regional() ? 'Sesuai wilayah ' + me.unit : '' })}
+      ${field('Kabupaten/kota', sel('w-kab', [['', d.p ? 'Pilih kabupaten/kota…' : 'Pilih provinsi dulu']].concat(d.p ? MCS.kabsOf(d.p).map((k) => [k.id, k.name]) : []), d.kab), { req: true })}
       ${field('Lokasi detail', inp('w-loc', d.loc, 'placeholder="Kecamatan, desa, alamat"'), { full: true })}
-      ${field('Uraian singkat perkara', inp('w-title', d.title, 'placeholder="Contoh: Meninggalkan kesatuan tanpa izin lebih dari 30 hari"'), { full: true, req: true })}
     </div>`;
     else if (s === 1) body = `${field('Matra tersangka militer', `<div class="chipset">${MCS.MATRA.map((m) => `<span class="chk ${d.matra === m.id ? 'on' : ''}" data-m="${m.id}">${m.name}</span>`).join('')}</div>`)}
       <div style="height:14px"></div>${d.terdakwa.map((t, i) => `<div class="tcard"><header>Tersangka militer ${i + 1}${i ? `<button class="btn ghost" data-rm="${i}">${I('trash')}</button>` : ''}</header><div class="form">
@@ -532,19 +696,37 @@
       <button class="btn" id="w-addt">${I('plus')}Tambah tersangka militer</button>${K ? ` <button class="btn" id="w-adds">${I('plus')}Tambah tersangka sipil</button>` : ''}`;
     else if (s === 2) {
       const rec = d.cat ? new Set(MCS.CAT[d.cat].arts.flatMap((a) => a[0])) : new Set();
-      body = `${field('Klasifikasi tindak pidana', sel('w-cat', [['', 'Pilih klasifikasi…']].concat(MCS.CATS.map((c) => [c.id, c.name])), d.cat), { req: true })}
+      body = `${d.title ? '<div id="w-sg2"></div>' : ''}${field('Klasifikasi tindak pidana', sel('w-cat', [['', 'Pilih klasifikasi…']].concat(MCS.CATS.map((c) => [c.id, c.name])), d.cat), { req: true })}
         ${d.cat ? `<div class="fs" style="margin-top:16px"><h4>Pasal yang disarankan</h4><div class="chipset">${MCS.ARTS.filter((a) => rec.has(a.id)).map((a) => `<span class="chk ${d.arts.includes(a.id) ? 'on' : ''}" data-a="${a.id}" title="${E(a.desc)}">${MCS.artLabel(a.id)}</span>`).join('')}</div></div>
         <div class="fs" style="margin-top:16px"><h4>Pasal lain (junto)</h4><div class="chipset">${MCS.ARTS.filter((a) => !rec.has(a.id)).map((a) => `<span class="chk ${d.arts.includes(a.id) ? 'on' : ''}" data-a="${a.id}" title="${E(a.desc)}">${MCS.artLabel(a.id)}</span>`).join('')}</div></div>` : '<div class="hint" style="margin-top:10px;color:var(--txt-4)">Pilih klasifikasi untuk melihat pasal yang lazim digunakan.</div>'}`;
-    } else if (s === 3) body = `<div class="form">
-      ${field(d.cat && MCS.CAT[d.cat].kn === 'korban' ? 'Kerugian korban (Rp)' : 'Kerugian keuangan negara (Rp)', inp('w-rugi', d.kerugian, 'type="number" min="0" placeholder="0"'), { hint: d.cat && MCS.CAT[d.cat].kn ? 'Wajib untuk klasifikasi ' + MCS.CAT[d.cat].name : 'Kosongkan bila tidak ada kerugian' })}
-      ${field('Catatan koordinasi', '<textarea id="w-cat-n" placeholder="Barang bukti, saksi kunci, hasil koordinasi dengan Oditurat, dsb.">' + E(d.catatan) + '</textarea>', { full: true })}
+    } else if (s === 3) {
+      const au = d.audit, korban = d.cat && MCS.CAT[d.cat].kn === 'korban';
+      body = `<div class="form">
+      ${field(korban ? 'Kerugian korban' : 'Kerugian keuangan negara', `<div class="money"><span>Rp</span><input class="input" id="w-rugi" inputmode="numeric" autocomplete="off" placeholder="0" value="${fmtNum(d.kerugian)}" /></div><div class="terbilang" id="w-rugi-t">${terbilang(+d.kerugian)}</div>`, { full: true, hint: d.cat && MCS.CAT[d.cat].kn ? 'Wajib untuk klasifikasi ' + MCS.CAT[d.cat].name + '. Ketik angkanya saja, titik pemisah ribuan muncul otomatis.' : 'Kosongkan bila tidak ada kerugian. Ketik angkanya saja, titik pemisah ribuan muncul otomatis.' })}
+      <div class="f full"><div class="audit"><h4>Apakah nilai kerugian ini sudah diaudit oleh pihak berwenang?</h4>
+        <div class="chipset"><span class="chk ${au.st === 'sudah' ? 'on' : ''}" data-au="sudah">Sudah diaudit</span><span class="chk ${au.st === 'belum' ? 'on' : ''}" data-au="belum">Belum diaudit</span></div>
+        ${au.st === 'sudah' ? `<div class="form" style="margin-top:12px">
+          ${field('Lembaga yang mengaudit', sel('w-au-l', AUDITORS, au.lembaga))}
+          ${field('Nomor laporan hasil audit', inp('w-au-n', au.no, 'placeholder="Contoh: LHA-12/2026"'))}
+          ${field('Tanggal laporan', inp('w-au-t', au.tgl, 'type="date"'))}
+          <div class="f"><div class="hint" style="margin-top:24px">Unggah laporan hasil auditnya di langkah <b>Berkas &amp; barang bukti</b>.</div></div></div>` : au.st === 'belum' ? '<div class="sg-note" style="margin:10px 0 0">Nilai ini dicatat sebagai <b>perkiraan awal</b>. Perbarui setelah hasil audit tersedia.</div>' : ''}
+      </div></div>
+      ${field('Catatan tambahan (opsional)', '<textarea id="w-cat-n" placeholder="Hal penting yang perlu diketahui tim, misalnya saksi kunci, hasil koordinasi dengan Oditurat, atau perkembangan terakhir.">' + E(d.catatan) + '</textarea>', { full: true, hint: 'Tidak perlu mengulang isi berkas yang diunggah.' })}
     </div>`;
+    }
+    else if (s === 4) {
+      const sl = slotsOf(K, d.terdakwa.some((t) => t.ditahan === '1'), d.audit.st === 'sudah');
+      const total = Object.values(d.files).reduce((n, a) => n + a.length, 0);
+      body = `<div class="smart" style="margin:0 0 14px"><div class="t">${I('upload')}Unggah sekarang, atau nanti</div>Berkas yang berhubungan dengan perkara ini bisa langsung diunggah di sini. Tidak harus lengkap — berkas tambahan (misalnya saat persidangan) dapat ditambahkan nanti oleh petugas yang berwenang di tab <b>Dokumen</b> pada halaman perkara.</div>
+        <div class="slots">${sl.map(([id, name, kind, tag]) => { const fl = d.files[id] || []; return `<div class="slot ${fl.length ? 'has' : ''}"><div class="slot-h"><div><b>${name}</b>${tag ? `<em>${tag}</em>` : ''}<span>${FKIND[kind].label}</span></div><button class="btn" type="button" data-pick="${id}">${I('upload')}${fl.length ? 'Tambah' : 'Pilih berkas'}</button><input type="file" id="w-file-${id}" data-fs="${id}" data-kind="${kind}" accept="${FKIND[kind].accept}" multiple hidden /></div>${fl.length ? `<ul>${fl.map((f, i) => `<li>${I('file')}<span>${E(f.n)}<small>${fmtSize(f.size)}</small></span><button type="button" class="btn ghost" data-rf="${id}:${i}" aria-label="Hapus berkas">${I('x')}</button></li>`).join('')}</ul>` : ''}</div>`; }).join('')}</div>
+        <div class="note-sm">${total ? total + ' berkas dipilih' : 'Belum ada berkas dipilih'} · berkas dipindai otomatis dan tersimpan terenkripsi</div>`;
+    }
     else body = `<div class="sum">${[
       ['Jenis perkara', MCS.JN[d.jenis].name], [K ? 'Nomor sprindik' : 'Nomor LP', d.lp], ['Sumber', d.sumber], ['Diterima Kejati', MCS.fmtDate(new Date(d.tgl).getTime())], ['Tempus delicti', MCS.fmtDate(new Date(d.tglk).getTime())],
-      ['Locus delicti', (d.loc ? d.loc + ', ' : '') + MCS.KAB[d.kab].name + ', ' + MCS.PROV[d.p]], ['Uraian', d.title],
+      ['Locus delicti', (d.loc ? d.loc + ', ' : '') + (d.kab ? MCS.KAB[d.kab].name + ', ' + MCS.PROV[d.p] : '—')], ['Uraian', d.title],
       ['Tersangka militer', d.terdakwa.map((t) => t.pangkat + ' ' + t.nama + ' (NRP ' + t.nrp + ')').join('; ')], ['Matra', MCS.matraName(d.matra)],
       ...(K ? [['Tersangka sipil', d.sipil.map((t) => t.nama + (t.pekerjaan ? ' — ' + t.pekerjaan : '')).join('; ') || '—']] : []),
-      ['Klasifikasi', d.cat ? MCS.CAT[d.cat].name : '—'], ['Pasal', d.arts.map(MCS.artLabel).join(' jo. ') || '—'], ['Kerugian', d.kerugian ? MCS.fmtRp(+d.kerugian) : '—'],
+      ['Klasifikasi', d.cat ? MCS.CAT[d.cat].name : '—'], ['Pasal', d.arts.map(MCS.artLabel).join(' jo. ') || '—'], ['Kerugian', +d.kerugian ? 'Rp ' + fmtNum(d.kerugian) + ' (' + terbilang(+d.kerugian).toLowerCase() + ')' : '—'], ['Audit kerugian', !+d.kerugian || !d.audit.st ? '—' : d.audit.st === 'sudah' ? 'Sudah diaudit · ' + d.audit.lembaga + (d.audit.no ? ' · ' + d.audit.no : '') : 'Belum diaudit (perkiraan awal)'], ['Berkas & barang bukti', (() => { const n = Object.values(d.files).reduce((a, b) => a + b.length, 0); return n ? n + ' berkas diunggah' : 'Belum ada (bisa ditambahkan nanti)'; })()],
       ['Kejaksaan Tinggi', kjW.name], ['Peradilan', K ? 'Ditetapkan melalui penelitian bersama' : court.name], ['Oditurat mitra', MCS.otmilOf(court)],
     ].map(([k, v]) => `<div class="row"><span>${k}</span><b>${E(v)}</b></div>`).join('')}</div>
       <label style="display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:12.5px;color:var(--txt-2);cursor:pointer"><input type="checkbox" id="w-ok" style="margin-top:3px" /> Saya menyatakan data yang diinput sesuai dokumen sumber dan dapat dipertanggungjawabkan.</label>`;
@@ -555,35 +737,85 @@
         <div class="card"><header><h3>${s + 1}. ${WSTEPS[s][0]}</h3><span class="aux">Langkah ${s + 1} dari ${WSTEPS.length}</span></header><div class="cb" id="w-body">${body}</div>
           <div class="form-foot"><span class="note" id="w-note">${I('shield')}Draf tersimpan otomatis</span>${s ? '<button class="btn" id="w-prev">← Sebelumnya</button>' : ''}<button class="btn primary" id="w-next">${s === WSTEPS.length - 1 ? 'Kirim perkara' : 'Lanjut →'}</button></div></div>
         <div class="aside"><div class="card"><div class="mini-map" id="w-map"></div><div class="cb">
-          <div class="sum"><div class="row"><span>Locus</span><b>${MCS.KAB[d.kab].name}</b></div><div class="row"><span>Jenis</span><b>${MCS.JN[d.jenis].name}</b></div><div class="row"><span>Tersangka</span><b>${d.terdakwa.length} militer${K ? ' · ' + d.sipil.length + ' sipil' : ''}</b></div><div class="row"><span>Pasal</span><b>${d.arts.length ? d.arts.map(MCS.artLabel).join(', ') : '—'}</b></div></div>
-          <div class="smart"><div class="t">${I('checkc')}Ditentukan otomatis</div>Perkara dicatat di <b>${kjW.name}</b> berdasarkan locus delicti. ${K ? 'Peradilan (umum atau militer) ditetapkan pada tahap Pendapat Hukum melalui penelitian bersama Jaksa dan Oditur.' : `Penuntutan oleh <b>${MCS.otmilOf(court)}</b> di <b>${court.name}</b>${court.level === 'dilmilti' ? ' (tingkat pertama karena tersangka berpangkat Mayor ke atas)' : ''}; Kejati melakukan koordinasi teknis.`}</div>
+          <div class="sum"><div class="row"><span>Locus</span><b>${d.kab ? MCS.KAB[d.kab].name : 'Belum dipilih'}</b></div><div class="row"><span>Jenis</span><b>${MCS.JN[d.jenis].name}</b></div><div class="row"><span>Tersangka</span><b>${d.terdakwa.length} militer${K ? ' · ' + d.sipil.length + ' sipil' : ''}</b></div><div class="row"><span>Pasal</span><b>${d.arts.length ? d.arts.map(MCS.artLabel).join(', ') : '—'}</b></div></div>
+          <div class="smart"><div class="t">${I('checkc')}Ditentukan otomatis</div>Perkara dicatat di <b>${kjW.name}</b> berdasarkan locus delicti. ${K ? 'Peradilan (umum atau militer) ditetapkan pada tahap Pendapat Hukum melalui penelitian bersama Jaksa dan Oditur.' : (!d.kab ? 'Pengadilan dan Oditurat ditentukan otomatis setelah wilayah dipilih.' : `Penuntutan oleh <b>${MCS.otmilOf(court)}</b> di <b>${court.name}</b>${court.level === 'dilmilti' ? ' (tingkat pertama karena tersangka berpangkat Mayor ke atas)' : ''}; Kejati melakukan koordinasi teknis.`)}</div>
         </div></div></div>
       </div>`;
-    requestAnimationFrame(() => MCSMap.miniMap($('w-map'), d.kab));
+    requestAnimationFrame(() => { if (d.kab) MCSMap.miniMap($('w-map'), d.kab); else $('w-map').innerHTML = '<div class="mm-empty">Pilih provinsi dan kabupaten/kota untuk melihat lokasi di peta</div>'; });
     // binding
     const keep = () => {
-      if (s === 0) Object.assign(d, { lp: $('w-lp').value, sumber: $('w-sumber').value, tgl: $('w-tgl').value, tglk: $('w-tglk').value, p: +$('w-prov').value, kab: $('w-kab').value, loc: $('w-loc').value, title: $('w-title').value });
+      if (s === 0) Object.assign(d, { lp: $('w-lp').value, sumber: $('w-sumber').value, tgl: $('w-tgl').value, tglk: $('w-tglk').value, p: $('w-prov').value ? +$('w-prov').value : '', kab: $('w-kab').value, loc: $('w-loc').value, title: $('w-title').value });
       if (s === 1) {
         d.terdakwa.forEach((t, i) => Object.assign(t, { pangkat: $('w-pk' + i).value, nama: $('w-nm' + i).value, nrp: $('w-nrp' + i).value, jabatan: $('w-jb' + i).value, kesatuan: $('w-ks' + i).value, ditahan: $('w-th' + i).value }));
         if (K) d.sipil.forEach((t, i) => Object.assign(t, { nama: $('w-snm' + i).value, nik: $('w-snik' + i).value, pekerjaan: $('w-spk' + i).value }));
       }
       if (s === 2) d.cat = $('w-cat').value;
-      if (s === 3) { d.kerugian = $('w-rugi').value; d.catatan = $('w-cat-n').value; }
+      if (s === 3) { d.kerugian = $('w-rugi').value.replace(/\D/g, ''); d.catatan = $('w-cat-n').value; if ($('w-au-l')) Object.assign(d.audit, { lembaga: $('w-au-l').value, no: $('w-au-n').value, tgl: $('w-au-t').value }); }
     };
     const validate = () => {
       let ok = true;
-      $('w-body').querySelectorAll('.f').forEach((f) => { const req = f.querySelector('label i'); const v = f.querySelector('input,select'); f.classList.remove('err'); if (req && v && !String(v.value).trim()) { f.classList.add('err'); ok = false; } });
+      $('w-body').querySelectorAll('.f').forEach((f) => { const req = f.querySelector('label i'); const v = f.querySelector('input,select,textarea'); f.classList.remove('err'); if (req && v && !String(v.value).trim()) { f.classList.add('err'); ok = false; } });
       if (s === 1 && K && !d.sipil.length) { ok = false; $('w-note').innerHTML = '<span style="color:var(--crit-txt)">Perkara koneksitas wajib memiliki tersangka sipil.</span>'; return ok; }
       if (s === 2 && !d.arts.length) { ok = false; $('w-note').innerHTML = '<span style="color:var(--crit-txt)">Pilih minimal satu pasal.</span>'; }
       if (s === 3 && d.cat && MCS.CAT[d.cat].kn && !+d.kerugian) { ok = false; $('w-rugi').closest('.f').classList.add('err'); }
-      if (s === 4 && !$('w-ok').checked) { ok = false; $('w-note').innerHTML = '<span style="color:var(--crit-txt)">Centang pernyataan untuk mengirim.</span>'; }
+      if (s === 3 && ok && d.cat && MCS.CAT[d.cat].kn === 'negara' && !d.audit.st) { ok = false; $('w-note').innerHTML = '<span style="color:var(--crit-txt)">Pilih: nilai kerugian sudah atau belum diaudit.</span>'; }
+      if (s === 5 && !$('w-ok').checked) { ok = false; $('w-note').innerHTML = '<span style="color:var(--crit-txt)">Centang pernyataan untuk mengirim.</span>'; }
       if (!ok && s < 2) $('w-note').innerHTML = '<span style="color:var(--crit-txt)">Lengkapi isian bertanda *</span>';
       return ok;
     };
-    if ($('w-prov')) $('w-prov').onchange = (e) => { keep(); d.p = +e.target.value; d.kab = MCS.kabsOf(d.p)[0].id; renderWizard(); };
+    // ---- asisten saran pasal & contoh perkara ----
+    const sgS = (wz.sg = wz.sg || {});
+    const paintSg = (mid) => {
+      const m = $(mid); if (!m) return;
+      const sg = SARAN.suggest(d.title, d.tglk);
+      const all = sg && !sg.empty ? [sg.top].concat(sg.alts) : [];
+      const shown = (all.find((x) => x.cat === sgS.cat) || all[0] || {}).cat;
+      m.innerHTML = SARAN.render(sg, { cat: sgS.cat, picked: !!(shown && d.sgOk && d.cat === shown), compact: mid === 'w-sg2' });
+      m.querySelectorAll('[data-sg-use]').forEach((b) => (b.onclick = () => {
+        const x = all.find((y) => y.cat === b.dataset.sgUse); if (!x) return;
+        keep(); d.cat = x.cat; d.arts = x.ids.slice(); d.sgOk = true; sgS.cat = x.cat;
+        if (s === 2) renderWizard(); else { paintSg(mid); UI.toast('Saran dipakai — klasifikasi & pasal terisi, bisa diubah di langkah 3'); }
+      }));
+      m.querySelectorAll('[data-sg-alt]').forEach((b) => (b.onclick = () => { sgS.cat = b.dataset.sgAlt; paintSg(mid); }));
+    };
+    paintSg('w-sg'); paintSg('w-sg2');
+    if ($('w-title')) $('w-title').oninput = () => { d.title = $('w-title').value; sgS.cat = null; paintSg('w-sg'); };
+    if ($('w-ex')) $('w-ex').onchange = (ev) => {
+      const e = SARAN.EXAMPLES.find((x) => x.id === ev.target.value); if (!e) return;
+      keep();
+      const tk = SARAN.exDate(e).getTime(), tr = Math.min(MCS.NOW, tk + 9 * MCS.DAY), rd = new Date(tr);
+      d.jenis = e.jenis; d.sumber = '';
+      d.lp = e.jenis === 'koneksitas' ? 'Print-' + (10 + Math.floor(Math.random() * 150)) + '/Kon/' + MCS.ROMAN[rd.getMonth()] + '/' + rd.getFullYear() : 'LP-' + (10 + Math.floor(Math.random() * 150)) + '/A-' + (1 + Math.floor(Math.random() * 40)) + '/' + MCS.ROMAN[rd.getMonth()] + '/' + rd.getFullYear() + '/Idik';
+      d.tglk = toDateInput(tk); d.tgl = toDateInput(tr);
+      const kb = MCS.KABS.find((k) => k.name === e.kab);
+      const kk = regional() && !(kb && MCS.KJ[me.kejati].prov.includes(kb.p)) ? MCS.kabsOf(MCS.KJ[me.kejati].prov[0])[0] : kb;
+      if (kk) { d.p = kk.p; d.kab = kk.id; }
+      d.loc = ''; d.title = e.title; d.matra = e.matra;
+      d.terdakwa = [{ pangkat: MCS.PANGKAT[e.matra].some((x) => x[0] === e.pangkat) ? e.pangkat : MCS.PANGKAT[e.matra][6][0], nama: e.nama, nrp: e.nrp, jabatan: e.jabatan, kesatuan: e.kesatuan, ditahan: '0' }];
+      d.sipil = e.sipil.map(([n, pk], i) => ({ nama: n, nik: '3578' + String(MCS.hash(e.id + i)).padStart(12, '0').slice(0, 12), pekerjaan: pk }));
+      d.cat = e.cat; d.arts = e.arts.slice(); d.sgOk = true; d.kerugian = e.kerugian ? String(e.kerugian) : ''; d.catatan = e.catatan;
+      d.audit = e.kerugian && (e.cat === 'KOR' || e.cat === 'MAT') ? { st: 'sudah', lembaga: e.cat === 'MAT' ? 'Inspektorat Jenderal TNI' : e.matra === 'AL' ? 'BPKP' : 'BPK RI', no: 'LHA-' + (20 + (MCS.hash(e.id) % 60)) + '/' + rd.getFullYear(), tgl: toDateInput(Math.min(MCS.NOW, tr + 60 * MCS.DAY)) } : { st: '', lembaga: 'BPK RI', no: '', tgl: '' };
+      wz.sg = {}; renderWizard(); UI.toast('Contoh dimuat — periksa tiap langkah, lalu kirim');
+    };
+    page.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = () => $('w-file-' + b.dataset.pick).click()));
+    page.querySelectorAll('input[data-fs]').forEach((x) => (x.onchange = () => {
+      const { ok, bad } = filterFiles([...x.files], x.dataset.kind);
+      if (bad.length) UI.toast(bad[0], false);
+      d.files[x.dataset.fs] = (d.files[x.dataset.fs] || []).concat(ok.map((f) => ({ n: f.name, size: f.size, type: f.type })));
+      renderWizard();
+    }));
+    page.querySelectorAll('[data-rf]').forEach((b) => (b.onclick = () => { const [id, i] = b.dataset.rf.split(':'); d.files[id].splice(+i, 1); if (!d.files[id].length) delete d.files[id]; renderWizard(); }));
+    if ($('w-rugi')) $('w-rugi').oninput = (e) => {
+      const el = e.target, fromEnd = el.value.length - el.selectionStart;
+      el.value = fmtNum(el.value);
+      const pos = Math.max(0, el.value.length - fromEnd); el.setSelectionRange(pos, pos);
+      $('w-rugi-t').textContent = terbilang(+el.value.replace(/\D/g, ''));
+    };
+    page.querySelectorAll('[data-au]').forEach((b) => (b.onclick = () => { keep(); d.audit.st = d.audit.st === b.dataset.au ? '' : b.dataset.au; renderWizard(); }));
+    if ($('w-prov')) $('w-prov').onchange = (e) => { keep(); d.p = e.target.value ? +e.target.value : ''; d.kab = ''; renderWizard(); };
     if ($('w-kab')) $('w-kab').onchange = () => { keep(); renderWizard(); };
     if ($('w-tglk')) $('w-tglk').onchange = () => { keep(); renderWizard(); };
-    if ($('w-cat')) $('w-cat').onchange = () => { keep(); d.arts = d.cat ? MCS.CAT[d.cat].arts[0][0].slice() : []; renderWizard(); };
+    if ($('w-cat')) $('w-cat').onchange = () => { keep(); d.sgOk = false; d.arts = d.cat ? MCS.CAT[d.cat].arts[0][0].slice() : []; renderWizard(); };
     page.querySelectorAll('[data-m]').forEach((b) => (b.onclick = () => { keep(); d.matra = b.dataset.m; d.terdakwa.forEach((t) => { if (!MCS.PANGKAT[d.matra].some((p) => p[0] === t.pangkat)) t.pangkat = MCS.PANGKAT[d.matra][6][0]; }); renderWizard(); }));
     page.querySelectorAll('[data-a]').forEach((b) => (b.onclick = () => { const a = b.dataset.a; d.arts = d.arts.includes(a) ? d.arts.filter((x) => x !== a) : d.arts.concat(a); b.classList.toggle('on'); keep(); }));
     page.querySelectorAll('select[id^="w-pk"]').forEach((x) => (x.onchange = () => { keep(); renderWizard(); }));
@@ -615,9 +847,13 @@
       sipil: d.jenis === 'koneksitas' ? d.sipil.map((x) => ({ nama: x.nama, pekerjaan: x.pekerjaan || '—', umur: 30 })) : [],
     };
     MCS.enrich(c);
+    c.auditKerugian = +d.kerugian && d.audit.st ? { ...d.audit } : null; c.catatan = d.catatan || ''; c.gate = true; c.td = {};
     c.lp = d.lp; c.verified = !needsApproval(); c.updated = Date.now(); c.updatedBy = me.unit;
     MCS.saveCase(c);
-    MCS.audit(me.name, 'Input perkara baru', c.id, d.lp + ' · ' + MCS.CAT[d.cat].name);
+    const slotName = Object.fromEntries(slotsOf(d.jenis === 'koneksitas', true, true).map((x) => [x[0], x[1]]));
+    const docs = []; Object.keys(d.files).forEach((k) => d.files[k].forEach((f) => docs.push({ n: f.n, jenis: slotName[k] || 'Berkas', k, size: f.size, t: Date.now(), by: me.name })));
+    if (docs.length) MCS.LS.set('mcs3_docs_' + c.id, docs);
+    MCS.audit(me.name, 'Input perkara baru', c.id, d.lp + ' · ' + MCS.CAT[d.cat].name + (docs.length ? ' · ' + docs.length + ' berkas' : ''));
     if (!c.verified) {
       const ap = MCS.getApprovals();
       ap.unshift({ id: 'APR-' + (2000 + ap.length), caseId: c.id, by: me.name + ' (' + me.unit + ')', t: Date.now(), field: 'Perkara baru', from: '—', to: MCS.CAT[d.cat].name + ' · ' + d.terdakwa[0].pangkat + ' ' + d.terdakwa[0].nama, note: d.lp, status: 'menunggu' });
@@ -667,7 +903,7 @@
         <div><div class="h"><span class="mono">${a.id}</span>·<b><a href="#perkara/${a.caseId}">${c ? c.reg || c.id : a.caseId}</a></b>·<span>${c ? E(MCS.terdakwaLabel(c.terdakwa[0])) : ''}</span>·<span>diajukan ${E(a.by)} · ${MCS.fmtAgo(a.t)}</span>${a.status !== 'menunggu' ? `<span class="pill ${a.status === 'disetujui' ? 'good' : 'crit'}">${a.status}</span>` : ''}</div>
           <div class="diff"><span class="k">${E(a.field)}</span><span class="a">${E(a.from)}</span><span style="color:var(--txt-4)">→</span><span class="b">${E(a.to)}</span></div>
           ${a.note ? `<div class="note">Catatan: ${E(a.note)}</div>` : ''}</div>
-        <div class="btns">${a.status === 'menunggu' ? `<button class="btn danger" data-r="${a.id}">${I('x')}Tolak</button><button class="btn primary" data-ok="${a.id}">${I('check')}Setujui</button>` : ''}</div></div>`; }).join('') : '<div class="empty">Tidak ada pengajuan.</div>'}</div>`;
+        <div class="btns"><button class="btn" data-d="${a.id}">${I('file')}Lihat detail</button>${a.status === 'menunggu' ? `<button class="btn danger" data-r="${a.id}">${I('x')}Tolak</button><button class="btn primary" data-ok="${a.id}">${I('check')}Setujui</button>` : ''}</div></div>`; }).join('') : '<div class="empty">Tidak ada pengajuan.</div>'}</div>`;
     const decide = (id, ok) => {
       const ap = MCS.getApprovals(); const a = ap.find((x) => x.id === id);
       let alasan = '';
@@ -686,6 +922,35 @@
       setTimeout(() => { persetujuan(); renderNav('persetujuan'); }, 300);
       UI.toast(ok ? 'Perubahan disetujui dan diterbitkan' : 'Perubahan ditolak');
     };
+    // ---- detail pengajuan: lihat isi perkara sebelum menyetujui ----
+    const showDetail = (id) => {
+      const ap = MCS.getApprovals().find((x) => x.id === id); if (!ap) return;
+      const c = MCS.byId(ap.caseId);
+      if (!c) { UI.toast('Berkas perkara tidak ditemukan', false); return; }
+      const row = (k, v) => `<div class="row"><span>${k}</span><b>${E(v)}</b></div>`;
+      const docs = MCS.LS.get('mcs3_docs_' + c.id, []);
+      const au = c.auditKerugian;
+      const rows = [
+        ['Nomor perkara', c.reg || c.id], [c.jenis === 'koneksitas' ? 'Nomor sprindik' : 'Nomor LP', c.lp], ['Jenis perkara', MCS.JN[c.jenis].name], ['Tahap saat ini', MCS.TAHAP[c.st].name],
+        ['Klasifikasi', MCS.CAT[c.cat].name], ['Uraian', c.title], ['Lokasi', (c.loc ? c.loc + ', ' : '') + MCS.KAB[c.kab].name + ', ' + MCS.PROV[c.p]], ['Kejaksaan Tinggi', MCS.KJ[c.kejati].name], ['Diterima', MCS.fmtDate(c.d)],
+        ['Tersangka militer', c.terdakwa.map((t) => t.pangkat + ' ' + t.nama + (t.nrp ? ' (NRP ' + t.nrp + ')' : '')).join('; ')], ['Satuan', c.kesatuan || '—'],
+        ...(c.sipil && c.sipil.length ? [['Tersangka sipil', c.sipil.map((t) => t.nama + (t.pekerjaan && t.pekerjaan !== '—' ? ' — ' + t.pekerjaan : '')).join('; ')]] : []),
+        ['Pasal', (c.arts || []).map(MCS.artLabel).join(' jo. ') || '—'],
+        ['Kerugian', c.kerugian ? 'Rp ' + fmtNum(c.kerugian) + ' (' + terbilang(c.kerugian).toLowerCase() + ')' : '—'],
+        ['Audit kerugian', !c.kerugian ? '—' : au ? (au.st === 'sudah' ? 'Sudah diaudit · ' + au.lembaga + (au.no ? ' · ' + au.no : '') : 'Belum diaudit (perkiraan awal)') : 'Belum diisi'],
+        ['Catatan awal', c.catatan || '—'],
+      ];
+      const dl = docs.length ? `<ul class="dlist">${docs.map((d) => `<li>${I('file')}<span>${E(d.n)}<small>${d.jenis ? E(d.jenis) + ' · ' : ''}${d.size ? fmtSize(d.size) : ''}</small></span></li>`).join('')}</ul>` : '<div class="hint">Belum ada berkas yang diunggah untuk perkara ini.</div>';
+      const open = ap.status === 'menunggu';
+      modal('Detail pengajuan ' + ap.id, 'Periksa isi perkara sebelum diputuskan', `<div class="smart" style="margin:0 0 14px"><div class="t">${I('inbox')}Yang diajukan</div>${E(ap.field)}: ${E(ap.from)} → <b>${E(ap.to)}</b>${ap.note ? '<br>Catatan pengaju: ' + E(ap.note) : ''}<br><span style="color:var(--txt-3)">Diajukan ${E(ap.by)} · ${MCS.fmtAgo(ap.t)}</span></div>
+        <div class="sum">${rows.map(([k, v]) => row(k, v)).join('')}</div>
+        <div class="fs" style="margin-top:14px"><h4>Berkas & barang bukti (${docs.length})</h4>${dl}</div>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center"><a href="#perkara/${c.id}" id="m-open" class="btn">Buka halaman perkara lengkap</a>${open ? `<button class="btn danger" id="m-rej" type="button">${I('x')}Tolak pengajuan</button>` : ''}</div>`,
+        () => { if (open) decide(id, true); }, open ? 'Setujui' : 'Tutup');
+      const o = $('m-open'); if (o) o.onclick = () => UI.close('modal');
+      const r = $('m-rej'); if (r) r.onclick = () => { UI.close('modal'); decide(id, false); };
+    };
+    page.querySelectorAll('[data-d]').forEach((b) => (b.onclick = () => showDetail(b.dataset.d)));
     page.querySelectorAll('[data-ok]').forEach((b) => (b.onclick = () => decide(b.dataset.ok, true)));
     page.querySelectorAll('[data-r]').forEach((b) => (b.onclick = () => decide(b.dataset.r, false)));
   }

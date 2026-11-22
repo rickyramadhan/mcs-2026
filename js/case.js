@@ -48,7 +48,7 @@ window.CaseView = (function () {
       </div>
       <div class="acts">
         ${ns ? `<div class="next-box"><span>Sidang berikutnya</span><b>${MCS.fmtDay(ns.t)}, ${MCS.fmtTime(ns.t)} WIB</b><em>${ns.agenda} · ${ns.ruang}</em></div>`
-          : c.putusan ? `<div class="next-box" style="border-color:rgba(25,158,112,.35);background:rgba(25,158,112,.07)"><span style="color:#5fd3a8">Putusan · ${MCS.fmtDate(c.putusan.t)}</span><b>${c.putusan.amar}</b><em>${c.putusan.tambahan || 'Tanpa pidana tambahan'}</em></div>` : ''}
+          : c.putusan ? `<div class="next-box" style="border-color:color-mix(in srgb, var(--s3) 35%, transparent);background:color-mix(in srgb, var(--s3) 7%, transparent)"><span style="color:var(--ok-txt)">Putusan · ${MCS.fmtDate(c.putusan.t)}</span><b>${c.putusan.amar}</b><em>${c.putusan.tambahan || 'Tanpa pidana tambahan'}</em></div>` : ''}
         <button class="btn" id="d-print" title="Cetak ringkasan">${UI.icon('print')}</button>
         <a class="btn" href="admin.html#perkara/${c.id}" title="Perbarui di Workspace">${UI.icon('edit')}Perbarui</a>
         <button class="x" data-close aria-label="Tutup">×</button>
@@ -101,7 +101,7 @@ window.CaseView = (function () {
     } else if (tab === 'terdakwa') {
       h += sec('Terdakwa', `<div class="cards">${c.terdakwa.map((t) => `<div class="card person"><div class="av">${t.nama.split(' ').map((x) => x[0]).slice(0, 2).join('')}</div>
         <div><b>${E(MCS.terdakwaLabel(t))}</b><span>NRP ${t.nrp} · ${t.umur} tahun</span><span>${MCS.GOL[t.gol]} · ${MCS.matraName(c.matra)}</span><span>${E(c.kesatuan)}</span></div></div>`).join('')}</div>`, c.terdakwa.length + ' orang');
-      if (c.sipil.length) h += sec('Tersangka sipil', `<div class="cards">${c.sipil.map((t) => `<div class="card person"><div class="av" style="background:rgba(92,200,230,.12);color:var(--accent)">${t.nama.split(' ').map((x) => x[0]).slice(0, 2).join('')}</div>
+      if (c.sipil.length) h += sec('Tersangka sipil', `<div class="cards">${c.sipil.map((t) => `<div class="card person"><div class="av" style="background:color-mix(in srgb, var(--accent) 12%, transparent);color:var(--accent)">${t.nama.split(' ').map((x) => x[0]).slice(0, 2).join('')}</div>
         <div><b>${E(t.nama)}</b><span>${E(t.pekerjaan)} · ${t.umur} tahun</span><span>Tunduk pada peradilan umum</span></div></div>`).join('')}</div>`, c.sipil.length + ' orang');
       h += `<div class="note">NRP & NIK disamarkan sesuai hak akses. Identitas lengkap hanya dapat dibuka Kejati yang menangani.</div>`;
     } else if (tab === 'pasal') {
@@ -113,7 +113,7 @@ window.CaseView = (function () {
       else {
         h += sec('Majelis' + (c.jenis === 'koneksitas' ? ' koneksitas' : '') + ' · ' + MCS.forumName(c), `<dl class="kv"><dt>Hakim ketua</dt><dd>${c.majelis[0]}</dd><dt>Hakim anggota</dt><dd>${c.majelis[1]}<br>${c.majelis[2]}</dd><dt>Penuntut</dt><dd>${MCS.penuntutOf(c)}</dd><dt>Panitera pengganti</dt><dd>${c.panitera}</dd><dt>Penasihat hukum</dt><dd>${c.ph}</dd></dl>`);
         h += sec('Jalannya persidangan', `<div class="tl2">${c.sidang.map((s, i) => `<div class="e ${s.status === 'selesai' ? 'done' : s.status === 'jadwal' ? 'next' : 'tunda'}" style="animation-delay:${i * 40}ms">
-          <b>${s.agenda}</b>${s.status === 'tunda' ? ' <span class="pill warn" style="display:inline-flex;height:18px;font-size:10.5px">Ditunda</span>' : s.status === 'jadwal' ? ' <span class="pill" style="display:inline-flex;height:18px;font-size:10.5px;color:#f0a07e">Terjadwal</span>' : ''}
+          <b>${s.agenda}</b>${s.status === 'tunda' ? ' <span class="pill warn" style="display:inline-flex;height:18px;font-size:10.5px">Ditunda</span>' : s.status === 'jadwal' ? ' <span class="pill" style="display:inline-flex;height:18px;font-size:10.5px;color:var(--serious-txt)">Terjadwal</span>' : ''}
           <span>${MCS.fmtDate(s.t, true)} WIB · ${s.ruang}${s.ket ? ' · ' + s.ket : ''}</span></div>`).join('')}</div>`, c.sidang.filter((s) => s.status === 'selesai').length + ' sidang selesai');
         if (c.upaya) h += sec('Upaya hukum', `<div class="card">${c.upaya.jenis} diajukan oleh ${c.upaya.oleh.toLowerCase()} pada ${MCS.fmtDate(c.upaya.t)} ${c.upaya.selesai ? '— telah diputus, menguatkan putusan tingkat pertama' : '— sedang diperiksa ' + (c.upaya.jenis !== 'Banding' ? 'Mahkamah Agung' : c.forum === 'umum' ? 'Pengadilan Tinggi' : MCS.COURT[MCS.COURT[c.court].tinggi || 'UTAMA'].name)}</div>`);
       }
@@ -121,14 +121,14 @@ window.CaseView = (function () {
       const pct = c.kerugian ? (c.pulih / c.kerugian) * 100 : 0;
       h += sec(c.kn === 'negara' ? 'Kerugian keuangan negara' : 'Kerugian korban', `<div class="money-row">
         <div class="card"><span>Nilai kerugian</span><b>${MCS.fmtRp(c.kerugian)}</b></div>
-        <div class="card"><span>Telah dipulihkan</span><b style="color:#5fd3a8">${MCS.fmtRp(c.pulih)}</b></div>
+        <div class="card"><span>Telah dipulihkan</span><b style="color:var(--ok-txt)">${MCS.fmtRp(c.pulih)}</b></div>
         <div class="card"><span>Sisa</span><b>${MCS.fmtRp(c.kerugian - c.pulih)}</b></div></div>
-        <div class="bigbar"><i style="width:0" data-w="${pct}"></i></div><div class="muted" style="font-size:12px">${pct.toFixed(1)}% dipulihkan · ${c.kn === 'negara' ? 'hasil audit/penghitungan BPKP & Itjen TNI' : 'berdasarkan laporan korban'}</div>`);
+        <div class="bigbar"><i style="width:0" data-w="${pct}"></i></div><div class="muted" style="font-size:12px">${pct.toFixed(1)}% dipulihkan · ${c.auditKerugian ? (c.auditKerugian.st === 'sudah' ? 'sudah diaudit ' + c.auditKerugian.lembaga : 'belum diaudit, perkiraan awal') : c.kn === 'negara' ? 'hasil audit/penghitungan BPKP & Itjen TNI' : 'berdasarkan laporan korban'}</div>`);
       if (c.putusan && c.putusan.uangPengganti) h += sec('Pidana uang pengganti', `<div class="card">${MCS.fmtRp(c.putusan.uangPengganti)} — subsider pidana penjara apabila tidak dibayar dalam 1 bulan setelah inkracht</div>`);
     } else if (tab === 'tahanan') {
       if (c.tahanan) {
         const sisa = Math.ceil((c.tahanan.sampai - MCS.TODAY) / MCS.DAY);
-        h += sec('Status penahanan', `<div class="card" style="${sisa <= 5 ? 'border-color:rgba(208,59,59,.4)' : ''}"><div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><span class="pill ${sisa <= 2 ? 'crit' : sisa <= 5 ? 'warn' : ''}">${UI.icon('lock')}Ditahan</span><b>berakhir ${MCS.fmtDate(c.tahanan.sampai)}</b><span class="muted">(${sisa} hari lagi)</span></div>
+        h += sec('Status penahanan', `<div class="card" style="${sisa <= 5 ? 'border-color:color-mix(in srgb, var(--crit) 40%, transparent)' : ''}"><div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><span class="pill ${sisa <= 2 ? 'crit' : sisa <= 5 ? 'warn' : ''}">${UI.icon('lock')}Ditahan</span><b>berakhir ${MCS.fmtDate(c.tahanan.sampai)}</b><span class="muted">(${sisa} hari lagi)</span></div>
           <dl class="kv"><dt>Tempat</dt><dd>${c.tahanan.tempat}</dd><dt>Kewenangan penahanan</dt><dd>${c.tahanan.oleh}</dd></dl></div>`);
         h += `<div class="note">Sistem mengirim pengingat 5 hari dan 2 hari sebelum masa penahanan berakhir kepada pejabat yang berwenang memperpanjang (${c.jenis === 'koneksitas' ? 'penyidik koneksitas/penuntut/hakim' : 'Ankum/Papera/Hakim Ketua'}), dengan tembusan ke Aspidmil.</div>`;
       } else h += `<div class="empty">${c.absentia ? 'Terdakwa tidak diketahui keberadaannya — perkara desersi diperiksa secara in absentia.' : 'Terdakwa tidak ditahan.'}</div>`;
