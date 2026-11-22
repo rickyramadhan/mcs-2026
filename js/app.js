@@ -210,9 +210,9 @@ window.App = (function () {
       svg.append('text').attr('class', 'end').attr('x', x(last.key) + 6).attr('y', y(last[k]) + 4 + (j ? 6 : -6) * (Math.abs(y(last.masuk) - y(last.putus)) < 12 ? 1 : 0)).attr('fill', 'var(--txt-2)').text(MCS.fmt(last[k]) + ' ' + S[j][2].toLowerCase());
     });
     // crosshair + tooltip
-    const tip = d3.select('#tip-trend').empty() ? d3.select('body').append('div').attr('id', 'tip-trend').attr('style', 'position:fixed;z-index:60;pointer-events:none;background:#111a25;border:1px solid rgba(148,172,204,.18);border-radius:9px;padding:8px 11px;font-size:12px;opacity:0;transition:opacity .15s;box-shadow:0 12px 30px rgba(0,0,0,.5)') : d3.select('#tip-trend');
+    const tip = d3.select('#tip-trend').empty() ? d3.select('body').append('div').attr('id', 'tip-trend').attr('style', 'position:fixed;z-index:60;pointer-events:none;background:var(--panel-2);border:1px solid rgba(var(--tint), .18);border-radius:9px;padding:8px 11px;font-size:12px;opacity:0;transition:opacity .15s;box-shadow:0 12px 30px rgba(var(--sh), .5)') : d3.select('#tip-trend');
     const xh = svg.append('line').attr('class', 'xh').attr('y1', pad.t).attr('y2', h - pad.b).style('opacity', 0);
-    const dots = S.map(([, col]) => svg.append('circle').attr('r', 4).attr('fill', col).attr('stroke', '#0d141d').attr('stroke-width', 2).style('opacity', 0));
+    const dots = S.map(([, col]) => svg.append('circle').attr('r', 4).attr('fill', col).style('stroke', 'var(--panel)').attr('stroke-width', 2).style('opacity', 0));
     svg.append('rect').attr('x', pad.l).attr('y', 0).attr('width', w - pad.l - pad.r).attr('height', h).attr('fill', 'transparent')
       .on('mousemove', (e) => {
         const [mx] = d3.pointer(e);
