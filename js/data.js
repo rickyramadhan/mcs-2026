@@ -536,7 +536,7 @@
     if (c.updated > NOW) c.updated = NOW - between(0.3, 30, r) * 3600000;
     if (c.st === 6) c.updated = Math.max(c.updated, NOW - between(2, 70, r) * DAY);
     if (c.st < 4 && r() < 0.06) c.updated = Math.min(c.updated, NOW - between(95, 160, r) * DAY);
-    c.updatedBy = (r() < 0.35 ? 'Aspidmil ' : 'Operator ') + kj.short;
+    c.updatedBy = (r() < 0.35 ? 'Aspidmil ' + kj.short : 'Operator Kejari ' + KAB[c.kab].short.replace(/^Kota /, ''));
     c.verified = r() < 0.94;
   }
   const forumName = (c) => (c.forum === 'umum' ? c.pn : COURT[c.court].name);
@@ -722,7 +722,7 @@
     { id: 'PIMPINAN', name: 'Pimpinan', unit: 'Jaksa Agung · Jampidmil · Direktur pada Jampidmil', scope: 'Nasional', desc: 'Melihat dashboard nasional, laporan, dan peringatan prioritas. Tidak mengubah data.' },
     { id: 'DIREKTORAT', name: 'Analis Direktorat', unit: 'Direktorat pada Jampidmil', scope: 'Nasional', desc: 'Memantau, mengevaluasi, dan melakukan eksaminasi perkara seluruh Kejati.' },
     { id: 'ASPIDMIL', name: 'Aspidmil', unit: 'Asisten Pidana Militer, Kejaksaan Tinggi', scope: 'Wilayah Kejati', desc: 'Memverifikasi input staf dan menerbitkan data perkara wilayahnya.' },
-    { id: 'OPERATOR', name: 'Operator Kejati', unit: 'Staf / Jaksa bidang Pidana Militer, Kejaksaan Tinggi', scope: 'Wilayah Kejati', desc: 'Menginput perkara baru dan memperbarui perkembangannya.' },
+    { id: 'OPERATOR', name: 'Operator Kejari', unit: 'Staf / Jaksa bidang Pidana Militer, Kejaksaan Negeri', scope: 'Wilayah Kejari', desc: 'Menginput perkara baru dan memperbarui perkembangannya.' },
     { id: 'PENGAWAS', name: 'Pengawas', unit: 'Jaksa Agung Muda Bidang Pengawasan', scope: 'Nasional (baca saja)', desc: 'Membaca seluruh data dan log audit untuk keperluan pengawasan.' },
   ];
   const PERMS = [
@@ -742,14 +742,14 @@
     ['U-002', 'Jaksa Agung Muda Bidang Pidana Militer', 'jampidmil', 'PIMPINAN', 'Jampidmil, Kejaksaan Agung', null, 'Aktif', 5],
     ['U-003', 'Dr. Ratna Kusumawati, S.H., M.H.', 'direktorat.penuntutan', 'DIREKTORAT', 'Direktorat Penuntutan, Jampidmil', null, 'Aktif', 2],
     ['U-004', 'Kolonel Chk Agus Pramono, S.H.', 'aspidmil.dki', 'ASPIDMIL', 'Kejati DKI Jakarta', 'KJ31', 'Aktif', 1.2],
-    ['U-005', 'Fajar Nugroho, S.H., M.H.', 'pidmil.dki', 'OPERATOR', 'Kejati DKI Jakarta', 'KJ31', 'Aktif', 0.1],
+    ['U-005', 'Fajar Nugroho, S.H., M.H.', 'pidmil.dki', 'OPERATOR', 'Kejari Jakarta Pusat', 'KJ31', 'Aktif', 0.1],
     ['U-006', 'Kolonel Laut (H) Andi Mappaseng, S.H.', 'aspidmil.sulsel', 'ASPIDMIL', 'Kejati Sulawesi Selatan', 'KJ73', 'Aktif', 4],
-    ['U-007', 'Siti Rahmawati, S.H.', 'pidmil.jatim', 'OPERATOR', 'Kejati Jawa Timur', 'KJ35', 'Aktif', 0.6],
-    ['U-008', 'Rizky Hasibuan, S.H.', 'pidmil.sumut', 'OPERATOR', 'Kejati Sumatera Utara', 'KJ12', 'Aktif', 7],
+    ['U-007', 'Siti Rahmawati, S.H.', 'pidmil.jatim', 'OPERATOR', 'Kejari Surabaya', 'KJ35', 'Aktif', 0.6],
+    ['U-008', 'Rizky Hasibuan, S.H.', 'pidmil.sumut', 'OPERATOR', 'Kejari Medan', 'KJ12', 'Aktif', 7],
     ['U-009', 'Kolonel Kum Dedi Kurniawan, S.H.', 'aspidmil.jabar', 'ASPIDMIL', 'Kejati Jawa Barat', 'KJ32', 'Aktif', 2.5],
-    ['U-010', 'Yohanes Wenda, S.H.', 'pidmil.papua', 'OPERATOR', 'Kejati Papua', 'KJ91', 'Aktif', 30],
+    ['U-010', 'Yohanes Wenda, S.H.', 'pidmil.papua', 'OPERATOR', 'Kejari Jayapura', 'KJ91', 'Aktif', 30],
     ['U-011', 'Maria Lestari, S.H., M.H.', 'jamwas.1', 'PENGAWAS', 'Jamwas, Kejaksaan Agung', null, 'Aktif', 72],
-    ['U-012', 'Bayu Saputra, S.H.', 'pidmil.bali', 'OPERATOR', 'Kejati Bali', 'KJ51', 'Nonaktif', 900],
+    ['U-012', 'Bayu Saputra, S.H.', 'pidmil.bali', 'OPERATOR', 'Kejari Denpasar', 'KJ51', 'Nonaktif', 900],
   ].map(([id, name, username, role, unit, kejati, status, h]) => ({ id, name, username, role, unit, kejati, status, last: NOW - h * 3600000 }));
   const getUsers = () => LS.get('mcs3_users', DEFAULT_USERS);
   const saveUsers = (u) => LS.set('mcs3_users', u);
@@ -785,7 +785,7 @@
     const out = Array.from({ length: 9 }, (x, i) => {
       const c = pick(pool, r);
       const k = pick(kinds, r)(c);
-      return { id: 'APR-' + (1041 + i), caseId: c.id, by: 'Operator ' + KJ[c.kejati].short, t: NOW - between(0.2, 40, r) * 3600000, ...k, note: pick(['Sesuai berita acara sidang', 'Hasil rapat koordinasi dengan Oditurat', 'Berdasarkan surat pelimpahan perkara', 'Setoran pengembalian kerugian dari terdakwa'], r), status: 'menunggu' };
+      return { id: 'APR-' + (1041 + i), caseId: c.id, by: 'Operator Kejari ' + KAB[c.kab].short.replace(/^Kota /, ''), t: NOW - between(0.2, 40, r) * 3600000, ...k, note: pick(['Sesuai berita acara sidang', 'Hasil rapat koordinasi dengan Oditurat', 'Berdasarkan surat pelimpahan perkara', 'Setoran pengembalian kerugian dari terdakwa'], r), status: 'menunggu' };
     });
     return out.sort((a, b) => b.t - a.t);
   }
