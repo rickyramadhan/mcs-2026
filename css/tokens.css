@@ -111,10 +111,13 @@ input, select, textarea { font: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
 svg { display: block; }
 ::selection { background: var(--accent-2); }
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: rgba(var(--tint), 0.16); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
-::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--tint), 0.3); }
-::-webkit-scrollbar-track { background: transparent; }
+/* Bilah gulir: tipis, tanpa latar, dan baru tampak saat area diarahkan kursor (kesan imersif) */
+::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: transparent; border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+*:hover::-webkit-scrollbar-thumb { background-color: rgba(var(--tint), 0.26); }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--tint), 0.5); }
+@supports (-moz-appearance: none) { * { scrollbar-width: thin; scrollbar-color: transparent transparent; } *:hover { scrollbar-color: rgba(var(--tint), 0.3) transparent; } }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 .mono { font-family: var(--mono); font-size: .92em; letter-spacing: -.01em; }

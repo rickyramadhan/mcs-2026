@@ -61,11 +61,11 @@ window.App = (function () {
     UI.countUp($('k-rugi'), s.kerugianNegara, { fmt: (v) => MCS.fmtRp(v, true) });
     const monthStart = new Date(MCS.NOW); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
     const baru = current.filter((c) => c.d >= monthStart.getTime()).length;
-    $('k-total-s').innerHTML = `<span class="up">+${MCS.fmt(baru)}</span> masuk bulan ini`;
-    $('k-proses-s').textContent = MCS.fmt(s.byGroup.sidang) + ' di tahap sidang';
+    $('k-total-s').innerHTML = `<span class="up">+${MCS.fmt(baru)}</span> bulan ini`;
+    $('k-proses-s').textContent = MCS.fmt(s.byGroup.sidang) + ' di sidang';
     $('k-kon-s').textContent = MCS.fmt(s.sipil) + ' tersangka sipil';
     const pct = s.kerugianNegara ? (s.pulihNegara / s.kerugianNegara) * 100 : 0;
-    $('k-rugi-s').textContent = pct.toFixed(0) + '% telah dipulihkan';
+    $('k-rugi-s').textContent = pct.toFixed(0) + '% pulih';
     $('k-rugi-bar').style.width = pct + '%';
     $('ov-scope').textContent = F.kejati ? MCS.KJ[F.kejati].short : MCS.regionName(F.region);
 
@@ -111,7 +111,9 @@ window.App = (function () {
 
   function renderCats(s) {
     const base = F.cat ? MCS.stats(MCS.filter({ ...F, cat: '' })) : s;
-    const list = MCS.CATS.map((c) => ({ c, v: base.byCat[c.id] })).sort((a, b) => b.v - a.v);
+    const all = MCS.CATS.map((c) => ({ c, v: base.byCat[c.id] })).sort((a, b) => b.v - a.v);
+    const list = all.slice(0, 6);
+    if (F.cat && !list.some((x) => x.c.id === F.cat)) list.push(all.find((x) => x.c.id === F.cat));
     const mx = list[0] ? list[0].v || 1 : 1;
     $('cats').innerHTML = list.map(({ c, v }) => `<div class="cb ${F.cat === c.id ? 'sel' : F.cat ? 'faded' : ''}" data-c="${c.id}">
       <span class="n">${c.name}</span><span class="v">${MCS.fmt(v)}<small>${((v / Math.max(1, base.total)) * 100).toFixed(1)}%</small></span>

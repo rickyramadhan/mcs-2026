@@ -41,11 +41,11 @@ window.AI = (function () {
     const list = MCS.filter(f);
     const acts = [];
     let h = '';
-    if (ql.includes('tahan')) {
+    if (/tahan|penahanan/.test(ql)) {
       const al = MCS.alerts(list).filter((a) => a.type === 'tahanan').slice(0, 6);
       h = al.length ? `Ada <b>${MCS.alerts(list).filter((a) => a.type === 'tahanan').length} terdakwa</b> yang masa penahanannya berakhir dalam 5 hari (${scopeText(f)}). Yang paling mendesak:
         <table class="tbl">${al.map((a) => `<tr><td>${MCS.esc(MCS.terdakwaLabel(a.c.terdakwa[0]))}<br><span class="muted">${a.c.reg || a.c.id}</span></td><td>${a.sisa <= 0 ? 'hari ini' : a.sisa + ' hari'}</td></tr>`).join('')}</table>` : 'Tidak ada masa penahanan yang berakhir dalam 5 hari.';
-      al.slice(0, 2).forEach((a) => acts.push(['Buka ' + (a.c.reg || a.c.id).split('/')[0], () => CaseView.open(a.c.id)]));
+      al.slice(0, 2).forEach((a) => acts.push(['Buka ' + MCS.terdakwaLabel(a.c.terdakwa[0]), () => CaseView.open(a.c.id)]));
     } else if (ql.includes('sidang') && (ql.includes('hari ini') || ql.includes('besok') || ql.includes('minggu'))) {
       const from = ql.includes('besok') ? MCS.TODAY + MCS.DAY : MCS.TODAY;
       const to = ql.includes('minggu') ? MCS.TODAY + 7 * MCS.DAY : from + MCS.DAY;
@@ -74,34 +74,6 @@ window.AI = (function () {
     return { h: h + `<div class="src">Sumber: basis data MCS · ${MCS.fmtDate(MCS.NOW, true)} · cakupan Nasional</div>`, acts };
   }
 
-  function add(cls, html) { const el = document.createElement('div'); el.className = 'msg ' + cls; el.innerHTML = html; msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight; return el; }
-  function ask(q) {
-    if (!q.trim()) return;
-    add('u', MCS.esc(q));
-    $('ai-sugg').classList.add('compact');
-    const t = add('a', '<div class="typing"><i></i><i></i><i></i></div>');
-    setTimeout(() => {
-      const r = answer(q);
-      t.innerHTML = r.h + (r.acts.length ? '<div class="acts">' + r.acts.map((a, i) => `<button data-i="${i}">${a[0]}</button>`).join('') + '</div>' : '');
-      t.querySelectorAll('.acts button').forEach((b) => (b.onclick = r.acts[+b.dataset.i][1]));
-      msgs.scrollTop = msgs.scrollHeight;
-    }, 650 + Math.random() * 500);
-  }
-
-  function toggle(on) {
-    on = on == null ? !drawer.classList.contains('on') : on;
-    drawer.classList.toggle('on', on);
-    $('btn-ai').classList.toggle('on', on);
-    if (on) setTimeout(() => $('ai-input').focus(), 300);
-  }
-  function init() {
-    add('a', 'Selamat datang. Saya dapat merangkum data perkara, agenda sidang, masa penahanan, dan kerugian negara sesuai hak akses Anda. Silakan bertanya.');
-    $('ai-sugg').innerHTML = SUGG.map((s) => `<button>${s}</button>`).join('');
-    $('ai-sugg').querySelectorAll('button').forEach((b) => (b.onclick = () => ask(b.textContent)));
-    $('ai-form').onsubmit = (e) => { e.preventDefault(); ask($('ai-input').value); $('ai-input').value = ''; };
-    $('btn-ai').onclick = () => toggle();
-    $('ai-x').onclick = () => toggle(false);
-    document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') { e.preventDefault(); toggle(); } });
-  }
-  return { init, ask, toggle };
+  function init() { /* panel asisten digantikan pencarian pintar di header */ }
+  return { init, answer };
 })();

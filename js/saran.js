@@ -99,11 +99,11 @@ window.SARAN = (function () {
 
   function render(sg, state) {
     // state: { picked: bool, cat }
-    if (!sg) return `<div class="sg idle"><b>Asisten pasal</b>Ceritakan kejadiannya dengan kalimat biasa, misalnya <i>"anggota memakai sabu"</i> atau <i>"mark-up pengadaan bahan bakar"</i>. Asisten akan menyarankan undang-undang dan pasalnya.</div>`;
-    if (sg.empty) return `<div class="sg idle warn"><b>Belum bisa menebak</b>Tambahkan kata kunci kejadian, misalnya jenis perbuatan (memukul, menipu, tidak kembali, korupsi, narkoba) atau barang yang terlibat.</div>`;
+    if (!sg) return `<div class="sg idle"><b>Asisten pasal</b>Tulis kejadiannya, asisten akan menyarankan pasal.</div>`;
+    if (sg.empty) return `<div class="sg idle warn"><b>Belum bisa menebak</b>Tambahkan jenis perbuatan, misalnya memukul, menipu, atau narkoba.</div>`;
     const m = state && state.cat ? [sg.top].concat(sg.alts).find((x) => x.cat === state.cat) || sg.top : sg.top;
     const others = [sg.top].concat(sg.alts).filter((x) => x.cat !== m.cat);
-    const sims = state && state.compact ? [] : similar(m.cat, 2);
+    const sims = state && state.compact ? [] : similar(m.cat, 1);
     const note = m.cat === 'KOR' ? '<div class="sg-note">Jika ada pelaku sipil atau rekanan, pilih jenis perkara <b>Koneksitas</b>.</div>' : '';
     return `<div class="sg ${state && state.picked ? 'done' : ''}">
       <div class="sg-h"><span class="sg-ic">✦</span><b>Saran asisten</b><i class="sg-conf">${m.conf}</i></div>
@@ -113,7 +113,7 @@ window.SARAN = (function () {
       ${note}
       <div class="sg-act">${state && state.picked ? '<span class="sg-ok">✓ Sudah dipakai · bisa diubah di bawah</span>' : `<button class="btn primary" type="button" data-sg-use="${m.cat}">Pakai saran ini</button>`}
         ${others.map((o) => `<button class="btn" type="button" data-sg-alt="${o.cat}">Atau: ${E(o.name)}</button>`).join('')}</div>
-      ${sims.length ? `<div class="sg-sim"><h5>Perkara serupa yang pernah ditangani</h5>${sims.map((e) => `<div class="sg-sim-i"><b>${exYear(e)} · ${E(e.kab)}</b><span>${E(e.title)}</span><em>${e.arts.map((id) => E(MCS.artLabel(id))).join(' jo. ')} → ${E(e.putusan)}</em></div>`).join('')}<small>Data contoh untuk simulasi.</small></div>` : ''}
+      ${sims.length ? `<div class="sg-sim"><h5>Perkara serupa</h5>${sims.map((e) => `<div class="sg-sim-i"><b>${exYear(e)} · ${E(e.kab)}</b><span>${E(e.title)}</span><em>${e.arts.map((id) => E(MCS.artLabel(id))).join(' jo. ')} → ${E(e.putusan)}</em></div>`).join('')}</div>` : ''}
     </div>`;
   }
 

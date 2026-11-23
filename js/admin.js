@@ -99,7 +99,7 @@
       .concat(pend.slice(0, 2).map((p) => ({ lv: 'warn', ic: 'inbox', t: `Verifikasi perubahan ${p.field.toLowerCase()}`, s: `${p.caseId} · diajukan ${p.by} · ${MCS.fmtAgo(p.t)}`, go: 'Tinjau', href: '#persetujuan' })))
       .concat(stale.slice(0, 3).map((a) => ({ lv: 'warn', ic: 'clock', t: `${a.text} — mohon perbarui status`, s: `${MCS.terdakwaLabel(a.c.terdakwa[0])} · ${MCS.TAHAP[a.c.st].name} · ${a.c.reg || a.c.id}`, go: 'Perbarui', href: '#perkara/' + a.c.id })));
     page.innerHTML = `
-      <div class="ph"><div><h1>${salam}, ${E(me.name.split(',')[0])}</h1><p>${role().name} · cakupan data <b style="color:var(--txt-2)">${E(scopeLabel())}</b> · ${MCS.HARI[new Date().getDay()]}, ${MCS.fmtDate(MCS.NOW)}</p></div>
+      <div class="ph"><div><h1>${salam}, ${E(me.name.split(',')[0])}</h1><p>${role().name} · <b style="color:var(--txt-2)">${E(scopeLabel())}</b> · ${MCS.HARI[new Date().getDay()]}, ${MCS.fmtDate(MCS.NOW)}</p></div>
         <div class="acts">${can('Input perkara baru') ? `<a class="btn primary" href="#baru">${I('plus')}Input perkara baru</a>` : ''}</div></div>
       <div class="kpis">
         <div class="kpi" data-href="#perkara"><span class="ic">${I('folder')}</span><span>Perkara aktif</span><b data-n="${active.length}">0</b><em>${MCS.fmt(active.filter((c) => c.st === 4).length)} dalam persidangan</em></div>
@@ -157,7 +157,7 @@
     listState.page = Math.min(listState.page, pages);
     const slice = rows.slice((listState.page - 1) * PAGE, listState.page * PAGE);
     page.innerHTML = `
-      <div class="ph"><div><h1>Perkara</h1><p>${MCS.fmt(scoped.length)} perkara dalam cakupan ${E(scopeLabel())}</p></div>
+      <div class="ph"><div><h1>Perkara</h1><p>${MCS.fmt(scoped.length)} perkara · ${E(scopeLabel())}</p></div>
         <div class="acts"><button class="btn" id="exp">${I('download')}Ekspor</button>${can('Input perkara baru') ? `<a class="btn primary" href="#baru">${I('plus')}Input perkara baru</a>` : ''}</div></div>
       <div class="views">${VIEWS.map(([k, n, f]) => { const cnt = scoped.filter(f).length; return `<button data-v="${k}" class="${k === v[0] ? 'on' : ''}">${n}<em class="${(k === 'tahanan' || k === 'stale') && cnt ? 'warn' : ''}">${MCS.fmt(cnt)}</em></button>`; }).join('')}</div>
       <div class="toolbar">
@@ -250,9 +250,12 @@
           <a class="btn ghost" href="index.html" title="Lihat di Command Center">${I('ext')}</a>
           ${!ro && c.st >= 4 && c.st <= 4 ? `<button class="btn" id="a-jadwal">${I('cal')}Jadwalkan sidang</button>` : ''}
           ${!ro && ns ? `<button class="btn" id="a-hasil">${I('gavel')}Catat hasil sidang</button>` : ''}
-          ${!ro && nextSt <= 7 && !c.closed ? (pending ? `<span class="pill warn" style="height:32px">${I('clock')}Menunggu verifikasi: ${pending.to}</span>` : `<button class="btn primary" id="a-tahap" ${canMoveTo(nextSt) ? '' : 'disabled title="Peran Anda hanya dapat membaca"'}>${I('arrow')}Lanjut ke ${MCS.TAHAP[nextSt].name}</button>`) : ''}
         </div></div>
-      <div class="stepper">${MCS.TAHAP.map((t, i) => `<div class="sp ${i < c.st ? 'done' : i === c.st ? 'cur' : ''}" title="${MCS.tahapLong(i, c)}"><span class="d"></span><b>${t.name}</b><span>${c.sd[i] ? MCS.fmtDate(c.sd[i]) : MCS.tahapActor(i, c)}</span></div>`).join('')}</div>
+      <div class="stepper" style="grid-template-columns:${MCS.TAHAP.map((t, i) => (i === c.st ? 'minmax(210px,1.9fr)' : 'minmax(128px,1fr)')).join(' ')}">${MCS.TAHAP.map((t, i) => {
+        const done = i < c.st, cur = i === c.st, nxt = i === c.st + 1;
+        const go = !ro && nextSt <= 7 && !c.closed ? (pending ? `<span class="pill warn">${I('clock')}Menunggu verifikasi</span>` : `<button class="btn primary" id="a-tahap" ${canMoveTo(nextSt) ? '' : 'disabled title="Peran Anda hanya dapat membaca"'}>${I('arrow')}Lanjut ke ${MCS.TAHAP[nextSt].name}</button>`) : (c.closed ? '<span class="pill crit">Tidak dilanjutkan</span>' : '');
+        return `<div class="sp ${done ? 'done' : cur ? 'cur' : nxt ? 'next' : ''}" title="${MCS.tahapLong(i, c)}"><div class="sp-h"><span class="no">${done ? '✓' : i + 1}</span><span class="st">${done ? 'Selesai' : cur ? 'Sedang berjalan' : nxt ? 'Berikutnya' : ''}</span></div><b>${t.name}</b><span class="mt">${c.sd[i] ? (cur ? 'sejak ' : '') + MCS.fmtDate(c.sd[i]) : MCS.tahapActor(i, c)}</span>${cur && go ? `<div class="sp-go">${go}</div>` : ''}</div>`;
+      }).join('')}</div>
       <div class="ed">
         <div class="tabsv">${ED_TABS.filter(([k]) => k !== 'kerugian' || c.kn).map(([k, n, ic]) => `<button data-t="${k}" class="${k === edTab ? 'on' : ''}">${I(ic)}${n}${k === 'sidang' ? `<em>${c.sidang.length}</em>` : k === 'terdakwa' ? `<em>${c.terdakwa.length + c.sipil.length}</em>` : ''}</button>`).join('')}</div>
         <div id="ed-body"></div>
@@ -273,6 +276,7 @@
         </div></div>`;
     page.querySelectorAll('.tabsv button').forEach((b) => (b.onclick = () => { edTab = b.dataset.t; page.querySelectorAll('.tabsv button').forEach((x) => x.classList.toggle('on', x === b)); edBody(c, ro); }));
     if ($('a-tahap')) $('a-tahap').onclick = () => stageModal(c);
+    { const stp = page.querySelector('.stepper'), cu = stp && stp.querySelector('.sp.cur'); if (stp && cu) stp.scrollLeft = Math.max(0, cu.offsetLeft - 24); }
     if ($('ek-save')) $('ek-save').onclick = () => {
       const t = $('ek-txt').value.trim();
       if (!t) { UI.toast('Isi catatan eksaminasi terlebih dahulu', false); return; }
@@ -679,10 +683,10 @@
         <details class="more-arts" ${others.some((a) => d.arts.includes(a.id)) ? 'open' : ''}><summary>Pasal lain (junto)</summary><div class="chipset" style="margin-top:8px">${others.map(chip).join('')}</div></details>
         ${sel1.length ? `<ul class="sel-arts">${sel1.map((a) => `<li><b>${E(a.pasal)} ${E(MCS.LAW[a.law].name)}</b><span>${E(a.desc)}</span><em>${E(a.threat)}</em></li>`).join('')}</ul>` : ''}`;
     };
-    if (s === 0) body = `<div class="demo-bar"><label for="w-ex">${I('plus')}Mau coba cepat? Isi otomatis dengan contoh perkara</label><select class="select" id="w-ex"><option value="">Pilih contoh perkara (data simulasi 1–3 tahun lalu)…</option>${SARAN.EXAMPLES.map((e) => `<option value="${e.id}">${E(SARAN.exDate(e).getFullYear() + ' · ' + SARAN.exLabel(e))}</option>`).join('')}</select></div>${field('Jenis perkara', `<div class="chipset">${MCS.JENIS.map((j) => `<span class="chk ${d.jenis === j.id ? 'on' : ''}" data-j="${j.id}" title="${j.long}">${j.name}</span>`).join('')}</div>`, { hint: K ? 'Pelaku militer bersama sipil — penyidikan & penuntutan ditangani tim koneksitas' : 'Perkara yang dituntut Oditurat — Kejati melakukan koordinasi teknis & pemantauan' })}
+    if (s === 0) body = `<div class="demo-bar"><label for="w-ex">${I('plus')}Isi dengan contoh perkara</label><select class="select" id="w-ex"><option value="">Pilih contoh…</option>${SARAN.EXAMPLES.map((e) => `<option value="${e.id}">${E(SARAN.exDate(e).getFullYear() + ' · ' + SARAN.exLabel(e))}</option>`).join('')}</select></div>${field('Jenis perkara', `<div class="chipset">${MCS.JENIS.map((j) => `<span class="chk ${d.jenis === j.id ? 'on' : ''}" data-j="${j.id}" title="${j.long}">${j.name}</span>`).join('')}</div>`, { hint: K ? 'Pelaku militer bersama sipil — penyidikan & penuntutan ditangani tim koneksitas' : 'Perkara yang dituntut Oditurat — Kejati melakukan koordinasi teknis & pemantauan' })}
       <div style="height:14px"></div><div class="form">
-      ${field('Ceritakan singkat kejadiannya', '<textarea id="w-title" placeholder="Tulis dengan kalimat sehari-hari. Contoh: anggota memakai sabu, hasil tes urine positif">' + E(d.title) + '</textarea><div id="w-sg"></div>', { full: true, req: true })}
-      ${field('Klasifikasi tindak pidana', sel('w-cat', [['', 'Pilih klasifikasi…']].concat(MCS.CATS.map((c) => [c.id, c.name])), d.cat), { req: true, full: true, hint: 'Terisi otomatis bila Anda memakai saran asisten di atas' })}
+      ${field('Ceritakan singkat kejadiannya', '<textarea id="w-title" placeholder="Contoh: anggota memakai sabu, hasil tes urine positif">' + E(d.title) + '</textarea><div id="w-sg"></div>', { full: true, req: true })}
+      ${field('Klasifikasi tindak pidana', sel('w-cat', [['', 'Pilih klasifikasi…']].concat(MCS.CATS.map((c) => [c.id, c.name])), d.cat), { req: true, full: true })}
       <div class="f full" id="w-pasal">${pasalHtml()}</div>
       ${field(K ? 'Nomor surat perintah penyidikan koneksitas' : 'Nomor laporan Polisi Militer', inp('w-lp', d.lp), { req: true })}
       ${field('Sumber perkara', sel('w-sumber', K ? ['Surat perintah penyidikan koneksitas', 'Pelimpahan dari Jampidmil', 'Laporan masyarakat', 'Temuan audit BPK/BPKP'] : ['Pemberitahuan penyidikan dari Polisi Militer', 'Koordinasi dengan Oditurat', 'Laporan masyarakat', 'Temuan Itjen / audit'], d.sumber))}
@@ -710,7 +714,7 @@
     else if (s === 2) {
       const au = d.audit, korban = d.cat && MCS.CAT[d.cat].kn === 'korban';
       body = `<div class="form">
-      ${field(korban ? 'Kerugian korban' : 'Kerugian keuangan negara', `<div class="money"><span>Rp</span><input class="input" id="w-rugi" inputmode="numeric" autocomplete="off" placeholder="0" value="${fmtNum(d.kerugian)}" /></div><div class="terbilang" id="w-rugi-t">${terbilang(+d.kerugian)}</div>`, { full: true, hint: d.cat && MCS.CAT[d.cat].kn ? 'Wajib untuk klasifikasi ' + MCS.CAT[d.cat].name + '. Ketik angkanya saja, titik pemisah ribuan muncul otomatis.' : 'Kosongkan bila tidak ada kerugian. Ketik angkanya saja, titik pemisah ribuan muncul otomatis.' })}
+      ${field(korban ? 'Kerugian korban' : 'Kerugian keuangan negara', `<div class="money"><span>Rp</span><input class="input" id="w-rugi" inputmode="numeric" autocomplete="off" placeholder="0" value="${fmtNum(d.kerugian)}" /></div><div class="terbilang" id="w-rugi-t">${terbilang(+d.kerugian)}</div>`, { full: true, hint: d.cat && MCS.CAT[d.cat].kn ? 'Wajib untuk klasifikasi ' + MCS.CAT[d.cat].name + '.' : 'Kosongkan bila tidak ada kerugian.' })}
       <div class="f full"><div class="audit"><h4>Apakah nilai kerugian ini sudah diaudit oleh pihak berwenang?</h4>
         <div class="chipset"><span class="chk ${au.st === 'sudah' ? 'on' : ''}" data-au="sudah">Sudah diaudit</span><span class="chk ${au.st === 'belum' ? 'on' : ''}" data-au="belum">Belum diaudit</span></div>
         ${au.st === 'sudah' ? `<div class="form" style="margin-top:12px">
@@ -725,7 +729,7 @@
     else if (s === 3) {
       const sl = slotsOf(K, d.terdakwa.some((t) => t.ditahan === '1'), d.audit.st === 'sudah');
       const total = Object.values(d.files).reduce((n, a) => n + a.length, 0);
-      body = `<div class="smart" style="margin:0 0 14px"><div class="t">${I('upload')}Unggah sekarang, atau nanti</div>Berkas yang berhubungan dengan perkara ini bisa langsung diunggah di sini. Tidak harus lengkap — berkas tambahan (misalnya saat persidangan) dapat ditambahkan nanti oleh petugas yang berwenang di tab <b>Dokumen</b> pada halaman perkara.</div>
+      body = `<div class="smart" style="margin:0 0 14px"><div class="t">${I('upload')}Unggah sekarang atau nanti</div>Berkas tambahan bisa ditambahkan nanti di tab <b>Dokumen</b>.</div>
         <div class="slots">${sl.map(([id, name, kind, tag]) => { const fl = d.files[id] || []; return `<div class="slot ${fl.length ? 'has' : ''}"><div class="slot-h"><div><b>${name}</b>${tag ? `<em>${tag}</em>` : ''}<span>${FKIND[kind].label}</span></div><button class="btn" type="button" data-pick="${id}">${I('upload')}${fl.length ? 'Tambah' : 'Pilih berkas'}</button><input type="file" id="w-file-${id}" data-fs="${id}" data-kind="${kind}" accept="${FKIND[kind].accept}" multiple hidden /></div>${fl.length ? `<ul>${fl.map((f, i) => `<li>${I('file')}<span>${E(f.n)}<small>${fmtSize(f.size)}</small></span><button type="button" class="btn ghost" data-rf="${id}:${i}" aria-label="Hapus berkas">${I('x')}</button></li>`).join('')}</ul>` : ''}</div>`; }).join('')}</div>
         <div class="note-sm">${total ? total + ' berkas dipilih' : 'Belum ada berkas dipilih'} · berkas dipindai otomatis dan tersimpan terenkripsi</div>`;
     }
@@ -739,14 +743,14 @@
     ].map(([k, v]) => `<div class="row"><span>${k}</span><b>${E(v)}</b></div>`).join('')}</div>
       <label style="display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:12.5px;color:var(--txt-2);cursor:pointer"><input type="checkbox" id="w-ok" style="margin-top:3px" /> Saya menyatakan data yang diinput sesuai dokumen sumber dan dapat dipertanggungjawabkan.</label>`;
 
-    page.innerHTML = `<div class="ph"><div><h1>Input perkara baru</h1><p>Perkara baru tercatat di wilayah <b style="color:var(--txt-2)">${kjW.short}</b> dan tampil di dashboard nasional Jampidmil setelah diverifikasi Aspidmil.</p></div><div class="acts"><button class="btn ghost" id="w-reset">Batalkan</button></div></div>
+    page.innerHTML = `<div class="ph"><div><h1>Input perkara baru</h1><p>Tercatat di <b style="color:var(--txt-2)">${kjW.short}</b>. Tampil di dashboard setelah diverifikasi Aspidmil.</p></div><div class="acts"><button class="btn ghost" id="w-reset">Batalkan</button></div></div>
       <div class="wiz">
         <div class="wsteps">${WSTEPS.map(([n, sub], i) => `<div class="ws ${i === s ? 'on' : i < s ? 'done' : ''}" data-i="${i}"><i>${i < s ? '✓' : i + 1}</i><div><b>${n}</b><span>${sub}</span></div></div>`).join('')}</div>
         <div class="card"><header><h3>${s + 1}. ${WSTEPS[s][0]}</h3><span class="aux">Langkah ${s + 1} dari ${WSTEPS.length}</span></header><div class="cb" id="w-body">${body}</div>
           <div class="form-foot"><span class="note" id="w-note">${I('shield')}Draf tersimpan otomatis</span>${s ? '<button class="btn" id="w-prev">← Sebelumnya</button>' : ''}<button class="btn primary" id="w-next">${s === WSTEPS.length - 1 ? 'Kirim perkara' : 'Lanjut →'}</button></div></div>
         <div class="aside"><div class="card"><div class="mini-map" id="w-map"></div><div class="cb">
           <div class="sum"><div class="row"><span>Locus</span><b>${d.kab ? MCS.KAB[d.kab].name : 'Belum dipilih'}</b></div><div class="row"><span>Jenis</span><b>${MCS.JN[d.jenis].name}</b></div><div class="row"><span>Tersangka</span><b>${d.terdakwa.length} militer${K ? ' · ' + d.sipil.length + ' sipil' : ''}</b></div><div class="row"><span>Pasal</span><b>${d.arts.length ? d.arts.map(MCS.artLabel).join(', ') : '—'}</b></div></div>
-          <div class="smart"><div class="t">${I('checkc')}Ditentukan otomatis</div>Perkara dicatat di <b>${kjW.name}</b> berdasarkan locus delicti. ${K ? 'Peradilan (umum atau militer) ditetapkan pada tahap Pendapat Hukum melalui penelitian bersama Jaksa dan Oditur.' : (!d.kab ? 'Pengadilan dan Oditurat ditentukan otomatis setelah wilayah dipilih.' : `Penuntutan oleh <b>${MCS.otmilOf(court)}</b> di <b>${court.name}</b>${court.level === 'dilmilti' ? ' (tingkat pertama karena tersangka berpangkat Mayor ke atas)' : ''}; Kejati melakukan koordinasi teknis.`)}</div>
+          <div class="smart"><div class="t">${I('checkc')}Ditentukan otomatis</div>Dicatat di <b>${kjW.name}</b>${d.kab && !K ? '. Peradilan: <b>' + court.name + '</b>' : ''}.</div>
         </div></div></div>
       </div>`;
     requestAnimationFrame(() => { if (d.kab) MCSMap.miniMap($('w-map'), d.kab); else $('w-map').innerHTML = '<div class="mm-empty">Pilih provinsi dan kabupaten/kota untuk melihat lokasi di peta</div>'; });
@@ -888,7 +892,7 @@
     const hs = MCS.hearings(scoped, days[0], days[41] + MCS.DAY);
     const byDay = d3.group(hs, (h) => { const d = new Date(h.s.t); d.setHours(0, 0, 0, 0); return d.getTime(); });
     const selList = byDay.get(calSel) || [];
-    page.innerHTML = `<div class="ph"><div><h1>Agenda sidang</h1><p>${MCS.BULAN_L[m]} ${y} · ${MCS.fmt(hs.filter((h) => new Date(h.s.t).getMonth() === m).length)} sidang dalam cakupan ${E(scopeLabel())}</p></div>
+    page.innerHTML = `<div class="ph"><div><h1>Agenda sidang</h1><p>${MCS.BULAN_L[m]} ${y} · ${MCS.fmt(hs.filter((h) => new Date(h.s.t).getMonth() === m).length)} sidang</p></div>
       <div class="acts"><button class="btn" id="cp">←</button><button class="btn" id="ct">Bulan ini</button><button class="btn" id="cn">→</button></div></div>
       <div class="g3"><div class="card" style="overflow:hidden"><div class="cal">${['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((d) => `<div class="h">${d}</div>`).join('')}
         ${days.map((t) => { const L = byDay.get(t) || []; const d = new Date(t); return `<div class="d ${d.getMonth() !== m ? 'out' : ''} ${t === MCS.TODAY ? 'today' : ''} ${t === calSel ? 'sel' : ''}" data-t="${t}"><div class="n"><b>${d.getDate()}</b>${L.length ? `<em>${L.length} sidang</em>` : ''}</div>${L.slice(0, 3).map(({ c, s }) => `<div class="ev ${s.t < MCS.NOW ? 'past' : ''}">${MCS.fmtTime(s.t)} ${E(c.terdakwa[0].pangkat + ' ' + c.terdakwa[0].nama.split(' ')[0])}</div>`).join('')}${L.length > 3 ? `<div class="mo">+${L.length - 3} lainnya</div>` : ''}</div>`; }).join('')}</div></div>
@@ -910,7 +914,7 @@
     crumb(['Persetujuan']);
     if (!can('Menyetujui pembaruan (verifikasi)')) { page.innerHTML = '<div class="empty">Menu ini untuk Aspidmil dan Admin Pusat.</div>'; return; }
     const all = MCS.getApprovals().filter((a) => me.role === 'PUSAT' || (MCS.byId(a.caseId) && inScope(MCS.byId(a.caseId))));
-    page.innerHTML = `<div class="ph"><div><h1>Persetujuan</h1><p>Prinsip empat mata: input operator Kejati diverifikasi Aspidmil sebelum terbit di dashboard nasional Jampidmil.</p></div></div>
+    page.innerHTML = `<div class="ph"><div><h1>Persetujuan</h1><p>Input operator diperiksa Aspidmil sebelum tampil di dashboard.</p></div></div>
       <div class="card">${all.length ? all.map((a) => { const c = MCS.byId(a.caseId); return `<div class="ap ${a.status !== 'menunggu' ? 'done' : ''}" data-id="${a.id}">
         <div><div class="h"><span class="mono">${a.id}</span>·<b><a href="#perkara/${a.caseId}">${c ? c.reg || c.id : a.caseId}</a></b>·<span>${c ? E(MCS.terdakwaLabel(c.terdakwa[0])) : ''}</span>·<span>diajukan ${E(a.by)} · ${MCS.fmtAgo(a.t)}</span>${a.status !== 'menunggu' ? `<span class="pill ${a.status === 'disetujui' ? 'good' : 'crit'}">${a.status}</span>` : ''}</div>
           <div class="diff"><span class="k">${E(a.field)}</span><span class="a">${E(a.from)}</span><span style="color:var(--txt-4)">→</span><span class="b">${E(a.to)}</span></div>
@@ -993,7 +997,7 @@
       const l = scoped.filter((c) => c.putusan).sort((a, b) => b.putusan.t - a.putusan.t).slice(0, 20);
       table = `<table><thead><tr><th>Tanggal</th><th>Nomor perkara</th><th>Terdakwa</th><th>Amar</th><th>Pidana tambahan</th></tr></thead><tbody>${l.map((c) => `<tr><td>${MCS.fmtDate(c.putusan.t)}</td><td>${c.reg}</td><td>${E(MCS.terdakwaLabel(c.terdakwa[0]))}</td><td>${c.putusan.amar}</td><td>${c.putusan.tambahan || '—'}</td></tr>`).join('')}</tbody></table>`;
     }
-    page.innerHTML = `<div class="ph"><div><h1>Laporan</h1><p>Laporan berkala dengan format baku, siap ditandatangani pejabat berwenang.</p></div>
+    page.innerHTML = `<div class="ph"><div><h1>Laporan</h1><p>Laporan siap diunduh.</p></div>
       <div class="acts"><button class="btn" id="rx">${I('download')}Excel</button><button class="btn primary" id="rp">${I('print')}Unduh PDF</button></div></div>
       <div class="rpts">${RPT.map(([k, n, s, ic]) => `<div class="rpt ${k === rptSel ? 'on' : ''}" data-k="${k}"><div class="ic">${I(ic)}</div><b>${n}</b><span>${s}</span></div>`).join('')}</div>
       <div class="doc-preview"><h2>${r[1].toUpperCase()}</h2><div class="sub">Cakupan: ${E(scopeLabel())} · Keadaan per ${MCS.fmtDate(MCS.NOW)}</div>${table}
@@ -1007,7 +1011,7 @@
   function pasal() {
     crumb(['Data induk'], ['Pasal & undang-undang']);
     const cnt = {}; MCS.cases.forEach((c) => c.arts.forEach((a) => (cnt[a] = (cnt[a] || 0) + 1)));
-    page.innerHTML = `<div class="ph"><div><h1>Pasal & undang-undang</h1><p>Rujukan pasal yang dapat dipilih saat input perkara. Perubahan hanya oleh Admin Pusat.</p></div>
+    page.innerHTML = `<div class="ph"><div><h1>Pasal & undang-undang</h1><p>Daftar pasal untuk input perkara. Hanya Admin Pusat yang dapat mengubah.</p></div>
       <div class="acts">${can('Kelola master pasal & satuan') ? `<button class="btn primary" id="pa">${I('plus')}Tambah pasal</button>` : ''}</div></div>
       <div class="tw"><table class="t"><thead><tr><th>Pasal</th><th>Undang-undang</th><th>Uraian</th><th>Ancaman</th><th>Padanan KUHP 2023</th><th class="r">Dipakai</th></tr></thead>
       <tbody>${MCS.ARTS.map((a) => `<tr><td><b style="font-weight:500">${a.pasal}</b></td><td>${MCS.LAW[a.law].name}<span class="sub">${MCS.LAW[a.law].full.slice(0, 48)}${MCS.LAW[a.law].full.length > 48 ? '…' : ''}</span></td><td style="max-width:340px">${a.desc}</td><td>${a.threat}</td><td>${a.baru ? a.baru + ' UU 1/2023' : '<span class="muted">—</span>'}</td><td class="r num">${MCS.fmt(cnt[a.id] || 0)}</td></tr>`).join('')}</tbody></table></div>
@@ -1018,7 +1022,7 @@
     crumb(['Data induk'], ['Kejati & instansi mitra']);
     const g = d3.rollup(MCS.cases, (v) => [v.length, v.filter((c) => c.jenis === 'koneksitas').length, v.filter((c) => c.st < 7).length], (c) => c.kejati);
     const asp = (id) => users.filter((u) => u.kejati === id && u.role === 'ASPIDMIL').map((u) => u.name)[0];
-    page.innerHTML = `<div class="ph"><div><h1>Kejati & instansi mitra</h1><p>Bidang Pidana Militer pada ${MCS.KEJATI.length} Kejaksaan Tinggi. Cakupan Kejati untuk provinsi pemekaran bersifat indikatif dan perlu dicocokkan dengan Peraturan Kejaksaan terbaru.</p></div></div>
+    page.innerHTML = `<div class="ph"><div><h1>Kejati & instansi mitra</h1><p>Bidang Pidana Militer pada ${MCS.KEJATI.length} Kejaksaan Tinggi. </p></div></div>
       <div class="tw"><table class="t"><thead><tr><th>Kejaksaan Tinggi</th><th>Wilayah</th><th>Aspidmil</th><th class="r">Perkara</th><th class="r">Koneksitas</th><th class="r">Belum selesai</th></tr></thead>
       <tbody>${MCS.KEJATI.map((k) => { const [n, kn, a] = g.get(k.id) || [0, 0, 0]; return `<tr><td><b style="font-weight:500">${k.name}</b><span class="sub">Kedudukan: ${k.city}</span></td><td>${k.prov.map((q) => MCS.PROV[q]).join(', ')}</td><td>${asp(k.id) ? E(asp(k.id)) : '<span class="muted">—</span>'}</td><td class="r num">${MCS.fmt(n)}</td><td class="r num">${MCS.fmt(kn)}</td><td class="r num">${MCS.fmt(a)}</td></tr>`; }).join('')}</tbody></table></div>
       <h3 style="font-size:15px;font-weight:600;margin:26px 0 4px">Instansi mitra (rujukan)</h3><p class="muted" style="margin-bottom:12px">Oditurat dan Pengadilan Militer bukan pengguna aplikasi; dicatat sebagai pihak dalam perkara. Susunan pengadilan sesuai PP 22/2025 & PP 23/2025.</p>
@@ -1030,7 +1034,7 @@
   function pengguna() {
     crumb(['Sistem'], ['Pengguna & hak akses']);
     users = MCS.getUsers();
-    page.innerHTML = `<div class="ph"><div><h1>Pengguna & hak akses</h1><p>Akses berbasis peran dan wilayah. Login wajib dengan autentikasi dua faktor.</p></div>
+    page.innerHTML = `<div class="ph"><div><h1>Pengguna & hak akses</h1><p>Akses menurut peran dan wilayah.</p></div>
       <div class="acts"><button class="btn primary" id="ua">${I('plus')}Tambah pengguna</button></div></div>
       <div class="views"><button data-t="users" class="${userTab === 'users' ? 'on' : ''}">Pengguna<em>${users.length}</em></button><button data-t="roles" class="${userTab === 'roles' ? 'on' : ''}">Peran & izin<em>${MCS.ROLES.length}</em></button></div>
       <div id="ub"></div>`;
@@ -1061,7 +1065,7 @@
     crumb(['Sistem'], ['Log audit']);
     const q = auditQ.toLowerCase();
     const log = MCS.getAudit().filter((a) => !q || (a.user + ' ' + a.action + ' ' + a.target + ' ' + a.detail).toLowerCase().includes(q)).slice(0, 120);
-    page.innerHTML = `<div class="ph"><div><h1>Log audit</h1><p>Seluruh akses dan perubahan data tercatat permanen (append-only) untuk pengawasan Itjen TNI.</p></div><div class="acts"><button class="btn" id="ax">${I('download')}Ekspor</button></div></div>
+    page.innerHTML = `<div class="ph"><div><h1>Log audit</h1><p>Semua akses dan perubahan data tercatat.</p></div><div class="acts"><button class="btn" id="ax">${I('download')}Ekspor</button></div></div>
       <div class="toolbar"><input class="input grow" id="aq" placeholder="Cari pengguna, aksi, nomor perkara…" value="${E(auditQ)}" /></div>
       <div class="tw"><table class="t"><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Objek</th><th>Keterangan</th></tr></thead><tbody>${log.map((a) => `<tr class="${MCS.byId(a.target) ? 'click' : ''}" ${MCS.byId(a.target) ? `data-href="#perkara/${a.target}"` : ''}><td class="num" style="white-space:nowrap">${MCS.fmtDate(a.t, true)}</td><td>${E(a.user)}</td><td>${E(a.action)}</td><td class="mono">${E(a.target)}</td><td style="color:var(--txt-2)">${E(a.detail)}</td></tr>`).join('')}</tbody></table></div>`;
     let tq; $('aq').oninput = (e) => { clearTimeout(tq); tq = setTimeout(() => { auditQ = e.target.value; audit(); $('aq').focus(); $('aq').setSelectionRange(99, 99); }, 250); };
@@ -1070,6 +1074,22 @@
   }
 
   // ================= Pencarian & notifikasi =================
+  window.WSHost = {
+    pool: () => scoped,
+    scope: () => scopeLabel(),
+    open: (id) => { location.hash = '#perkara/' + id; },
+    list: (P) => {
+      listState = { view: 'semua', q: P.text || '', stage: P.f.stage === '' || P.f.stage == null ? '' : String(P.f.stage), cat: P.f.cat || '', matra: P.f.matra || '', page: 1 };
+      if (location.hash === '#perkara') list(); else location.hash = '#perkara';
+    },
+    agenda: () => { location.hash = '#agenda'; },
+    commands: [
+      ...(can('Input perkara baru') ? [['Input perkara baru', 'plus', () => { location.hash = '#baru'; }]] : []),
+      ...(can('Menyetujui pembaruan (verifikasi)') ? [['Persetujuan', 'inbox', () => { location.hash = '#persetujuan'; }]] : []),
+      ['Agenda sidang', 'cal', () => { location.hash = '#agenda'; }],
+      ['Daftar perkara', 'folder', () => { location.hash = '#perkara'; }],
+    ],
+  };
   function quick() {
     const q = $('qs-input').value.trim().toLowerCase();
     const res = [];

@@ -75,7 +75,7 @@
   });
 
   // Mode globe dari tombol topbar
-  $('btn-globe').onclick = () => {
+  if ($('btn-globe')) $('btn-globe').onclick = () => {
     if (!world) world = buildGlobe();
     if (!world) return;
     intro.classList.add('globe-mode'); intro.classList.remove('done');

@@ -281,7 +281,7 @@ window.MCSMap = (function () {
     }
     if (!layers.heat) { el.innerHTML = '<div class="t">Kepadatan perkara dimatikan</div>'; return; }
     const lo = [Math.max(1, d3.min(sc.domain()))].concat(sc.quantiles().map((v) => Math.ceil(v)));
-    el.innerHTML = `<div class="t">Jumlah perkara per ${d === 0 ? 'provinsi' : 'kabupaten/kota'} · 5 kelas sama banyak</div>
+    el.innerHTML = `<div class="t">Perkara per ${d === 0 ? 'provinsi' : 'kabupaten/kota'}</div>
       <div class="steps">${RAMP.slice(1).map((c, i) => `<span><i style="background:${c}"></i>${i === 4 ? '≥ ' + MCS.fmt(lo[i]) : MCS.fmt(lo[i]) + '–' + MCS.fmt(Math.max(lo[i], lo[i + 1] - 1))}</span>`).join('')}</div>`;
   }
 
