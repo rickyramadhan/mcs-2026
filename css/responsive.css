@@ -35,7 +35,7 @@
   .tabsv { flex-direction: row; overflow-x: auto; position: static; gap: 4px; padding-bottom: 6px; scrollbar-width: none; }
   .tabsv::-webkit-scrollbar { display: none; }
   .tabsv button { flex: none; white-space: nowrap; }
-  .stepper { overflow-x: auto; grid-template-columns: repeat(8, minmax(104px, 1fr)); scrollbar-width: thin; }
+  .stepper { overflow-x: auto; grid-template-columns: repeat(8, minmax(104px, 1fr)); }
   .ch { flex-wrap: wrap; }
   .ch .acts { width: 100%; flex-wrap: wrap; }
   .ch .acts .btn { flex: 1 1 auto; }
@@ -108,12 +108,10 @@
    ===================================================================== */
 @media (max-width: 1100px) {
   html, body { overflow: hidden; }
-  #app { grid-template-rows: auto auto minmax(0, 1fr) auto auto; height: 100dvh; inset: auto; top: 0; left: 0; right: 0; }
+  #app { grid-template-rows: auto auto minmax(0, 1fr) auto; height: 100dvh; inset: auto; top: 0; left: 0; right: 0; }
   .topbar { height: 56px; gap: 8px; padding: 0 10px; }
   .brand { padding-right: 10px; }
   .brand div { display: none; }
-  .crumbs { flex: 1 1 0; }
-  .crumbs button:not(.cur), .crumbs .sep { display: none; }
   .search-trigger { flex: none; min-width: 0; width: 38px; margin-left: 0; padding: 0; justify-content: center; }
   .search-trigger span, .search-trigger kbd { display: none; }
   .user { padding-left: 8px; }
@@ -161,7 +159,7 @@
   .kv { grid-template-columns: minmax(96px, 150px) minmax(0, 1fr); gap: 8px 12px; }
   .cl-sum { padding: 10px 14px; }
   .cl-body { overflow: auto; }
-  .cl-t { min-width: 860px; }
+  .cl-t { min-width: 680px; }
   .cl-foot { padding: 10px 14px; flex-wrap: wrap; }
   .week { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
   .wd { flex: none; width: min(300px, 82vw); scroll-snap-align: start; }
@@ -206,4 +204,10 @@
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .d-head .acts .btn { flex: 1 1 auto; }
   .s-head .eyebrow { font-size: 11px; }
+}
+@media (max-width: 700px) {
+  #caselist .s-tools { flex-wrap: nowrap; overflow-x: auto; width: 100%; scrollbar-width: none; padding-bottom: 2px; }
+  #caselist .s-tools::-webkit-scrollbar { display: none; }
+  #caselist .s-tools > * { flex: none; }
+  #caselist .s-tools #cl-q { width: 200px !important; }
 }

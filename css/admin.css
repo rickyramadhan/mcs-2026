@@ -406,3 +406,33 @@ table.t { width: 100%; border-collapse: collapse; }
 .sel-arts li b { color: var(--txt); }
 .sel-arts li span { color: var(--txt-2); }
 .sel-arts li em { font-style: normal; font-size: 12px; color: var(--txt-3); }
+
+/* ---------- Tahap perkara sebagai kartu ---------- */
+.stepper { background: transparent; border: 0; padding: 2px 2px 6px; gap: 10px; align-items: stretch; overflow-x: auto; }
+.sp { padding: 12px 14px 13px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--panel); display: flex; flex-direction: column; gap: 2px; min-height: 96px; transition: border-color .2s, box-shadow .2s, background .2s; }
+.sp::before, .sp::after, .sp .d { display: none; }
+.sp-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; min-height: 24px; }
+.sp .no { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none; font-size: 12px; font-weight: 700; background: rgba(var(--tint), .1); color: var(--txt-3); }
+.sp .st { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--txt-4); white-space: nowrap; }
+.sp b { font-size: 14px; font-weight: 600; color: var(--txt-3); }
+.sp .mt { font-size: 12px; color: var(--txt-4); }
+.sp.done { background: color-mix(in srgb, var(--ok-txt) 5%, var(--panel)); border-color: color-mix(in srgb, var(--ok-txt) 28%, var(--line-2)); }
+.sp.done .no { background: color-mix(in srgb, var(--ok-txt) 20%, transparent); color: var(--ok-txt); }
+.sp.done .st { color: var(--ok-txt); }
+.sp.done b { color: var(--txt); }
+.sp.done .mt { color: var(--txt-3); }
+.sp.cur { border: 1.5px solid var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--panel)); box-shadow: 0 0 0 4px var(--accent-d), 0 8px 24px rgba(var(--sh), .18); }
+.sp.cur .no { background: var(--accent); color: var(--on-accent); }
+.sp.cur .st { color: var(--accent); }
+.sp.cur b { color: var(--txt); font-size: 15.5px; }
+.sp.cur .mt { color: var(--txt-2); }
+.sp.next { border-style: dashed; border-color: var(--line-3); }
+.sp.next b { color: var(--txt-2); }
+.sp.next .st { color: var(--txt-3); }
+.sp-go { margin-top: auto; padding-top: 12px; }
+.sp-go .btn { width: 100%; height: 36px; }
+.sp-go .pill { width: 100%; justify-content: center; height: 32px; }
+@media (max-width: 700px) {
+  .stepper { margin-inline: -2px; scroll-snap-type: x proximity; }
+  .sp { scroll-snap-align: center; }
+}

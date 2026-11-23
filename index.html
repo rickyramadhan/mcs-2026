@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/tokens.css" />
   <link rel="stylesheet" href="css/mcs.css" />
   <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="css/smartsearch.css" />
 </head>
 <body>
   <!-- ============ INTRO (globe) ============ -->
@@ -38,19 +39,16 @@
         <svg viewBox="0 0 48 48"><use href="#mark" /></svg>
         <div><b>MCS</b><span>Jampidmil · Kejaksaan RI</span></div>
       </a>
-      <nav class="crumbs" id="crumbs" aria-label="Wilayah"></nav>
       <button class="search-trigger" id="open-palette">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-        <span>Cari perkara, tersangka, NRP, pasal, Kejati…</span>
+        <span>Cari perkara, tersangka, NRP…</span>
         <kbd>Ctrl K</kbd>
       </button>
       <button class="tb icon more-btn" id="btn-more" aria-label="Menu lainnya" title="Menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
       <div class="top-actions">
         <button class="tb" id="btn-agenda"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg><span>Agenda Sidang</span></button>
         <button class="tb" id="btn-legal"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0zM8 21h8" /></svg><span>Pustaka Hukum</span></button>
-        <button class="tb" id="btn-ai"><span class="ai-dot"></span><span>Asisten</span></button>
         <div class="theme-seg" role="group" aria-label="Tema tampilan"><button type="button" data-theme-set="light" title="Mode terang" aria-label="Mode terang"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg></button><button type="button" data-theme-set="dark" title="Mode gelap" aria-label="Mode gelap"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" /></svg></button></div>
-        <button class="tb icon" id="btn-globe" title="Tampilan globe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18" /></svg></button>
         <a class="tb primary" href="admin.html"><svg viewBox="0 0 24 24"><path d="M4 20h16M6 16V9l6-5 6 5v7" /><path d="M10 16v-4h4v4" /></svg><span>Workspace</span></a>
       </div>
       <div class="user">
@@ -69,7 +67,7 @@
       <label class="sel"><span>Kejati</span><select id="f-kejati"></select></label>
       <div class="chips" id="chips"></div>
       <span class="sp"></span>
-      <div class="scope"><span class="live"></span>Data per <b id="asof">—</b> · Cakupan <b>Nasional</b></div>
+      <div class="scope"><span class="live"></span>Data per <b id="asof">—</b></div>
     </div>
 
     <main class="grid">
@@ -88,10 +86,10 @@
           <div class="stages" id="stages"></div>
         </section>
         <section class="panel grow min" data-reveal>
-          <header><h3>Klasifikasi tindak pidana</h3><span class="aux" id="cat-aux">13 klasifikasi</span></header>
+          <header><h3>Klasifikasi tindak pidana</h3><span class="aux" id="cat-aux">6 terbanyak</span></header>
           <div class="body scroll" id="cats"></div>
         </section>
-        <section class="panel" data-reveal>
+        <section class="panel" data-reveal hidden>
           <header><h3>Profil tersangka</h3><span class="aux">militer &amp; sipil</span></header>
           <div class="body" id="profile"></div>
         </section>
@@ -101,12 +99,13 @@
         <div id="map-wrap">
           <svg id="map" role="img" aria-label="Peta sebaran perkara pidana militer"></svg>
           <div class="hud tl">
+            <nav class="crumbs hud-crumbs" id="crumbs" aria-label="Jalur wilayah"></nav>
             <div class="lvl" id="m-lvl">Nasional</div>
             <div class="nm" id="m-nm">Indonesia</div>
             <div class="sub" id="m-sub">38 provinsi · 514 kabupaten/kota</div>
             <div class="hud-acts"><button class="back hidden" id="m-back">← Kembali</button><button class="back list" data-list="" id="m-list">☰ Daftar perkara</button></div>
           </div>
-          <div class="hud tr layers" id="layers">
+          <div class="hud tr layers" id="layers" hidden>
             <button data-layer="heat" class="on"><i class="sw heat"></i>Kepadatan perkara</button>
             <button data-layer="court" class="on"><i class="sw court"></i>Kejaksaan Tinggi</button>
             <button data-layer="lbl" class="on"><i class="sw lbl"></i>Label</button>
@@ -170,17 +169,18 @@
       <header class="s-head">
         <div><div class="eyebrow" id="cl-scope">Daftar perkara</div><h2 id="cl-title">Daftar perkara</h2></div>
         <div class="s-tools">
-          <input class="input" id="cl-q" placeholder="Cari nomor, tersangka, satuan…" style="width:260px" />
+          <input class="input" id="cl-q" placeholder="Cari nomor, nama, satuan" style="width:240px" />
           <div class="seg" id="cl-jenis"><button data-v="" class="on">Semua</button><button data-v="koneksitas">Koneksitas</button><button data-v="oditurat">Oditurat</button></div>
           <label class="sel"><span>Klasifikasi</span><select id="cl-cat"></select></label>
-          <label class="sel"><span>Urutkan</span><select id="cl-sort"><option value="upd">Terakhir diperbarui</option><option value="new">Tanggal terbaru</option><option value="old">Paling lama di tahap</option><option value="rugi">Kerugian terbesar</option><option value="sidang">Sidang terdekat</option></select></label>
+          <label class="sel"><span>Tahap</span><select id="cl-stage"></select></label>
+          <label class="sel"><span>Urutkan</span><select id="cl-sort"><option value="upd">Terbaru diperbarui</option><option value="new">Tanggal masuk</option><option value="old">Paling lama di tahap</option><option value="rugi">Kerugian terbesar</option><option value="sidang">Sidang terdekat</option></select></label>
           <button class="btn" id="cl-exp"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>Ekspor</button>
         </div>
         <button class="x" data-close aria-label="Tutup">×</button>
       </header>
       <div class="cl-sum" id="cl-sum"></div>
       <div class="cl-tabs" id="cl-tabs"></div>
-      <div class="cl-body scroll"><table class="cl-t"><thead><tr><th>Nomor perkara</th><th>Tersangka</th><th>Jenis &amp; klasifikasi</th><th>Tahap</th><th>Kejati · peradilan</th><th>Sidang berikutnya</th><th class="r">Kerugian</th><th>Diperbarui</th></tr></thead><tbody id="cl-rows"></tbody></table></div>
+      <div class="cl-body scroll"><table class="cl-t"><thead><tr><th>Nomor perkara</th><th>Tersangka</th><th>Klasifikasi</th><th>Tahap</th><th>Sidang</th><th class="r">Kerugian</th></tr></thead><tbody id="cl-rows"></tbody></table></div>
       <footer class="cl-foot" id="cl-foot"></footer>
     </div>
   </div>
@@ -215,18 +215,6 @@
     </div>
   </div>
 
-  <!-- ============ ASISTEN ============ -->
-  <aside id="ai" aria-hidden="true">
-    <header>
-      <span class="ai-dot big"></span>
-      <div><b>Asisten Analisis</b><span>Menjawab dari data dalam cakupan akses Anda</span></div>
-      <button class="x" id="ai-x" aria-label="Tutup">×</button>
-    </header>
-    <div class="ai-msgs scroll" id="ai-msgs"></div>
-    <div class="ai-sugg" id="ai-sugg"></div>
-    <form class="ai-in" id="ai-form"><input id="ai-input" placeholder="Tanyakan sesuatu tentang perkara…" autocomplete="off" /><button aria-label="Kirim"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button></form>
-  </aside>
-
   <!-- ============ COMMAND PALETTE ============ -->
   <div class="overlay palette-wrap" id="palette" aria-hidden="true">
     <div class="palette">
@@ -253,6 +241,9 @@
   <script src="js/list.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/boot.js"></script>
+  <script src="js/saran.js"></script>
+  <script src="js/smartsearch.js"></script>
+  <script src="js/panelsize.js"></script>
   <script src="js/mobile.js"></script>
 </body>
 </html>

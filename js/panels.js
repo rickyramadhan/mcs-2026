@@ -93,7 +93,6 @@
   const CMDS = [
     { t: 'Buka agenda sidang', s: 'Jadwal sidang minggu ini', ic: 'cal', run: () => $('btn-agenda').click() },
     { t: 'Buka pustaka hukum', s: 'Undang-undang & pasal', ic: 'scale', run: () => $('btn-legal').click() },
-    { t: 'Tanya asisten analisis', s: 'Pertanyaan dalam bahasa sehari-hari', ic: 'search', run: () => $('btn-ai').click() },
     { t: 'Kembali ke tampilan nasional', s: 'Atur ulang wilayah', ic: 'home', run: () => App.setFilter('region', 'ID') },
     { t: 'Buka Workspace', s: 'Input & pembaruan perkara', ic: 'edit', run: () => (location.href = 'admin.html') },
   ];
