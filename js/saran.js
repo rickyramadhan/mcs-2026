@@ -111,7 +111,7 @@ window.SARAN = (function () {
       <ul class="sg-art">${m.arts.map((a) => artRow(a, m.newLaw)).join('')}</ul>
       <div class="sg-why">Disarankan karena ada kata ${m.hits.map((h) => `<q>${E(h)}</q>`).join(', ')}${m.reason ? ' · ' + E(m.reason) : ''}.</div>
       ${note}
-      <div class="sg-act">${state && state.picked ? '<span class="sg-ok">✓ Sudah dipakai · bisa diubah di langkah 3</span>' : `<button class="btn primary" type="button" data-sg-use="${m.cat}">Pakai saran ini</button>`}
+      <div class="sg-act">${state && state.picked ? '<span class="sg-ok">✓ Sudah dipakai · bisa diubah di bawah</span>' : `<button class="btn primary" type="button" data-sg-use="${m.cat}">Pakai saran ini</button>`}
         ${others.map((o) => `<button class="btn" type="button" data-sg-alt="${o.cat}">Atau: ${E(o.name)}</button>`).join('')}</div>
       ${sims.length ? `<div class="sg-sim"><h5>Perkara serupa yang pernah ditangani</h5>${sims.map((e) => `<div class="sg-sim-i"><b>${exYear(e)} · ${E(e.kab)}</b><span>${E(e.title)}</span><em>${e.arts.map((id) => E(MCS.artLabel(id))).join(' jo. ')} → ${E(e.putusan)}</em></div>`).join('')}<small>Data contoh untuk simulasi.</small></div>` : ''}
     </div>`;

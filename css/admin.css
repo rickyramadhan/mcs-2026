@@ -398,3 +398,11 @@ table.t { width: 100%; border-collapse: collapse; }
 .basis summary small { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--txt-3); margin-left: 6px; }
 .basis ul { margin-top: 8px; }
 .cbx input { flex: none; }
+.more-arts { margin-top: 12px; }
+.more-arts summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--txt-3); }
+.more-arts summary:hover { color: var(--txt); }
+.sel-arts { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.sel-arts li { display: grid; gap: 1px; padding: 8px 12px; border-radius: 9px; background: var(--bg-2); border: 1px solid var(--line-2); font-size: 12.5px; }
+.sel-arts li b { color: var(--txt); }
+.sel-arts li span { color: var(--txt-2); }
+.sel-arts li em { font-style: normal; font-size: 12px; color: var(--txt-3); }
